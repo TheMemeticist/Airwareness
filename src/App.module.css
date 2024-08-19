@@ -1,0 +1,35 @@
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700&display=swap');
+
+/* Design tokens */
+:root {
+  --off-white: #DCDCDC;
+  --light-tan: #f8f3ef;
+  --dark-tan: #f2e7df;
+  --off-black-1: #101315;
+  --off-black-2: #0C0E11;
+  --light-blue: #288DBA;
+  --royal-blue: #094DAC;
+  --bright-teal: #34B9B8;
+  --bright-yellow: #DDC113;
+  
+  --font-primary: 'Inter', sans-serif;
+  --font-secondary: 'Anton', sans-serif;
+}
+
+.app {
+  font-family: var(--font-primary);
+  text-align: center;
+  color: white;
+  background: linear-gradient(to right, var(--light-blue), var(--royal-blue));
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-large);
+  color: var(--color-text-primary);
+  font-family: var(--font-secondary);
+}

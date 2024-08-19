@@ -1,15 +1,14 @@
 import React from 'react';
-import './Dashboard.css'; // Import the CSS file
+import styles from './Dashboard.module.css'; // Import the CSS module
 
 const Dashboard = () => {
   return (
-    <div className="dashboard-wrapper">
-      <div className="dashboard-container">
-        <h2 className="dashboard-header">Dashboard</h2>
-        <div className="dashboard-content">
-          {/* Your dashboard content goes here */}
+    <div className={styles['dashboard-wrapper']}>
+      <div className={styles['dashboard-container']}>
+        <h2 className={styles['dashboard-header']}>Dashboard</h2>
+        <div className={styles['dashboard-content']}>
           <p>This is your dashboard content.</p>
-          {/* Add more content here */}
+          {/* TODO: Add more dashboard content components here */}
         </div>
       </div>
     </div>

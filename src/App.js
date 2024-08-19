@@ -1,26 +1,15 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import styles from './App.module.css';
+import SplashScreen from './comps/splashscreen/SplashScreen';
+import Dashboard from './comps/dashboard/Dashboard';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Airwareness
-        </p>
-
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={styles.app}>
+      <SplashScreen />
+      <Dashboard /> 
     </div>
   );
-}
+};
 
 export default App;
