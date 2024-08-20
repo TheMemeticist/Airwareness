@@ -6,12 +6,22 @@
 }
 
 .dashboard-container {
-  width: 90%;
-  max-width: 1200px;
+  width: 80vw;
+  min-height: 80vh;
   padding: 20px;
-  border: 6px solid;
-  border-radius: 6px;
+  border: 6px solid rgba(256, 256, 256, 0.9);
+  border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-container {
+    width: 100vw;
+    min-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
 }
 
 .dashboard-header {
@@ -21,6 +31,6 @@
 
 .dashboard-content {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-direction: unset;
+  flex-wrap: wrap;
 }
