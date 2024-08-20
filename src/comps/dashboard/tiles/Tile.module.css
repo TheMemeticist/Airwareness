@@ -1,0 +1,28 @@
+.tile {
+  background-color: var(--bright-yellow);
+  width: calc(49% - 10px);
+  height: 400px;
+  border-radius: 8px;
+  box-shadow: 18px 18px 18px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  margin: 10px;
+  box-sizing: border-box;
+  position: relative;
+  float: right;
+}
+
+@media (max-width: 1024px) {
+  .tile {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+.tile-header {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.tile-content {
+  /* Add any specific styling for the content area */
+}
