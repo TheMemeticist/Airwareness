@@ -33,12 +33,12 @@ const SplashScreen = () => {
         const timer = setTimeout(() => {
             const backspaceAndRetype = async () => {
                 for (let i = headerText.length; i > 3; i--) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
+                    await new Promise(resolve => setTimeout(resolve, 25));
                     setHeaderText(prev => prev.slice(0, -1));
                 }
-                const newText = 'Airwareness Support';
+                const newText = 'Airwareness Support App';
                 for (let i = 3; i <= newText.length; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 25));
                     setHeaderText(newText.slice(0, i));
                 }
             };
