@@ -3,6 +3,8 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .dashboard-container {
@@ -16,10 +18,17 @@
 }
 
 @media (max-width: 1024px) {
+  .dashboard-wrapper {
+    padding: 0;
+  }
+  
   .dashboard-container {
+    width: 100%;
+    min-height: 100vh;
     border: none;
     border-radius: 0;
     box-shadow: none;
+    padding: 10px;
   }
 }
 
@@ -30,8 +39,10 @@
 
 .dashboard-content {
   display: flex;
-  flex-direction: unset;
+  flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
 }
 
 .dashboard-wrapper h2 {
