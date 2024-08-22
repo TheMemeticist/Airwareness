@@ -1,71 +1,41 @@
-.co2-content {
+.tile-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-}
-
-.co2-icon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 80%;
-  height: 80%;
-  position: relative;
-  margin: 5% 0;
-}
-
-.leaf-icon {
-  color: var(--bright-teal);
   width: 100%;
-  height: 100%;
-  position: absolute;
-  align-items: center;
-  font-size: 1500%;
-  animation: leafInWind 3s ease-in-out infinite;
-  top: 10%;
 }
 
-@keyframes leafInWind {
-  0%, 100% {
-    transform: rotate(0deg) translateY(0);
-  }
-  25% {
-    transform: rotate(5deg) translateY(-5px);
-  }
-  50% {
-    transform: rotate(-3deg) translateY(-3px);
-  }
-  75% {
-    transform: rotate(3deg) translateY(-3px);
-  }
+.co2-image {
+  max-width: 80%;
+  max-height: 70%;
+  object-fit: contain;
 }
 
-.co2-symbol {
-  position: absolute;
-  top: -15%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  font-size: 12vmin;
+.co2-value {
+  font-size: 3rem;
+  margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
-  .co2-icon-container {
-    width: 85%;
-    height: 75%;
+  .co2-image {
+    max-width: 70%;
+    max-height: 60%;
+  }
+
+  .co2-value {
+    font-size: 2.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .co2-icon-container {
-    width: 90%;
-    height: 70%;
+  .co2-image {
+    max-width: 60%;
+    max-height: 50%;
   }
-}
 
-h3 {
-  font-size: 3rem;
+  .co2-value {
+    font-size: 2rem;
+  }
 }

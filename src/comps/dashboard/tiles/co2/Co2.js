@@ -1,15 +1,18 @@
 import React from 'react';
 import Tile from '../Tile';
 import styles from './Co2.module.css';
+import AnimatedCO2 from './AnimatedCO2'; // New component
 
-const Co2 = ({ title, co2ppm = 420 }) => {
+const Co2 = ({ co2ppm = 420, speed = 10, size = 100, colorScheme = 'default' }) => {
+  const helpText = "Monitor the CO₂ levels to ensure adequate ventilation and maintain optimal indoor air quality. Elevated CO₂ levels can indicate poor ventilation and may affect cognitive function and overall comfort.";
+
   return (
-    <Tile title={"CO₂"} helptxt={"This is the amount of CO₂ in the air."}>
-      <div className={styles['co2-content']}>
-        <div className={styles['co2-icon-container']}>
-          <span className={`material-symbols-outlined ${styles['leaf-icon']}`}>eco</span>
-        </div>
-        <h3>{co2ppm} ppm</h3>
+    <Tile 
+      title="CO₂" 
+      helptxt={helpText}
+    >
+      <div className={styles['tile-content']}>
+        <AnimatedCO2 rpm={speed} size={size} colorScheme={colorScheme} co2ppm={co2ppm} />
       </div>
     </Tile>
   );

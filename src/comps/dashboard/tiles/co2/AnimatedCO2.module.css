@@ -1,0 +1,31 @@
+.animatedCO2 {
+  overflow: visible;
+  padding: 5em;
+  width: 60%;
+  height: 90%;
+}
+
+.orbitingCircle {
+  transform-origin: 50% 50%;
+}
+
+.orbit1, .orbit2, .orbit3 {
+  animation: orbit 10s linear infinite;
+}
+
+.orbit2 {
+  animation-delay: -3.33s;
+}
+
+.orbit3 {
+  animation-delay: -6.66s;
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg) translateX(45%) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(45%) rotate(-360deg);
+  }
+}
