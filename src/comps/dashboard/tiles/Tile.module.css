@@ -1,6 +1,6 @@
 .tile {
-  background: linear-gradient(to bottom, var(--royal-blue), transparent);
-  width: calc(49% - 10px);
+  background: var(--off-black-1);
+  width: calc(50% - 24px);
   min-height: 400px;
   border-radius: 8px;
   box-shadow: -18px 12px 32px rgba(0, 0, 0, 0.2);
@@ -11,6 +11,12 @@
   float: right;
   display: flex;
   flex-direction: column;
+  transition: background 0.5s ease-in-out;
+}
+
+.tile:hover {
+  transition: background-color 1s ease;
+  background: linear-gradient(to top, var(--off-black-1), transparent);
 }
 
 @media (max-width: 1024px) {
@@ -20,20 +26,88 @@
   }
 }
 
-.tile-header {
-  font-size: 2rem;
+.tile-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 12px;
 }
+
+.tile-header {
+  font-size: 4rem;
+  margin: 0;
+}
+
+.help-icon-container {
+  position: relative;
+  cursor: help;
+}
+
+.help-icon {
+  font-size: 2.5rem;
+  color: var(--off-white);
+  border-radius: 100%;
+  transition: background-color, color 1s ease;
+}
+
+.help-icon:hover {
+  color: var(--off-black-1);
+  background-color: var(--bright-teal);
+}
+
+.help-icon-container::after {
+  content: attr(title);
+  position: absolute;
+  background-color: var(--off-black-2);
+  color: var(--off-white);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  z-index: 1;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+
+
+.help-icon-container::before {
+  content: '';
+  position: absolute;
+  border: 6px solid transparent;
+  border-bottom-color: var(--off-black-2);
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+
 
 @media (max-width: 768px) {
   .tile-header {
     font-size: 1.5rem;
+  }
+  
+  .help-icon {
+    font-size: 1.2rem;
   }
 }
 
 @media (max-width: 480px) {
   .tile-header {
     font-size: 1.2rem;
+  }
+  
+  .help-icon {
+    font-size: 1rem;
   }
 }
 

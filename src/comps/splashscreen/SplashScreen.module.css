@@ -11,6 +11,7 @@
   background: linear-gradient(to right, var(--light-blue), var(--royal-blue));
   animation: fadeOutOverlay 2s ease-out forwards;
   animation-delay: 7.5s;
+
 }
 
 .splash-screen {

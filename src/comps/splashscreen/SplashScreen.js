@@ -48,6 +48,10 @@ const SplashScreen = () => {
         return () => clearTimeout(timer);
     }, [isVisible, headerText]);
 
+    const handleClick = () => {
+        setIsVisible(false);
+    };
+
     if (!isVisible) return null;
 
     const dotsLogos = Array.from({ length: numberOfDots }).map((_, index) => (
@@ -55,7 +59,7 @@ const SplashScreen = () => {
     ));
 
     return (
-        <div className={styles['splash-screen-overlay']}>
+        <div className={styles['splash-screen-overlay']} onClick={handleClick}>
             <div className={styles['splash-screen']}>
                 <header className={styles['App-header']}>
                     <img src={fan} className={styles['Fan-logo']} alt="ASP Fan Logo" />

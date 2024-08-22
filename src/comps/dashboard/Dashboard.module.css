@@ -17,10 +17,9 @@
 
 @media (max-width: 1024px) {
   .dashboard-container {
-    width: 100vw;
-    min-height: 100vh;
     border: none;
     border-radius: 0;
+    box-shadow: none;
   }
 }
 
@@ -33,4 +32,11 @@
   display: flex;
   flex-direction: unset;
   flex-wrap: wrap;
+}
+
+.dashboard-wrapper h2 {
+  font-family: var(--font-primary);
+  letter-spacing: 0.05em;
+  font-size: 6rem;
+  font-weight: 100;
 }

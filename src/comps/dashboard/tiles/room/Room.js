@@ -5,7 +5,7 @@ import roomImage from './iso-metric-room.png';
 
 const Room = ({ title, children }) => {
   return (
-    <Tile title={title}>
+    <Tile title={"Room"} helptxt={"This is the room you are in."}>
       <div className={styles['room-content']}>
         <img src={roomImage} alt="Room" className={styles['room-image']} />
         {children}
