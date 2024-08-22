@@ -16,7 +16,7 @@
 
 .tile:hover {
   transition: background-color 1s ease;
-  background: linear-gradient(to top, var(--off-black-1), transparent);
+  background: linear-gradient(to bottom, var(--off-black-1), transparent);
 }
 
 @media (max-width: 1024px) {
@@ -52,7 +52,7 @@
 
 .help-icon:hover {
   color: var(--off-black-1);
-  background-color: var(--bright-teal);
+  background-color: var(--bright-yellow);
 }
 
 .help-icon-container::after {
@@ -113,4 +113,50 @@
 
 .tile-content {
   flex-grow: 1;
+}
+
+.tile-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  height: 80%;
+  position: relative;
+  margin: 5% 0;
+}
+
+.large-icon {
+  color: var(--bright-teal);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  align-items: center;
+  font-size: 1500%;
+  top: 10%;
+}
+
+@media (max-width: 768px) {
+  .icon-container {
+    width: 85%;
+    height: 75%;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-container {
+    width: 90%;
+    height: 70%;
+  }
 }

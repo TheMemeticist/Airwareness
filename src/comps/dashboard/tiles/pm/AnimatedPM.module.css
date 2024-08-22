@@ -1,0 +1,139 @@
+.animatedPMContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.animatedPM {
+  overflow: visible;
+  width: 45%;
+  height: auto;
+  margin: 2.5%;
+}
+
+.animatedPM:nth-child(3) {
+  width: 60%;
+  margin-top: 5%;
+}
+
+.backgroundCircle {
+  fill: none;
+  stroke: var(--light-tan);
+  stroke-width: 0.5;
+  opacity: 0.3;
+}
+
+.particle {
+  fill: var(--light-tan);
+  transform-origin: 50% 50%;
+  animation: float linear infinite;
+  animation-duration: calc(60s / (var(--rpm) * var(--speed)));
+}
+
+.particle1 { animation-delay: 0.2s; }
+.particle2 { animation-delay: 0.4s; }
+.particle3 { animation-delay: 0.6s; }
+.particle4 { animation-delay: 0.8s; }
+.particle5 { animation-delay: 1s; }
+.particle6 { animation-delay: 1.2s; }
+.particle7 { animation-delay: 1.4s; }
+.particle8 { animation-delay: 1.6s; }
+
+.pmValue {
+  fill: var(--off-white);
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: bold;
+  font-size: calc(var(--size) * 0.2px);
+}
+
+.pmLabel {
+  fill: var(--off-white);
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: normal;
+  font-family: var(--font-primary);
+  font-size: calc(var(--size) * 0.08px);
+}
+.animatedPMContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.animatedPM {
+  overflow: visible;
+  width: 45%;
+  height: auto;
+  margin: 2.5%;
+}
+
+.animatedPM:nth-child(3) {
+  width: 60%;
+  margin-top: 5%;
+}
+
+.backgroundCircle {
+  fill: none;
+  stroke: var(--light-tan);
+  stroke-width: 0.5;
+  opacity: 0.3;
+}
+
+.particle {
+  fill: var(--light-tan);
+  transform-origin: 50% 50%;
+  animation: float linear infinite;
+  animation-duration: calc(60s / (var(--rpm) * var(--speed)));
+}
+
+.particle1 { animation-delay: 0.2s; }
+.particle2 { animation-delay: 0.4s; }
+.particle3 { animation-delay: 0.6s; }
+.particle4 { animation-delay: 0.8s; }
+.particle5 { animation-delay: 1s; }
+.particle6 { animation-delay: 1.2s; }
+.particle7 { animation-delay: 1.4s; }
+.particle8 { animation-delay: 1.6s; }
+
+.pmValue {
+  fill: var(--off-white);
+  stroke: var(--off-black-1);
+  stroke-width: 2px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: bold;
+  font-size: calc(var(--size) * 0.2px);
+}
+
+.pmLabel {
+  fill: var(--off-white);
+  stroke: var(--off-black-1);
+  stroke-width: 2px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-weight: normal;
+  font-family: var(--font-primary);
+  font-size: calc(var(--size) * 0.08px);
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(10px, 10px); }
+  50% { transform: translate(0, 20px); }
+  75% { transform: translate(-10px, 10px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes float {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(10px, 10px); }
+  50% { transform: translate(0, 20px); }
+  75% { transform: translate(-10px, 10px); }
+  100% { transform: translate(0, 0); }
+}
