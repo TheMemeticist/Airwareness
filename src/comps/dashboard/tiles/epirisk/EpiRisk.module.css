@@ -1,0 +1,12 @@
+.epi-risk-icon {
+  font-size: 24rem !important;
+  color: var(--bright-teal);
+  margin-bottom: 1rem;
+}
+
+.epi-risk-value {
+  font-size: 4rem;
+  margin-top: 1rem;
+}
+
+/* Media queries remain unchanged */

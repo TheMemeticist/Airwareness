@@ -12,6 +12,7 @@
   display: flex;
   flex-direction: column;
   transition: background 0.5s ease-in-out;
+  color: var(--off-white);
 }
 
 .tile:hover {
@@ -74,8 +75,6 @@
   transition: opacity 0.3s, visibility 0.3s;
 }
 
-
-
 .help-icon-container::before {
   content: '';
   position: absolute;
@@ -88,8 +87,6 @@
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-
-
 
 @media (max-width: 768px) {
   .tile-header {
@@ -113,10 +110,6 @@
 
 .tile-content {
   flex-grow: 1;
-}
-
-.tile-content {
-  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,6 +117,7 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
+  color: var(--off-white);
 }
 
 .icon-container {
@@ -158,5 +152,58 @@
   .icon-container {
     width: 90%;
     height: 70%;
+  }
+}
+
+.tile-text-field {
+  color: var(--off-white) !important;
+  font-size: 1rem !important;
+  width: calc(100% - 8px) !important;
+}
+
+.tile-text-field :global(.MuiInputBase-input) {
+  color: var(--off-white) !important;
+  font-size: 1.1rem !important;
+  padding: 12px !important;
+}
+
+.tile-text-field :global(.MuiInputLabel-root) {
+  color: var(--off-white) !important;
+  font-size: 1.1rem !important;
+}
+
+.tile-text-field :global(.MuiOutlinedInput-root) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.tile-text-field :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline),
+.tile-text-field :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+.tile-text-field :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+@media (min-width: 600px) {
+  .tile-text-field :global(.MuiInputBase-input) {
+    font-size: 1.2rem !important;
+    padding: 14px !important;
+  }
+
+  .tile-text-field :global(.MuiInputLabel-root) {
+    font-size: 1.2rem !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .tile-text-field :global(.MuiInputBase-input) {
+    font-size: 1.3rem !important;
+    padding: 16px !important;
+  }
+
+  .tile-text-field :global(.MuiInputLabel-root) {
+    font-size: 1.3rem !important;
   }
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 import styles from './Dashboard.module.css';
-import Tile from './tiles/Tile';
 import Room from './tiles/room/Room';
 import Co2 from './tiles/co2/Co2';
 import Pm from './tiles/pm/Pm';
 import CentralVentilation from './tiles/airsystem/CentralVentilation';
 import AirPurifier from './tiles/airsystem/AirPurifier';
 import Aqi from './tiles/aqi/Aqi';
+import EpiRisk from './tiles/epirisk/EpiRisk';
 
 const Dashboard = () => {
   return (
@@ -20,7 +20,7 @@ const Dashboard = () => {
           <CentralVentilation />
           <AirPurifier />
           <Aqi />
-          {/* Add more specific tiles as needed */}
+          <EpiRisk />
         </div>
       </div>
     </div>

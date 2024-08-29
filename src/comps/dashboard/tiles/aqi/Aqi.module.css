@@ -1,15 +1,5 @@
-.tile-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-}
-
 .aqi-icon {
-  width: 80%;
-  height: 80%;
+  font-size: 24rem !important;
   color: var(--bright-teal);
   margin-bottom: 1rem;
 }
@@ -19,10 +9,10 @@
   margin-top: 1rem;
 }
 
+/* Media queries remain unchanged */
 @media (max-width: 768px) {
   .aqi-icon {
-    width: 70%;
-    height: 70%;
+    font-size: 4rem !important;
   }
   .aqi-value {
     font-size: 3.5rem;
@@ -31,8 +21,7 @@
 
 @media (max-width: 480px) {
   .aqi-icon {
-    width: 60%;
-    height: 60%;
+    font-size: 3.5rem !important;
   }
   .aqi-value {
     font-size: 3rem;
