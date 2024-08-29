@@ -14,13 +14,27 @@ const ParticleInstance = ({ rpm, size, colorScheme, pmValue, label }) => {
       }
     };
 
+    const getRandomColor = () => {
+      const colors = [
+        'var(--light-blue)',
+        'var(--royal-blue)',
+        'var(--bright-teal)',
+        'var(--bright-yellow)',
+        'var(--light-tan)',
+        'var(--dark-tan)',
+        'var(--off-white)',
+      ];
+      return colors[Math.floor(Math.random() * colors.length)];
+    };
+
     setParticles(
       Array(8).fill().map(() => ({
         x: Math.random() * size,
         y: Math.random() * size,
         radius: getParticleSize(),
         speed: 0.5 + Math.random() * 1,
-        direction: Math.random() * 7 * Math.PI
+        direction: Math.random() * 7 * Math.PI,
+        color: getRandomColor(),
       }))
     );
   }, [size, label]);
@@ -53,6 +67,7 @@ const ParticleInstance = ({ rpm, size, colorScheme, pmValue, label }) => {
           style={{
             '--rpm': rpm,
             '--speed': particle.speed,
+            fill: particle.color,
           }}
         />
       ))}

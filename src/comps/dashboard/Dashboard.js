@@ -4,9 +4,9 @@ import Tile from './tiles/Tile';
 import Room from './tiles/room/Room';
 import Co2 from './tiles/co2/Co2';
 import Pm from './tiles/pm/Pm';
-import AirSystem from './tiles/airsystem/AirSystem';
-
-
+import CentralVentilation from './tiles/airsystem/CentralVentilation';
+import AirPurifier from './tiles/airsystem/AirPurifier';
+import Aqi from './tiles/aqi/Aqi';
 
 const Dashboard = () => {
   return (
@@ -17,7 +17,9 @@ const Dashboard = () => {
           <Room />
           <Co2 />
           <Pm />
-          <AirSystem />
+          <CentralVentilation />
+          <AirPurifier />
+          <Aqi />
           {/* Add more specific tiles as needed */}
         </div>
       </div>

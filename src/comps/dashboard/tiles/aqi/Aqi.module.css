@@ -1,0 +1,40 @@
+.tile-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.aqi-icon {
+  width: 80%;
+  height: 80%;
+  color: var(--bright-teal);
+  margin-bottom: 1rem;
+}
+
+.aqi-value {
+  font-size: 4rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .aqi-icon {
+    width: 70%;
+    height: 70%;
+  }
+  .aqi-value {
+    font-size: 3.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .aqi-icon {
+    width: 60%;
+    height: 60%;
+  }
+  .aqi-value {
+    font-size: 3rem;
+  }
+}

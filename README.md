@@ -4,8 +4,6 @@ The **Air Supports Toolset** is a comprehensive and versatile application design
 
 ## Key Features
 
-## Key Features
-
 #### 1. **Indoor Air Quality Management Suite**:  
    This is the overarching suite that encompasses all tools, designed to optimize air quality, safety, and comfort in indoor environments. It’s geared towards both individual room assessments and whole-building management.
 
@@ -13,6 +11,7 @@ The **Air Supports Toolset** is a comprehensive and versatile application design
      - **Air Purifier Calculator**: This tool determines the ideal number of air purifier units required to achieve the target Air Changes per Hour (ACH) based on room volume, occupancy, and activity levels. It considers both mechanical air purifiers and natural ventilation strategies to provide a holistic view of air management.
      - **Natural Ventilation CADR Estimator**: Integrated into the Air Purifier Calculator, this sub-feature estimates the CADR from natural ventilation based on window size, wind speed, and direction. It helps balance mechanical and natural airflow to optimize indoor air quality.
      - **CO2 Level Estimator**: This component estimates CO2 levels based on the number of occupants, activity levels, and ventilation rate, ensuring that adequate ventilation is maintained to avoid excessive CO2 buildup.
+     - **Central Ventilation System**: This feature evaluates the effectiveness of central HVAC systems in maintaining optimal air quality and provides recommendations for adjustments or upgrades.
 
    - **Transmission Risk & Air Quality Visualizer**:
      - **Transmission Risk Calculator**: This tool assesses the risk of viral transmission in indoor spaces using the Wells-Riley model. It factors in room size, ventilation rates, and the infectiousness of individuals present to provide an estimate of the probability of infection.
