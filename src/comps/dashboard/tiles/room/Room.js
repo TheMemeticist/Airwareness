@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
@@ -25,6 +25,11 @@ const Room = ({ buildingId, roomId, children }) => {
   const building = state.buildings.find(b => b.id === buildingId);
   const rooms = building?.rooms || [];
   const room = rooms.find(r => r.id === selectedRoomId);
+
+  // Add this useEffect to update selectedRoomId when roomId prop changes
+  useEffect(() => {
+    setSelectedRoomId(roomId);
+  }, [roomId]);
 
   if (!room) {
     return (
@@ -60,7 +65,7 @@ const Room = ({ buildingId, roomId, children }) => {
     const newRoomId = String(Date.now());
     const newRoom = {
       id: newRoomId,
-      name: `New Room ${rooms.length + 1}`,
+      name: `${room.name} (copy)`,
       height: room.height || '',
       floorArea: room.floorArea || '',
       // Add any other attributes you want to copy here

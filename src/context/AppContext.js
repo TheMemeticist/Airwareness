@@ -16,7 +16,6 @@ const initialState = {
       ],
     },
   ],
-  // Add other initial state properties here
 };
 
 const AppContext = createContext();
@@ -66,7 +65,16 @@ function reducer(state, action) {
             : building
         ),
       };
-
+    case 'ADD_BUILDING':
+      return {
+        ...state,
+        buildings: [...state.buildings, action.payload],
+      };
+    case 'DELETE_BUILDING':
+      return {
+        ...state,
+        buildings: state.buildings.filter(building => building.id !== action.payload.buildingId),
+      };
     default:
       return state;
   }

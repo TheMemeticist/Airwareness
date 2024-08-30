@@ -1,6 +1,6 @@
 .tile {
   background: var(--off-black-1);
-  width: calc(33% - 24px);
+  width: calc(50% - 24px);
   min-height: 400px;
   max-height: calc(400px * 1.61)px;
   border-radius: 8px;
