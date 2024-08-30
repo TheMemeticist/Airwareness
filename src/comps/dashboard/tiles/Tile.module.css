@@ -1,7 +1,8 @@
 .tile {
   background: var(--off-black-1);
-  width: calc(50% - 24px);
+  width: calc(33% - 24px);
   min-height: 400px;
+  max-height: calc(400px * 1.61)px;
   border-radius: 8px;
   box-shadow: -18px 12px 32px rgba(0, 0, 0, 0.2);
   padding: 16px;
@@ -13,6 +14,7 @@
   flex-direction: column;
   transition: background 0.5s ease-in-out;
   color: var(--off-white);
+  font-size: 1vw; /* Base font size for the tile */
 }
 
 .tile:hover {
@@ -24,19 +26,24 @@
   .tile {
     width: 100%;
     margin-left: 0;
+    font-size: 1.5vw; /* Increase base font size for smaller screens */
   }
 }
 
 .tile-header-container {
   display: flex;
-  align-items: center;
+  align-items:flex-start;
   justify-content: space-between;
   margin-bottom: 12px;
 }
 
 .tile-header {
-  font-size: 4rem;
+  font-size: 3em;
+  text-align: left;
   margin: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .help-icon-container {
@@ -45,7 +52,7 @@
 }
 
 .help-icon {
-  font-size: 2.5rem;
+  font-size: 2.5em; /* 2.5 times the base font size */
   color: var(--off-white);
   border-radius: 100%;
   transition: background-color, color 1s ease;
@@ -63,7 +70,7 @@
   color: var(--off-white);
   padding: 5px 10px;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.9em; /* 0.9 times the base font size */
   white-space: nowrap;
   z-index: 1;
   top: calc(100% + 6px);
@@ -89,22 +96,30 @@
 }
 
 @media (max-width: 768px) {
+  .tile {
+    font-size: 2vw; /* Further increase base font size for even smaller screens */
+  }
+  
   .tile-header {
-    font-size: 1.5rem;
+    font-size: 3em; /* Reduce relative size for smaller screens */
   }
   
   .help-icon {
-    font-size: 1.2rem;
+    font-size: 2em; /* Reduce relative size for smaller screens */
   }
 }
 
 @media (max-width: 480px) {
+  .tile {
+    font-size: 2.5vw; /* Largest base font size for smallest screens */
+  }
+  
   .tile-header {
-    font-size: 1.2rem;
+    font-size: 2.5em; /* Further reduce relative size for smallest screens */
   }
   
   .help-icon {
-    font-size: 1rem;
+    font-size: 1.5em; /* Further reduce relative size for smallest screens */
   }
 }
 
@@ -137,7 +152,7 @@
   height: 100%;
   position: absolute;
   align-items: center;
-  font-size: 1500%;
+  font-size: 15em; /* 15 times the base font size */
   top: 10%;
 }
 
@@ -157,19 +172,19 @@
 
 .tile-text-field {
   color: var(--off-white) !important;
-  font-size: 1rem !important;
+  font-size: 1em !important; /* Same as base font size */
   width: calc(100% - 8px) !important;
 }
 
 .tile-text-field :global(.MuiInputBase-input) {
   color: var(--off-white) !important;
-  font-size: 1.1rem !important;
+  font-size: 1.1em !important; /* 1.1 times the base font size */
   padding: 12px !important;
 }
 
 .tile-text-field :global(.MuiInputLabel-root) {
   color: var(--off-white) !important;
-  font-size: 1.1rem !important;
+  font-size: 1.1em !important; /* 1.1 times the base font size */
 }
 
 .tile-text-field :global(.MuiOutlinedInput-root) {
@@ -204,6 +219,63 @@
   }
 
   .tile-text-field :global(.MuiInputLabel-root) {
+    font-size: 1.3rem !important;
+  }
+}
+
+.tile-select {
+  color: var(--off-white) !important;
+  font-size: 1em !important;
+  width: calc(100% - 8px) !important;
+}
+
+.tile-select :global(.MuiSelect-select) {
+  color: var(--off-white) !important;
+  font-size: 1.1em !important;
+  padding: 12px !important;
+}
+
+.select-label {
+  color: var(--off-white) !important;
+  font-size: 1.1em !important;
+}
+
+.tile-select :global(.MuiOutlinedInput-root) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.tile-select :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+.tile-select:hover :global(.MuiOutlinedInput-notchedOutline),
+.tile-select.Mui-focused :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+.tile-select :global(.MuiSelect-icon) {
+  color: var(--off-white) !important;
+}
+
+@media (min-width: 600px) {
+  .tile-select :global(.MuiSelect-select) {
+    font-size: 1.2rem !important;
+    padding: 14px !important;
+  }
+
+  .select-label {
+    font-size: 1.2rem !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .tile-select :global(.MuiSelect-select) {
+    font-size: 1.3rem !important;
+    padding: 16px !important;
+  }
+
+  .select-label {
     font-size: 1.3rem !important;
   }
 }

@@ -10,3 +10,111 @@
   flex-wrap: wrap;
   gap: 16px;
 }
+
+.room-title-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.room-select {
+  color: var(--off-white) !important;
+  font-size: 0.61em !important;
+  width: 100%;
+}
+
+.room-select .MuiOutlinedInput-notchedOutline {
+  border-color: var(--off-white) !important;
+}
+
+.room-select:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--bright-yellow) !important;
+}
+
+.room-select.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--bright-yellow) !important;
+}
+
+/* Add this new style for the label */
+.room-select-label {
+  color: var(--off-white) !important;
+}
+
+.room-select-label.Mui-focused {
+  color: var(--bright-yellow) !important;
+}
+
+/* Add this new style for the icon */
+.room-select .MuiSelect-icon {
+  color: var(--off-white) !important;
+}
+
+.select-icon {
+  fill: var(--off-white);
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  right: 7px;
+  top: calc(50% - 12px);
+  pointer-events: none;
+}
+
+.room-actions {
+  display: flex;
+  position: absolute;
+  right: 1;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.action-button {
+  opacity: 0;
+  transition: opacity 0.3s ease, background-color 0.3s ease !important;
+  min-width: 36px !important;
+  width: 36px;
+  height: 36px;
+  padding: 0 !important;
+  margin-left: 8px !important;
+  font-size: 1.2em !important;
+  font-weight: bold !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.add-room-button {
+  background-color: var(--bright-teal) !important;
+}
+
+.add-room-button:hover {
+  background-color: var(--bright-teal-hover) !important;
+}
+
+.delete-room-button {
+  background-color: transparent !important;
+}
+
+.delete-room-button:hover {
+  background-color: red !important;
+}
+
+.delete-room-button:disabled {
+  background-color: var(--disabled-gray) !important;
+  color: var(--disabled-text) !important;
+}
+
+.room-title-container:hover .action-button {
+  opacity: 1;
+}
+
+.button-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  float: left;
+  width: 100%;
+  height: 100%;
+}
+
+/* ... rest of your existing styles ... */
