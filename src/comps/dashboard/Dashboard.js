@@ -7,6 +7,7 @@ import CentralVentilation from './tiles/airsystem/CentralVentilation';
 import AirPurifier from './tiles/airsystem/AirPurifier';
 import Aqi from './tiles/aqi/Aqi';
 import EpiRisk from './tiles/epirisk/EpiRisk';
+import Occupants from './tiles/occupants/Occupants';
 import { useAppContext } from '../../context/AppContext';
 import { FormControl, InputLabel, Select, MenuItem, Box, Button } from '@mui/material';
 
@@ -40,11 +41,11 @@ const Dashboard = () => {
   const createNewBuilding = () => {
     const newBuildingId = String(Date.now());
     const newRoomId = String(Date.now() + 1); // Ensure unique ID for the room
-    const sourceId = state.buildings.length > 0 ? state.buildings[0].id : null;
+    const sourceBuilding = state.buildings[state.buildings.length - 1]; // Get the last building
     const newBuilding = {
       id: newBuildingId,
-      name: `Building ${state.buildings.length + 1}`,
-      sourceId: sourceId,
+      name: `${sourceBuilding.name} (copy)`,
+      sourceId: sourceBuilding.id,
       rooms: [{
         id: newRoomId,
         name: 'Room 1',
@@ -83,12 +84,16 @@ const Dashboard = () => {
               onChange={handleBuildingChange}
               label="Select a Building"
               IconComponent={ArrowDownIcon}
+              className={styles['building-select']}
+              MenuProps={{
+                classes: { paper: styles['menu-paper'] }
+              }}
             >
               {state.buildings.map((building) => (
                 <MenuItem 
                   key={building.id} 
                   value={building.id} 
-                  style={{ color: 'var(--off-white)' }} // Ensure text is white
+                  className={styles['building-select-item']}
                 >
                   {building.name}
                 </MenuItem>
@@ -118,8 +123,9 @@ const Dashboard = () => {
           {selectedBuilding && selectedBuilding.rooms.length > 0 ? (
             <Room buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
           ) : (
-            <p>No rooms available</p>
+            <p className={styles['no-rooms-message']}>No rooms available</p>
           )}
+          <Occupants />
           <Co2 />
           <Pm />
           <CentralVentilation />

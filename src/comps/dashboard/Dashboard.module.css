@@ -17,32 +17,9 @@
   flex-wrap: wrap;
 }
 
-@media (max-width: 1024px) {
-  .dashboard-wrapper {
-    padding: 0;
-  }
-  
-  .dashboard-container {
-    width: 100%;
-    min-height: 100vh;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 50px;
-  }
-}
-
 .dashboard-header {
   margin-bottom: 20px;
   text-align: center;
-}
-
-.dashboard-content {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
 }
 
 .dashboard-wrapper h2 {
@@ -61,32 +38,18 @@
 .building-select {
   width: 200px;
   flex-shrink: 0;
-  color: var(--off-white) !important;
-  font-size: 0.61em !important;
+  font-size: 1rem !important;
+  font-family: var(--font-secondary) !important;
 }
 
 .building-select .MuiOutlinedInput-root {
-  color: var(--off-white);
+  color: var(--off-white) !important;
 }
 
 .building-select-label {
   color: var(--off-white) !important;
-}
-
-.building-select-label.Mui-focused {
-  color: var(--bright-yellow) !important;
-}
-
-.building-select .MuiOutlinedInput-notchedOutline {
-  border-color: var(--off-white) !important;
-}
-
-.building-select:hover .MuiOutlinedInput-notchedOutline {
-  border-color: var(--bright-yellow) !important;
-}
-
-.building-select.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: var(--bright-yellow) !important;
+  font-size: 1rem !important;
+  font-family: var(--font-secondary) !important;
 }
 
 .building-select .MuiSelect-select {
@@ -94,7 +57,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: 32px;
-  color: var(--off-white) !important; /* Ensure selected text is white */
+  color: var(--off-white) !important;
+  font-family: var(--font-secondary) !important;
+  font-size: 1rem !important;
+}
+
+.building-select-item {
+  color: var(--off-black-1) !important;
+  font-family: var(--font-secondary) !important;
+  font-size: 1rem !important;
 }
 
 .select-icon {
@@ -110,7 +81,7 @@
 .building-actions-container {
   display: flex;
   align-items: center;
-  margin-left: 16px; /* Adjust spacing as needed */
+  margin-left: 16px;
 }
 
 .action-button {
@@ -147,14 +118,41 @@
   color: var(--disabled-text) !important;
 }
 
-.building-select-container:hover .action-button {
-  opacity: 1;
-}
-
 .button-content {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.no-rooms-message {
+  color: var(--off-white);
+}
+
+@media (max-width: 1024px) {
+  .dashboard-wrapper {
+    padding: 0;
+  }
+  
+  .dashboard-container {
+    width: 100%;
+    min-height: 100vh;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 50px;
+  }
+}
+
+.menu-paper {
+  background-color: var(--off-white) !important;
 }
