@@ -125,7 +125,12 @@ const Dashboard = () => {
           ) : (
             <p className={styles['no-rooms-message']}>No rooms available</p>
           )}
-          <Occupants />
+          {selectedBuilding && selectedBuilding.rooms.length > 0 && (
+            <Occupants
+              buildingId={selectedBuilding.id}
+              roomId={selectedBuilding.rooms[0].id}
+            />
+          )}
           <Co2 />
           <Pm />
           <CentralVentilation />

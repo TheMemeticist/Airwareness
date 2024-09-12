@@ -12,6 +12,12 @@ const initialState = {
           name: 'Room 1',
           height: '10',
           floorArea: '900',
+          occupants: {
+            groups: [
+              { name: 'Group 1', count: 1, age: '18' }
+            ],
+            activityLevel: 2
+          }
         },
       ],
     },
@@ -74,6 +80,22 @@ function reducer(state, action) {
       return {
         ...state,
         buildings: state.buildings.filter(building => building.id !== action.payload.buildingId),
+      };
+    case 'UPDATE_OCCUPANTS':
+      return {
+        ...state,
+        buildings: state.buildings.map(building =>
+          building.id === action.payload.buildingId
+            ? {
+                ...building,
+                rooms: building.rooms.map(room =>
+                  room.id === action.payload.roomId
+                    ? { ...room, occupants: action.payload.occupants }
+                    : room
+                ),
+              }
+            : building
+        ),
       };
     default:
       return state;

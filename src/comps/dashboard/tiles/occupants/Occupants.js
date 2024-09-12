@@ -1,93 +1,201 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useAppContext } from '../../../../context/AppContext';
 import Tile from '../Tile';
 import styles from './Occupants.module.css';
 import tileStyles from '../Tile.module.css';
-import { Box, Slider, Typography, TextField } from '@mui/material';
-import { PeopleIcon, HotelIcon, DirectionsRunIcon } from './OccupantIcons';
+import { Box, TextField, IconButton, Slider, Typography, Stack } from '@mui/material';
+import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { PeopleIcon, HotelIcon, DirectionsRunIcon, DirectionsWalkIcon, AccessibilityNewIcon, SittingIcon } from './OccupantIcons';
+import { styled, TextFieldProps } from '@mui/material/styles';
 
-const Occupants = ({ initialAdults = 8, initialChildren = 2 }) => {
-  const [adults, setAdults] = useState(initialAdults);
-  const [children, setChildren] = useState(initialChildren);
-  const [activityLevel, setActivityLevel] = useState(2);
-  const helpText = "This tile shows the current number of adult and child occupants in the room and their activity level.";
+// Add this custom styled component
+const WhiteTextField = styled((props: TextFieldProps) => (
+  <TextField {...props} />
+))({
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: 'white',
+    },
+    '&:hover fieldset': {
+      borderColor: 'white',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: 'white',
+    },
+  },
+  '& .MuiInputBase-input': {
+    color: 'white',
+  },
+  '& .MuiInputLabel-root': {
+    color: 'white',
+  },
+});
 
-  const handleActivityChange = (event, newValue) => {
-    setActivityLevel(newValue);
+const Occupants = ({ buildingId, roomId }) => {
+  const { state, dispatch } = useAppContext();
+  const room = state.buildings
+    .find(b => b.id === buildingId)
+    ?.rooms.find(r => r.id === roomId);
+
+  const { groups, activityLevel, maskRate, maskFiltration } = room?.occupants || { groups: [], activityLevel: 2, maskRate: 0, maskFiltration: 0 };
+
+  const updateOccupants = (newGroups, newActivityLevel, newMaskRate, newMaskFiltration) => {
+    dispatch({
+      type: 'UPDATE_OCCUPANTS',
+      payload: {
+        buildingId,
+        roomId,
+        occupants: {
+          groups: newGroups,
+          activityLevel: newActivityLevel,
+          maskRate: newMaskRate,
+          maskFiltration: newMaskFiltration
+        }
+      }
+    });
   };
 
-  const handleAdultsChange = (event) => {
-    setAdults(parseInt(event.target.value) || 0);
+  const addGroup = () => {
+    updateOccupants([...groups, { name: `Group ${groups.length + 1}`, count: 1, age: '18' }], activityLevel, maskRate, maskFiltration);  // Default age set to 18
   };
 
-  const handleChildrenChange = (event) => {
-    setChildren(parseInt(event.target.value) || 0);
+  const removeGroup = (index) => {
+    if (groups.length > 1) {
+      updateOccupants(groups.filter((_, i) => i !== index), activityLevel, maskRate, maskFiltration);
+    }
   };
 
-  const getActivityDetails = () => {
-    if (activityLevel <= 1) return { icon: <HotelIcon />, text: 'Sleeping' };
-    if (activityLevel <= 2) return { icon: <PeopleIcon />, text: 'Sitting' };
-    if (activityLevel <= 3) return { icon: <PeopleIcon />, text: 'Standing' };
-    if (activityLevel <= 3.5) return { icon: <DirectionsRunIcon />, text: 'Walking' };
-    return { icon: <DirectionsRunIcon />, text: 'Running' };
+  const updateGroup = (index, field, value) => {
+    const newGroups = [...groups];
+    newGroups[index][field] = value;
+    updateOccupants(newGroups, activityLevel, maskRate, maskFiltration);
   };
+
+  const getActivityIcon = (activity) => {
+    if (activity === 1) return <HotelIcon />;
+    if (activity === 2) return <SittingIcon />;
+    if (activity === 3) return <AccessibilityNewIcon />;
+    if (activity === 4) return <DirectionsWalkIcon />;
+    return <DirectionsRunIcon />;
+  };
+
+  const getActivityLabel = (activity) => {
+    if (activity === 1) return 'Sleeping';
+    if (activity === 2) return 'Sitting';
+    if (activity === 3) return 'Standing';
+    if (activity === 4) return 'Walking';
+    return 'Running';
+  };
+
+  const totalOccupants = groups.reduce((sum, group) => sum + group.count, 0);
 
   return (
-    <Tile title="Occupants" helptxt={helpText}>
-      <div className={`${tileStyles['tile-content']} ${styles['occupants-container']}`}>
-        <Box className={styles['occupants-inputs-container']}>
-          <TextField
-            className={`${tileStyles['tile-text-field']} ${styles['occupants-input']} ${styles['adults-input']}`}
-            label="Adults"
-            type="number"
-            value={adults}
-            onChange={handleAdultsChange}
-            variant="outlined"
-            size="small"
-            InputProps={{
-              inputProps: { min: 0 }
-            }}
-          />
-          <Box className={styles['occupants-icon-container']}>
-            <PeopleIcon />
-          </Box>
-          <TextField
-            className={`${tileStyles['tile-text-field']} ${styles['occupants-input']} ${styles['children-input']}`}
-            label="Children"
-            type="number"
-            value={children}
-            onChange={handleChildrenChange}
-            variant="outlined"
-            size="small"
-            InputProps={{
-              inputProps: { min: 0 }
-            }}
-          />
-        </Box>
-        <Box className={styles['activity-container']}>
-          <Typography id="activity-slider" gutterBottom>
-            Activity
-          </Typography>
-          <Box className={styles['slider-container']}>
-            <HotelIcon />
-            <Slider
-              value={activityLevel}
-              onChange={handleActivityChange}
-              aria-labelledby="activity-slider"
-              step={0.1}
-              min={0}
-              max={4}
-              className={styles['activity-slider']}
-            />
-            <DirectionsRunIcon />
-          </Box>
-        </Box>
-        <Box className={styles['current-activity']}>
-          {getActivityDetails().icon}
-          <Typography variant="body2">
-            {getActivityDetails().text}
-          </Typography>
-        </Box>
-      </div>
+    <Tile 
+      title="Occupants" 
+      collapsible={true} 
+      icon={<PeopleIcon className={styles['tile-icon']} />}
+      count={totalOccupants}
+      helpText="Manage occupant groups, activity levels, and mask usage in this room."
+    >
+      {({ isCollapsed }) => (
+        <>
+          {!isCollapsed && (
+            <div className={`${tileStyles['tile-content']} ${styles['occupants-container']}`}>
+              <Box className={styles['activity-slider-container']}>
+                <div className={styles['activity-icon']}>
+                  {getActivityIcon(activityLevel)}
+                </div>
+                <Slider
+                  value={activityLevel}
+                  onChange={(_, newValue) => updateOccupants(groups, newValue, maskRate, maskFiltration)}
+                  min={1}
+                  max={5}
+                  step={1}
+                  marks
+                  className={styles['activity-slider']}
+                />
+                <Typography className={styles['activity-label']}>
+                  {getActivityLabel(activityLevel)}
+                </Typography>
+              </Box>
+              <Box className={styles['mask-options-container']}>
+                <WhiteTextField
+                  className={styles['mask-input']}
+                  label="Mask Rate (%)"
+                  type="number"
+                  value={maskRate}
+                  onChange={(e) => updateOccupants(groups, activityLevel, parseFloat(e.target.value) || 0, maskFiltration)}
+                  variant="outlined"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{ inputProps: { min: 0, max: 100 } }}
+                />
+                <WhiteTextField
+                  className={styles['mask-input']}
+                  label="Mask Filtration (%)"
+                  type="number"
+                  value={maskFiltration}
+                  onChange={(e) => updateOccupants(groups, activityLevel, maskRate, parseFloat(e.target.value) || 0)}
+                  variant="outlined"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{ inputProps: { min: 0, max: 100 } }}
+                />
+              </Box>
+              <Box className={styles['groups-container']} sx={{ maxHeight: 200, overflowY: 'auto' }}>
+                <Stack spacing={2}>
+                  {groups.map((group, index) => (
+                    <Box key={index} className={styles['group-row']}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <WhiteTextField
+                          className={styles['group-input']}
+                          label="Group Name"
+                          value={group.name}
+                          onChange={(e) => updateGroup(index, 'name', e.target.value)}
+                          variant="outlined"
+                          size="small"
+                          InputLabelProps={{ shrink: true }}
+                          fullWidth
+                        />
+                        <WhiteTextField
+                          className={styles['group-input']}
+                          label="Count"
+                          type="number"
+                          value={group.count}
+                          onChange={(e) => updateGroup(index, 'count', parseInt(e.target.value) || 0)}
+                          variant="outlined"
+                          size="small"
+                          InputLabelProps={{ shrink: true }}
+                          InputProps={{ inputProps: { min: 1 } }}
+                        />
+                        <WhiteTextField
+                          className={styles['group-input']}
+                          label="Avg. Age"
+                          type="number"
+                          value={group.age}
+                          onChange={(e) => updateGroup(index, 'age', e.target.value)}
+                          variant="outlined"
+                          size="small"
+                          InputLabelProps={{ shrink: true }}
+                          InputProps={{ inputProps: { min: 0 } }}
+                        />
+                        {groups.length > 1 && (
+                          <IconButton onClick={() => removeGroup(index)} className={styles['remove-group-button']}>
+                            <RemoveIcon />
+                          </IconButton>
+                        )}
+                      </Stack>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+              <IconButton onClick={addGroup} className={styles['add-group-button']}>
+                <AddIcon />
+              </IconButton>
+            </div>
+          )}
+        </>
+      )}
     </Tile>
   );
 };

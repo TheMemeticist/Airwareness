@@ -1,125 +1,153 @@
 .occupants-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* Center children horizontally */
   padding: 1rem;
 }
 
-.occupants-inputs-container {
+.activity-slider-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  margin-bottom: 1rem;
   width: 100%;
-  margin: 0 auto 1rem;
-  padding: 0 1rem;
+  max-width: 600px; /* Increased from 300px */
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
-.occupants-input {
-  font-size: 1.5rem !important;
-  font-weight: bold !important;
-  color: var(--off-white) !important;
-  width: 80px;
-}
-
-.adults-input,
-.children-input {
-  flex: 0 0 30%;
-}
-
-.occupants-icon-container {
-  flex: 0 0 40%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.occupants-icon-container .icon {
-  width: 4rem;
-  height: 4rem;
-  fill: var(--off-white);
-}
-
-.occupants-input .MuiInputBase-input {
-  width: 100%;
-  text-align: center;
-  padding: 0.5rem;
-}
-
-.activity-container {
-  width: 100%;
+.activity-icon {
   margin-bottom: 1rem;
 }
 
-.slider-container {
-  display: flex;
-  align-items: center;
-}
-
-.slider-container .icon {
-  width: 30rem;
-  height: 1.5rem;
+.activity-icon svg {
+  width: 125px;  /* Increased from 48px */
+  height: 125px; /* Increased from 48px */
+  fill: white;
 }
 
 .activity-slider {
-  flex-grow: 1;
-  margin: 0 0.5rem;
-  padding: 1rem;
+  width: 100%;
+  color: white;
+}
+
+.activity-label {
+  color: white;
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
 .current-activity {
+  color: white;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.group-row {
   display: flex;
   align-items: center;
+  margin-bottom: 1rem;
+  width: 100%;
   justify-content: center;
 }
 
-.current-activity .icon {
-  width: 1.5rem;
-  height: 1.5rem;
+.group-name {
+  flex: 2;
   margin-right: 0.5rem;
 }
 
+.group-count, .group-age {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+.add-group-button, .remove-group-button {
+  color: white !important;
+}
+
+.add-group-button {
+  align-self: center;
+  margin-top: 1rem;
+}
+
+/* Ensure the icon is white and larger */
+.activity-slider-container svg {
+  fill: white;
+  width: 48px;  /* Increased from 24px */
+  height: 48px; /* Increased from 24px */
+}
+
+.group-name input,
+.group-count input,
+.group-age input {
+  color: white;
+}
+
+.group-name fieldset,
+.group-count fieldset,
+.group-age fieldset {
+  border-color: white !important;
+}
+
+.groups-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+.group-inputs {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.group-input {
+  width: 61%;
+}
+
+.remove-group-button {
+  margin-left: 0.5rem;
+}
+
 @media (max-width: 768px) {
-  .occupants-input {
-    font-size: 1.2rem !important;
-    width: 70px;
-  }
-  
-  .adults-input,
-  .children-input {
-    flex: 0 0 70px;
+  .group-inputs {
+    flex-direction: column;
+    width: 100%;
   }
 
-  .occupants-icon-container .icon {
-    width: 3rem;
-    height: 3rem;
+  .group-name,
+  .group-count,
+  .group-age {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
+  .activity-slider-container {
+    flex-direction: column;
+    padding: 2rem;
+    max-width: 100%; /* Ensure full width on mobile */
+  }
+
+  .activity-slider {
+    margin: 1rem 0;
   }
 }
 
-@media (max-width: 480px) {
-  .occupants-inputs-container {
-    flex-direction: column;
-    width: 100%;
-    padding: 0;
-  }
+.group-name {
+  margin-right: 5px;
+}
 
-  .adults-input,
-  .children-input,
-  .occupants-icon-container {
-    width: 100%;
-    margin: 0.5rem 0;
-  }
+.group-count {
+  margin-right: 5px;
+}
 
-  .occupants-input {
-    font-size: 1rem !important;
-    width: 100%;
-  }
-  
-  .occupants-icon-container .icon {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  .occupants-input .MuiInputBase-input {
-    width: 40px;
-  }
+.tile-icon {
+  fill: white;
+  width: 24px;
+  height: 24px;
 }

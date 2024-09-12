@@ -1,22 +1,28 @@
-import React from 'react';
-import BaseTile from '../Tile';
+import React, { useState } from 'react';
+import Tile from '../Tile';
 import AnimatedCO2 from './AnimatedCO2';
 import styles from './Co2.module.css';
-import tileStyles from '../Tile.module.css'; // Import Tile styles
+import tileStyles from '../Tile.module.css';
 
-class Co2 extends React.Component {
-  render() {
-    const { co2ppm = 420, speed = 10, size = 100, colorScheme = 'default' } = this.props;
-    const helpText = "Monitor the CO₂ levels to ensure adequate ventilation and maintain optimal indoor air quality.";
+const Co2 = ({ co2ppm = 420, speed = 10, size = 100, colorScheme = 'default' }) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const helpText = "Monitor the CO₂ levels to ensure adequate ventilation and maintain optimal indoor air quality.";
 
-    return (
-      <BaseTile title="CO₂" helptxt={helpText}>
-        <div className={tileStyles['tile-content']}> {/* Use tileStyles for tile-content */}
+  return (
+    <Tile 
+      title="CO₂" 
+      helptxt={helpText}
+      collapsible={true}
+      icon={<AnimatedCO2 rpm={speed} size={24} colorScheme={colorScheme} co2ppm={co2ppm} />}
+      count={co2ppm}
+    >
+      <div className={`${tileStyles['tile-content']} ${styles['co2-container']}`}>
+        {!collapsed && (
           <AnimatedCO2 rpm={speed} size={size} colorScheme={colorScheme} co2ppm={co2ppm} />
-        </div>
-      </BaseTile>
-    );
-  }
-}
+        )}
+      </div>
+    </Tile>
+  );
+};
 
 export default Co2;

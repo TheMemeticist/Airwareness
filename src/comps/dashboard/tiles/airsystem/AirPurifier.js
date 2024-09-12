@@ -6,8 +6,14 @@ import airPurifierImage from './ASP-box.png';
 
 const AirPurifier = ({ airflow = 500 }) => {
   return (
-    <Tile title="Air Purifier" helptxt="This represents an air purifier unit.">
-      <div className={tileStyles['tile-content']}> {/* Use tileStyles for tile-content */}
+    <Tile 
+      title="Air Purifier" 
+      collapsible={true} 
+      icon={<img src={airPurifierImage} alt="Air Purifier" className={styles['tile-icon']} />}
+      count={`${airflow} CFM`}
+      helptxt="This represents an air purifier unit."
+    >
+      <div className={`${tileStyles['tile-content']} ${styles['air-purifier-container']}`}>
         <img src={airPurifierImage} alt="Air Purifier" className={styles['purifier-image']} />
         <h2>{airflow} CFM</h2>
       </div>

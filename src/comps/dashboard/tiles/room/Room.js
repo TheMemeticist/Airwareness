@@ -26,14 +26,13 @@ const Room = ({ buildingId, roomId, children }) => {
   const rooms = building?.rooms || [];
   const room = rooms.find(r => r.id === selectedRoomId);
 
-  // Add this useEffect to update selectedRoomId when roomId prop changes
   useEffect(() => {
     setSelectedRoomId(roomId);
   }, [roomId]);
 
   if (!room) {
     return (
-      <Tile title="Room Not Found">
+      <Tile title="Room Not Found" isRoomTile={true}>
         <div className={tileStyles['tile-content']}>
           <p>Unable to find room data. Please check the provided building and room IDs.</p>
           <p>Building ID: {buildingId}</p>
@@ -51,7 +50,7 @@ const Room = ({ buildingId, roomId, children }) => {
       type: 'UPDATE_ROOM',
       payload: {
         buildingId,
-        roomId: selectedRoomId,  // Use selectedRoomId instead of roomId
+        roomId: selectedRoomId,
         roomData: { [field]: value }
       }
     });
@@ -68,7 +67,6 @@ const Room = ({ buildingId, roomId, children }) => {
       name: `${room.name} (copy)`,
       height: room.height || '',
       floorArea: room.floorArea || '',
-      // Add any other attributes you want to copy here
     };
     dispatch({
       type: 'ADD_ROOM',
@@ -96,46 +94,50 @@ const Room = ({ buildingId, roomId, children }) => {
   const helpText = "Use this tool to edit room attributes such as size and ventilation rate (natural or HVAC). This helps provide more accurate air quality estimates.";
 
   return (
-    <Tile title={
-      <Box className={styles['room-title-container']}>
-        <FormControl variant="outlined" size="small" className={styles['room-select-container']}>
-          <InputLabel id="room-select-label" className={styles['room-select-label']}>Room</InputLabel>
-          <Select
-            labelId="room-select-label"
-            id="room-select"
-            value={selectedRoomId}
-            onChange={handleRoomChange}
-            label="Select a Room"
-            className={styles['room-select']}
-            IconComponent={ArrowDownIcon}
-          >
-            {rooms.map((r) => (
-              <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Box className={styles['room-actions-container']}>
-          <Box className={styles['room-actions']}>
-            <Button
-              variant="contained"
-              onClick={createNewRoom}
-              className={`${styles['action-button']} ${styles['add-room-button']}`}
+    <Tile
+      title={
+        <Box className={styles['room-title-container']}>
+          <FormControl variant="outlined" size="small" className={styles['room-select-container']}>
+            <InputLabel id="room-select-label" className={styles['room-select-label']}>Room</InputLabel>
+            <Select
+              labelId="room-select-label"
+              id="room-select"
+              value={selectedRoomId}
+              onChange={handleRoomChange}
+              label="Select a Room"
+              className={styles['room-select']}
+              IconComponent={ArrowDownIcon}
             >
-              <span className={styles['button-content']}>+</span>
-            </Button>
-            {rooms.length > 1 && (
+              {rooms.map((r) => (
+                <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Box className={styles['room-actions-container']}>
+            <Box className={styles['room-actions']}>
               <Button
                 variant="contained"
-                onClick={deleteRoom}
-                className={`${styles['action-button']} ${styles['delete-room-button']}`}
+                onClick={createNewRoom}
+                className={`${styles['action-button']} ${styles['add-room-button']}`}
               >
-                <span className={styles['button-content']}>-</span>
+                <span className={styles['button-content']}>+</span>
               </Button>
-            )}
+              {rooms.length > 1 && (
+                <Button
+                  variant="contained"
+                  onClick={deleteRoom}
+                  className={`${styles['action-button']} ${styles['delete-room-button']}`}
+                >
+                  <span className={styles['button-content']}>-</span>
+                </Button>
+              )}
+            </Box>
           </Box>
         </Box>
-      </Box>
-    } helptxt={helpText}>
+      }
+      helptxt={helpText}
+      isRoomTile={true}
+    >
       <div className={tileStyles['tile-content']}>
         {room ? (
           <>

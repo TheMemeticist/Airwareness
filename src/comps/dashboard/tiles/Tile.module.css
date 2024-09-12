@@ -2,7 +2,7 @@
   background: var(--off-black-1);
   width: calc(50% - 24px);
   min-height: 400px;
-  max-height: calc(400px * 1.61)px;
+  max-height: calc(400px * 1.61);
   border-radius: 8px;
   box-shadow: -18px 12px 32px rgba(0, 0, 0, 0.2);
   padding: 16px;
@@ -12,47 +12,109 @@
   float: right;
   display: flex;
   flex-direction: column;
-  transition: background 0.5s ease-in-out;
+  transition: all 0.3s ease-in-out;
   color: var(--off-white);
-  font-size: 1vw; /* Base font size for the tile */
+  font-size: 1vw;
 }
 
-.tile:hover {
+.tile:not(.roomTile):not(.collapsed) {
+  background: linear-gradient(to bottom, var(--off-black-1), transparent);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 80%;
+  max-width: 1200px;
+  height: 80vh;
+  max-height: 800px;
+  transition: all 0.3s ease-in-out, background 0.3s ease;
+}
+
+.tile:not(.roomTile):not(.collapsed):hover {
+  background: var(--off-black-1); /* Solid color when hovering over expanded tiles */
+}
+
+.roomTile {
+  position: relative;
+  float: right;
+}
+
+.tile.collapsed {
+  width: 200px;
+  height: 200px;
+  min-height: unset;
+  max-height: unset;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Remove or comment out this block */
+/*.tile:hover {
   transition: background-color 1s ease;
   background: linear-gradient(to bottom, var(--off-black-1), transparent);
+}*/
+
+/* Add a backdrop for the expanded tile */
+.backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.tile:not(.roomTile):not(.collapsed) + .backdrop {
+  display: block;
 }
 
 @media (max-width: 1024px) {
   .tile {
     width: 100%;
     margin-left: 0;
-    font-size: 1.5vw; /* Increase base font size for smaller screens */
+    font-size: 1.5vw;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .tile:not(.roomTile):not(.collapsed) {
+    width: 90%;
+    height: 90vh;
+    transition: all 0.3s ease-in-out;
+  }
+}
+
+@media (max-width: 768px) {
+  .tile:not(.roomTile):not(.collapsed) {
+    width: 95%;
+    height: 95vh;
   }
 }
 
 .tile-header-container {
   display: flex;
-  align-items:flex-start;
   justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: center;
+  padding: 0.5rem;
 }
 
 .tile-header {
-  font-size: 3em;
-  text-align: left;
+  font-size: 1rem;
   margin: 0;
-  display: flex;
-  align-items: center;
-  width: 100%;
 }
 
 .help-icon-container {
   position: relative;
   cursor: help;
+  margin-right: 8px;
 }
 
 .help-icon {
-  font-size: 2.5em; /* 2.5 times the base font size */
+  font-size: 2.5em;
   color: var(--off-white);
   border-radius: 100%;
   transition: background-color, color 1s ease;
@@ -70,7 +132,7 @@
   color: var(--off-white);
   padding: 5px 10px;
   border-radius: 4px;
-  font-size: 0.9em; /* 0.9 times the base font size */
+  font-size: 0.9em;
   white-space: nowrap;
   z-index: 1;
   top: calc(100% + 6px);
@@ -97,29 +159,29 @@
 
 @media (max-width: 768px) {
   .tile {
-    font-size: 2vw; /* Further increase base font size for even smaller screens */
+    font-size: 2vw;
   }
   
   .tile-header {
-    font-size: 3em; /* Reduce relative size for smaller screens */
+    font-size: 3em;
   }
   
   .help-icon {
-    font-size: 2em; /* Reduce relative size for smaller screens */
+    font-size: 2em;
   }
 }
 
 @media (max-width: 480px) {
   .tile {
-    font-size: 2.5vw; /* Largest base font size for smallest screens */
+    font-size: 2.5vw;
   }
   
   .tile-header {
-    font-size: 2.5em; /* Further reduce relative size for smallest screens */
+    font-size: 2.5em;
   }
   
   .help-icon {
-    font-size: 1.5em; /* Further reduce relative size for smallest screens */
+    font-size: 1.5em;
   }
 }
 
@@ -152,7 +214,7 @@
   height: 100%;
   position: absolute;
   align-items: center;
-  font-size: 15em; /* 15 times the base font size */
+  font-size: 15em;
   top: 10%;
 }
 
@@ -172,19 +234,19 @@
 
 .tile-text-field {
   color: var(--off-white) !important;
-  font-size: 1em !important; /* Same as base font size */
+  font-size: 1em !important;
   width: calc(100% - 8px) !important;
 }
 
 .tile-text-field :global(.MuiInputBase-input) {
   color: var(--off-white) !important;
-  font-size: 1.1em !important; /* 1.1 times the base font size */
+  font-size: 1.1em !important;
   padding: 12px !important;
 }
 
 .tile-text-field :global(.MuiInputLabel-root) {
   color: var(--off-white) !important;
-  font-size: 1.1em !important; /* 1.1 times the base font size */
+  font-size: 1.1em !important;
 }
 
 .tile-text-field :global(.MuiOutlinedInput-root) {
@@ -277,5 +339,93 @@
 
   .select-label {
     font-size: 1.3rem !important;
+  }
+}
+
+.minimized-icon {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-height: 70%;
+}
+
+.minimized-icon svg {
+  width: 70%;
+  height: 70%;
+  max-width: 120px;
+  max-height: 120px;
+  fill: var(--off-white);
+}
+
+@media (min-width: 768px) {
+  .minimized-icon svg {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+.collapsed-content Typography {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.minimized {
+  width: 25%;
+  height: 25%;
+}
+
+.minimized-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.tile-header-icons .MuiSvgIcon-root {
+  color: var(--off-white);
+}
+
+.collapsed-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .tile.collapsed {
+    width: 180px;
+    height: 180px;
+  }
+
+  .minimized-icon svg {
+    width: 60%;
+    height: 60%;
+  }
+
+  .collapsed-content Typography {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tile.collapsed {
+    width: 150px;
+    height: 150px;
+  }
+
+  .minimized-icon svg {
+    width: 50%;
+    height: 50%;
+  }
+
+  .collapsed-content Typography {
+    font-size: 0.9rem;
   }
 }
