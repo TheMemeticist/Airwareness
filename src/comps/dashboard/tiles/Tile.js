@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Tile.module.css';
 import { IconButton, Typography } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-const Tile = ({ title, children, collapsible = false, icon, count, helpText, renderHelpIcon = true, isRoomTile = false }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const Tile = ({ title, children, collapsible = true, icon, count, helpText, renderHelpIcon = true, isRoomTile = false }) => {
+  const [isCollapsed, setIsCollapsed] = useState(collapsible);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!collapsible) {
+      setIsCollapsed(false);
+    }
+  }, [collapsible]);
 
   const expandTile = () => {
     if (collapsible && isCollapsed) {
       setIsCollapsed(false);
+      setIsExpanded(true);
     }
   };
 
@@ -18,10 +26,11 @@ const Tile = ({ title, children, collapsible = false, icon, count, helpText, ren
     e.stopPropagation();
     if (collapsible) {
       setIsCollapsed(!isCollapsed);
+      setIsExpanded(false);
     }
   };
 
-  const tileClassName = `${styles.tile} ${isCollapsed ? styles.collapsed : ''} ${isRoomTile ? styles.roomTile : ''} ${isCollapsed ? styles.cursorPointer : ''}`;
+  const tileClassName = `${styles.tile} ${isCollapsed ? styles.collapsed : ''} ${isRoomTile ? styles.roomTile : ''} ${isCollapsed ? styles.cursorPointer : ''} ${isExpanded ? styles.expanded : ''}`;
 
   return (
     <>
@@ -52,7 +61,8 @@ const Tile = ({ title, children, collapsible = false, icon, count, helpText, ren
           typeof children === 'function' ? children({ isCollapsed }) : children
         )}
       </div>
-      {!isRoomTile && <div className={styles.backdrop} onClick={expandTile}></div>}
+      {!isRoomTile && isExpanded && <div className={styles.backdrop} onClick={toggleTile}></div>}
+      {!isRoomTile && isExpanded && <div className={`${styles.tile} ${styles.placeholder}`} style={{width: '200px', height: '200px'}}></div>}
     </>
   );
 };

@@ -127,11 +127,53 @@
 }
 
 .dashboard-content {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr); /* Change from 0.1fr to 1fr */
+  gap: 2px;
+  padding: 2px;
+}
+
+/* Room tile (big tile) */
+.dashboard-content > *:first-child {
+  grid-column: span 2;
+  grid-row: span 1;
+  aspect-ratio: 1 / 1;
+}
+
+/* Small tiles */
+.dashboard-content > *:not(:first-child) {
+  aspect-ratio: 1 / 1;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-content > *:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    grid-template-columns: 1fr; /* Ensure single column layout */
+  }
+
+  .dashboard-content > *:first-child {
+    grid-column: span 1; /* Ensure it spans only one column */
+    grid-row: span 1;
+  }
+
+  .dashboard-container {
+    width: 95%; /* Change this from 100% to 95% */
+    padding: 10px; /* Reduce padding */
+  }
+
+  .dashboard-wrapper h2 {
+    font-size: 4rem; /* Reduce font size for smaller screens */
+  }
 }
 
 .no-rooms-message {
@@ -155,4 +197,39 @@
 
 .menu-paper {
   background-color: var(--off-white) !important;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-container {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .dashboard-wrapper h2 {
+    font-size: 5rem;
+  }
+}
+
+.main-component {
+  flex: 2;
+  padding: 1px;
+}
+
+.secondary-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+}
+
+@media (max-width: 768px) {
+  .main-component {
+    flex: 2;
+    padding: 50px;
+  }
+
+  .secondary-components {
+    flex-direction: column;
+    padding: 5px;
+  }
 }

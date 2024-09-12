@@ -121,22 +121,23 @@ const Dashboard = () => {
         </Box>
         <div className={styles['dashboard-content']}>
           {selectedBuilding && selectedBuilding.rooms.length > 0 ? (
-            <Room buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
+            <div className={styles['responsive-layout']}>
+              <div className={styles['main-component']}>
+                <Room buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
+              </div>
+              <div className={styles['secondary-components']}>
+                <Occupants buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
+                <Co2 />
+                <Pm />
+                <CentralVentilation />
+                <AirPurifier />
+                <Aqi />
+                <EpiRisk />
+              </div>
+            </div>
           ) : (
             <p className={styles['no-rooms-message']}>No rooms available</p>
           )}
-          {selectedBuilding && selectedBuilding.rooms.length > 0 && (
-            <Occupants
-              buildingId={selectedBuilding.id}
-              roomId={selectedBuilding.rooms[0].id}
-            />
-          )}
-          <Co2 />
-          <Pm />
-          <CentralVentilation />
-          <AirPurifier />
-          <Aqi />
-          <EpiRisk />
         </div>
       </div>
     </div>

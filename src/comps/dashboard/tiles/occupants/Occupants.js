@@ -89,6 +89,14 @@ const Occupants = ({ buildingId, roomId }) => {
 
   const totalOccupants = groups.reduce((sum, group) => sum + group.count, 0);
 
+  const activityIcons = [
+    { icon: <HotelIcon />, label: 'Sleeping' },
+    { icon: <SittingIcon />, label: 'Sitting' },
+    { icon: <AccessibilityNewIcon />, label: 'Standing' },
+    { icon: <DirectionsWalkIcon />, label: 'Walking' },
+    { icon: <DirectionsRunIcon />, label: 'Running' },
+  ];
+
   return (
     <Tile 
       title="Occupants" 
@@ -102,9 +110,13 @@ const Occupants = ({ buildingId, roomId }) => {
           {!isCollapsed && (
             <div className={`${tileStyles['tile-content']} ${styles['occupants-container']}`}>
               <Box className={styles['activity-slider-container']}>
-                <div className={styles['activity-icon']}>
-                  {getActivityIcon(activityLevel)}
-                </div>
+                <Box className={styles['activity-icons']}>
+                  {activityIcons.map((item, index) => (
+                    <div key={index} className={`${styles['activity-icon']} ${activityLevel === index + 1 ? styles['active'] : ''}`}>
+                      {item.icon}
+                    </div>
+                  ))}
+                </Box>
                 <Slider
                   value={activityLevel}
                   onChange={(_, newValue) => updateOccupants(groups, newValue, maskRate, maskFiltration)}
@@ -115,7 +127,7 @@ const Occupants = ({ buildingId, roomId }) => {
                   className={styles['activity-slider']}
                 />
                 <Typography className={styles['activity-label']}>
-                  {getActivityLabel(activityLevel)}
+                  {activityIcons[activityLevel - 1].label}
                 </Typography>
               </Box>
               <Box className={styles['mask-options-container']}>

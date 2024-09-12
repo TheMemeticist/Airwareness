@@ -137,6 +137,7 @@ const Room = ({ buildingId, roomId, children }) => {
       }
       helptxt={helpText}
       isRoomTile={true}
+      collapsible={false}  // Add this line
     >
       <div className={tileStyles['tile-content']}>
         {room ? (
