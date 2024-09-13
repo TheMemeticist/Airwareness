@@ -206,3 +206,27 @@
   height: 60px;
   margin: 0 10px;
 }
+
+/* Renamed from .3d-scene-container to .three-d-scene-container */
+.three-d-scene-container {
+  width: 500px;
+  height: 50vh; /* Use viewport height for responsiveness */
+  min-height: 300px; /* Ensure a minimum height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Prevent any potential overflow */
+}
+
+.3d-scene {
+  width: 100%;
+  height: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .three-d-scene-container {
+    height: 40vh; /* Slightly smaller on mobile devices */
+    min-height: 250px;
+  }
+}

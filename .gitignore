@@ -13,6 +13,7 @@
 
 /blender
 /src/comps/dashboard/tiles/room/classroom.glb
+/src/comps/dashboard/tiles/room/Buildings.glb
 
 # misc
 .DS_Store
