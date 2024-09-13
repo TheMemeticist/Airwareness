@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
-import roomImage from './iso-metric-classroom.png';
+import ThreeDScene from './3Dscn'; // Import the new component
 import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 
@@ -143,7 +143,7 @@ const Room = ({ buildingId, roomId, children }) => {
         {room ? (
           <>
             <div className={styles['room-image-container']}>
-              <img src={roomImage} alt="Room" className={styles['room-image']} />
+              <ThreeDScene title="Room" size={200} /> {/* Increase the size */}
             </div>
             <div className={styles['room-params']}>
               <TextField

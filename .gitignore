@@ -11,6 +11,9 @@
 # production
 /build
 
+/blender
+/src/comps/dashboard/tiles/room/classroom.glb
+
 # misc
 .DS_Store
 .env.local

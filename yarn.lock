@@ -9513,6 +9513,11 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
+three@^0.168.0:
+  version "0.168.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.168.0.tgz#3e33101d91e3e9716f5c610ea9a7b3b8423c242d"
+  integrity sha512-6m6jXtDwMJEK/GGMbAOTSAmxNdzKvvBzgd7q8bE/7Tr6m7PaBh5kKLrN7faWtlglXbzj7sVba48Idwx+NRsZXw==
+
 throat@^6.0.1:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/throat/-/throat-6.0.2.tgz#51a3fbb5e11ae72e2cf74861ed5c8020f89f29fe"

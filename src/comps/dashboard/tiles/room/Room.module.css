@@ -14,7 +14,8 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  min-height: 0;
+  min-height: 200px; /* Increase the minimum height */
+  margin-bottom: 16px; /* Add some margin at the bottom */
 }
 
 .room-image {
