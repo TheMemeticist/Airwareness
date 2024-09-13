@@ -155,15 +155,18 @@
 
 .activity-icons {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px; /* Increased from 8px */
-  padding: 0 10px; /* Added padding to give space on the edges */
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 0 10px;
+  width: 100%;
 }
 
 .activity-icon {
   opacity: 0.5;
   transition: opacity 0.3s ease;
-  margin: 0 10px; /* Added horizontal margin */
+  margin: 10px;
+  flex: 0 0 auto;
 }
 
 .activity-icon.active {
@@ -171,8 +174,19 @@
 }
 
 .activity-icon svg {
-  width: 90px;  /* Adjusted size */
-  height: 90px; /* Adjusted size */
+  width: 60px;
+  height: 60px;
+}
+
+@media (max-width: 768px) {
+  .activity-icons {
+    justify-content: center;
+  }
+
+  .activity-icon svg {
+    width: 50px;
+    height: 50px;
+  }
 }
 
 .group-name {

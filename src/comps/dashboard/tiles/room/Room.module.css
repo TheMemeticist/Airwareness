@@ -1,3 +1,22 @@
+.room-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 16px; /* Add padding at the bottom */
+  box-sizing: border-box; /* Ensure padding is included in the height calculation */
+}
+
+.room-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
 .room-image {
   max-width: 100%;
   max-height: 100%;
@@ -5,10 +24,18 @@
 }
 
 .room-params {
-  margin-top: 16px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px; /* Remove top and bottom padding */
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: auto; /* Push the inputs to the bottom */
+}
+
+.room-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .room-title-container {
@@ -146,3 +173,35 @@
 }
 
 /* ... rest of your existing styles ... */
+
+.room-icons-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1rem;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.room-icons-container::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+@media (max-width: 768px) {
+  .room-icons-container {
+    justify-content: flex-start;
+    padding-bottom: 10px;
+  }
+}
+
+/* ... rest of the existing styles ... */
+
+.activity-icon {
+  flex: 0 0 auto;
+  width: 60px;
+  height: 60px;
+  margin: 0 10px;
+}

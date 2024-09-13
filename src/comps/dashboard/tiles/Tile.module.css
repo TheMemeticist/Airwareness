@@ -87,18 +87,7 @@
   }
 }
 
-@media (max-width: 768px) {
-  .tile {
-    width: calc(100% - 20px); /* Ensure tiles take full width */
-    margin: 10px;
-    font-size: 2vw;
-  }
 
-  .tile:not(.roomTile):not(.collapsed) {
-    width: 90%;
-    height: 90vh;
-  }
-}
 
 .tile-header-container {
   display: flex;
@@ -200,6 +189,7 @@
   width: 100%;
   overflow: hidden;
   color: var(--off-white);
+  
 }
 
 .icon-container {

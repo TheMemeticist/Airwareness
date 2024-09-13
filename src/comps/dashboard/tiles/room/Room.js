@@ -139,37 +139,35 @@ const Room = ({ buildingId, roomId, children }) => {
       isRoomTile={true}
       collapsible={false}  // Add this line
     >
-      <div className={tileStyles['tile-content']}>
+      <div className={`${tileStyles['tile-content']} ${styles['room-content']}`}>
         {room ? (
           <>
-            <img src={roomImage} alt="Room" className={styles['room-image']} />
-            <Box display="flex" flexDirection="row" className={styles['room-params']} gap={2}>
-              <Box flex={1}>
-                <TextField
-                  className={tileStyles['tile-text-field']}
-                  label="Height (ft)"
-                  type="number"
-                  value={room.height || ''}
-                  onChange={(e) => updateRoom('height', e.target.value)}
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                />
-              </Box>
-              <Box flex={1}>
-                <TextField
-                  className={tileStyles['tile-text-field']}
-                  label="Floor Area (ft²)"
-                  type="number"
-                  value={room.floorArea || ''}
-                  onChange={(e) => updateRoom('floorArea', e.target.value)}
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                />
-              </Box>
-            </Box>
-            {children}
+            <div className={styles['room-image-container']}>
+              <img src={roomImage} alt="Room" className={styles['room-image']} />
+            </div>
+            <div className={styles['room-params']}>
+              <TextField
+                className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
+                label="Height (ft)"
+                type="number"
+                value={room.height || ''}
+                onChange={(e) => updateRoom('height', e.target.value)}
+                variant="outlined"
+                size="small"
+              />
+              <TextField
+                className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
+                label="Floor Area (ft²)"
+                type="number"
+                value={room.floorArea || ''}
+                onChange={(e) => updateRoom('floorArea', e.target.value)}
+                variant="outlined"
+                size="small"
+              />
+            </div>
+            <div className={styles['room-icons-container']}>
+              {children}
+            </div>
           </>
         ) : (
           <p>Please select a room or create a new one.</p>
