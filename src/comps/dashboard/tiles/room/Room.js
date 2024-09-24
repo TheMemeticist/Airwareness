@@ -5,6 +5,7 @@ import tileStyles from '../Tile.module.css';
 import ThreeDScene from './3Dscn'; // Import the new component
 import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
+import { debounce } from 'lodash'; // Import debounce from lodash
 
 // Custom arrow down icon
 const ArrowDownIcon = () => (
@@ -21,6 +22,7 @@ const ArrowDownIcon = () => (
 const Room = ({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
+  const [dimensions, setDimensions] = useState({ height: 0, floorArea: 0, sideLength: 0 }); // Add state for dimensions
 
   const building = state.buildings.find(b => b.id === buildingId);
   const rooms = building?.rooms || [];
@@ -29,6 +31,13 @@ const Room = ({ buildingId, roomId, children }) => {
   useEffect(() => {
     setSelectedRoomId(roomId);
   }, [roomId]);
+
+  useEffect(() => {
+    if (room) {
+      const sideLength = Math.sqrt(room.floorArea); // Calculate side length from floor area
+      setDimensions({ height: room.height, floorArea: room.floorArea, sideLength }); // Update dimensions when room changes
+    }
+  }, [room]);
 
   if (!room) {
     return (
@@ -44,7 +53,7 @@ const Room = ({ buildingId, roomId, children }) => {
 
   const { name, height, floorArea } = room;
 
-  const updateRoom = (field, value) => {
+  const updateRoom = debounce((field, value) => {
     console.log(`Updating ${field} to ${value}`);
     dispatch({
       type: 'UPDATE_ROOM',
@@ -54,7 +63,14 @@ const Room = ({ buildingId, roomId, children }) => {
         roomData: { [field]: value }
       }
     });
-  };
+    setDimensions(prev => {
+      const newDimensions = { ...prev, [field]: value };
+      if (field === 'floorArea') {
+        newDimensions.sideLength = Math.sqrt(value); // Update side length when floor area changes
+      }
+      return newDimensions;
+    }); // Update dimensions state
+  }, 300); // Debounce with 300ms delay
 
   const handleRoomChange = (event) => {
     setSelectedRoomId(event.target.value);
@@ -92,6 +108,13 @@ const Room = ({ buildingId, roomId, children }) => {
   };
 
   const helpText = "Use this tool to edit room attributes such as size and ventilation rate (natural or HVAC). This helps provide more accurate air quality estimates.";
+
+  // Convert dimensions from feet to meters
+  const dimensionsInMeters = {
+    height: dimensions.height * 0.3048,
+    floorArea: dimensions.floorArea * 0.092903,
+    sideLength: dimensions.sideLength * 0.3048
+  };
 
   return (
     <Tile
@@ -143,7 +166,7 @@ const Room = ({ buildingId, roomId, children }) => {
         {room ? (
           <>
             <div className={styles['room-image-container']}>
-              <ThreeDScene title="Room" size={200} /> {/* Increase the size */}
+              <ThreeDScene title="Room" size={200} dimensions={dimensionsInMeters} /> {/* Pass dimensions in meters as prop */}
             </div>
             <div className={styles['room-params']}>
               <TextField
