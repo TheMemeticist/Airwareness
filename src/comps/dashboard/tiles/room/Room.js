@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
-import ThreeDScene from './3Dscn'; // Import the new component
+import ThreeDScene from './3DScene/3Dscene'; // Import the new component
 import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
