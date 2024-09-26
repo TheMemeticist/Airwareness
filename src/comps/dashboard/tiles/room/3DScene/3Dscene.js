@@ -13,6 +13,8 @@ const ThreeDScene = ({ dimensions }) => {
   const clippingPlanesRef = useRef([]);
   const planeHelpersRef = useRef([]);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [pivotCorner, setPivotCorner] = useState('topRightFront');
+  const [position, setPosition] = useState({ x: 4, y: 4, z: 4 });
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -44,7 +46,7 @@ const ThreeDScene = ({ dimensions }) => {
     });
     planeHelpersRef.current = planeHelpers;
 
-    updateDimensions(dimensionsInMeters, clippingPlanesRef.current);
+    updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
 
     loadModel(scene, camera, controls, renderer, setErrorMessage);
 
@@ -77,14 +79,22 @@ const ThreeDScene = ({ dimensions }) => {
 
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
-      updateDimensions(dimensionsInMeters, clippingPlanesRef.current);
+      updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
       
       planeHelpersRef.current.forEach((helper) => {
         helper.size = Math.max(dimensionsInMeters.width, dimensionsInMeters.length, dimensionsInMeters.height);
         helper.updateMatrixWorld();
       });
     }
-  }, [dimensionsInMeters]);
+  }, [dimensionsInMeters, pivotCorner, position]);
+
+  const handlePivotChange = (e) => {
+    setPivotCorner(e.target.value);
+  };
+
+  const handlePositionChange = (axis, value) => {
+    setPosition(prev => ({ ...prev, [axis]: parseFloat(value) }));
+  };
 
   return (
     <div className={`${tileStyles['tile-content']} ${styles['three-d-scene-container']}`}>
@@ -94,7 +104,26 @@ const ThreeDScene = ({ dimensions }) => {
           <pre>{errorMessage}</pre>
         </div>
       ) : (
-        <div ref={mountRef} className={styles['3d-scene']}></div>
+        <>
+          <div ref={mountRef} className={styles['3d-scene']}></div>
+          <div className={styles['controls']}>
+            <select value={pivotCorner} onChange={handlePivotChange}>
+              <option value="topLeftFront">Top Left Front</option>
+              <option value="topRightFront">Top Right Front</option>
+              <option value="bottomLeftFront">Bottom Left Front</option>
+              <option value="bottomRightFront">Bottom Right Front</option>
+              <option value="topLeftBack">Top Left Back</option>
+              <option value="topRightBack">Top Right Back</option>
+              <option value="bottomLeftBack">Bottom Left Back</option>
+              <option value="bottomRightBack">Bottom Right Back</option>
+            </select>
+            <div>
+              <label>X: <input type="number" value={position.x} onChange={(e) => handlePositionChange('x', e.target.value)} /></label>
+              <label>Y: <input type="number" value={position.y} onChange={(e) => handlePositionChange('y', e.target.value)} /></label>
+              <label>Z: <input type="number" value={position.z} onChange={(e) => handlePositionChange('z', e.target.value)} /></label>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

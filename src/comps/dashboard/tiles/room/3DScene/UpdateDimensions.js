@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront') => {
-  console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner });
+export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
+  console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });
 
   const width = isNaN(dimensions.width) ? 1 : dimensions.width;
   const length = isNaN(dimensions.length) ? 1 : dimensions.length;
@@ -36,17 +36,17 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
         xOffset = 0; yOffset = 0; zOffset = 0;
         break;
       default:
-        console.warn('Invalid pivot corner specified, defaulting to bottomLeftBack');
-        xOffset = width; yOffset = height; zOffset = length;
+        console.warn('Invalid pivot corner specified, defaulting to topLeftFront');
+        xOffset = width; yOffset = 0; zOffset = 0;
     }
 
-    // Update clipping planes based on pivot
-    clippingPlanes[0].constant = xOffset;        // Right
-    clippingPlanes[1].constant = width - xOffset; // Left
-    clippingPlanes[2].constant = yOffset;        // Top
-    clippingPlanes[3].constant = height - yOffset; // Bottom
-    clippingPlanes[4].constant = zOffset;        // Front
-    clippingPlanes[5].constant = length - zOffset; // Back
+    // Update clipping planes based on pivot and position
+    clippingPlanes[0].constant = xOffset + position.x;        // Right
+    clippingPlanes[1].constant = width - xOffset + position.x; // Left
+    clippingPlanes[2].constant = yOffset + position.y;        // Top
+    clippingPlanes[3].constant = height - yOffset + position.y; // Bottom
+    clippingPlanes[4].constant = zOffset + position.z;        // Front
+    clippingPlanes[5].constant = length - zOffset + position.z; // Back
 
     console.log('Updated clipping planes:', clippingPlanes.map(plane => plane.constant));
   } else {
