@@ -1,18 +1,11 @@
 import * as THREE from 'three';
 
-export const updateDimensions = (dimensions, wireframe, clippingPlanes) => {
-  console.log('UpdateDimensions called with:', { dimensions, wireframe, clippingPlanes });
+export const updateDimensions = (dimensions, clippingPlanes) => {
+  console.log('UpdateDimensions called with:', { dimensions, clippingPlanes });
 
   const width = isNaN(dimensions.width) ? 1 : dimensions.width;
   const length = isNaN(dimensions.length) ? 1 : dimensions.length;
   const height = isNaN(dimensions.height) ? 1 : dimensions.height;
-
-  if (wireframe) {
-    wireframe.scale.set(width, height, length);
-    console.log('Updated wireframe scale:', wireframe.scale);
-  } else {
-    console.warn('Wireframe not available for update');
-  }
 
   if (clippingPlanes && clippingPlanes.length === 6) {
     clippingPlanes[0].constant = width / 2;
@@ -25,7 +18,4 @@ export const updateDimensions = (dimensions, wireframe, clippingPlanes) => {
   } else {
     console.warn('Clipping planes not available or incorrect number');
   }
-
-  const floorArea = width * length;
-  console.log('Calculated floor area:', floorArea);
 };
