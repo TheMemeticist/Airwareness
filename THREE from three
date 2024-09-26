@@ -1,0 +1,420 @@
+[1mdiff --git a/src/comps/dashboard/tiles/room/3DScene/3Dscene.js b/src/comps/dashboard/tiles/room/3DScene/3Dscene.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..100da97[m
+[1m--- /dev/null[m
+[1m+++ b/src/comps/dashboard/tiles/room/3DScene/3Dscene.js[m
+[36m@@ -0,0 +1,93 @@[m
+[32m+[m[32mimport React, { useRef, useEffect, useState } from 'react';[m
+[32m+[m[32mimport * as THREE from 'three';[m
+[32m+[m[32mimport styles from '../Room.module.css';[m
+[32m+[m[32mimport tileStyles from '../../Tile.module.css';[m
+[32m+[m
+[32m+[m[32mimport { setupRendering } from './RenderingSetup';[m
+[32m+[m[32mimport { loadModel } from './ModelLoader';[m
+[32m+[m[32mimport { updateDimensions } from './UpdateDimensions';[m
+[32m+[m
+[32m+[m[32mconst ThreeDScene = ({ title, dimensions, airflow = 500 }) => {[m
+[32m+[m[32m  const mountRef = useRef(null);[m
+[32m+[m[32m  const sceneRef = useRef(null);[m
+[32m+[m[32m  const cubeRef = useRef(null);[m
+[32m+[m[32m  const clippingPlanesRef = useRef([]);[m
+[32m+[m[32m  const [errorMessage, setErrorMessage] = useState(null);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    if (!mountRef.current) return;[m
+[32m+[m
+[32m+[m[32m    const container = mountRef.current;[m
+[32m+[m[32m    let width = container.clientWidth;[m
+[32m+[m[32m    let height = container.clientHeight;[m
+[32m+[m
+[32m+[m[32m    // Setup rendering environment[m
+[32m+[m[32m    const { scene, camera, renderer, controls } = setupRendering(container, width, height);[m
+[32m+[m[32m    sceneRef.current = { scene, camera, renderer, controls };[m
+[32m+[m
+[32m+[m[32m    // Create cube and add to scene[m
+[32m+[m[32m    const cubeGeometry = new THREE.BoxGeometry([m
+[32m+[m[32m      dimensions.sideLength,[m
+[32m+[m[32m      dimensions.height,[m
+[32m+[m[32m      dimensions.sideLength[m
+[32m+[m[32m    );[m
+[32m+[m[32m    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });[m
+[32m+[m[32m    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);[m
+[32m+[m[32m    scene.add(cube);[m
+[32m+[m[32m    cubeRef.current = cube;[m
+[32m+[m
+[32m+[m[32m    // Setup clipping planes[m
+[32m+[m[32m    const planes = [[m
+[32m+[m[32m      new THREE.Plane(new THREE.Vector3(1, 0, 0), dimensions.sideLength / 2),[m
+[32m+[m[32m      new THREE.Plane(new THREE.Vector3(-1, 0, 0), dimensions.sideLength / 2),[m
+[32m+[m[32m      new THREE.Plane(new THREE.Vector3(0, 1, 0), dimensions.height / 2),[m
+[32m+[m[32m      new THREE.Plane(new THREE.Vector3(0, -1, 0), dimensions.height / 2),[m
+[32m+[m[32m      new THREE.Plane(new THREE.Vector3(0, 0, 1), dimensions.sideLength / 2),[m
+[32m+[m[32m      new THREE.Plane(new THREE.Vector3(0, 0, -1), dimensions.sideLength / 2),[m
+[32m+[m[32m    ];[m
+[32m+[m[32m    clippingPlanesRef.current = planes;[m
+[32m+[m[32m    renderer.clippingPlanes = planes;[m
+[32m+[m
+[32m+[m[32m    // Load 3D model[m
+[32m+[m[32m    loadModel(scene, camera, controls, renderer, setErrorMessage);[m
+[32m+[m
+[32m+[m[32m    // Handle window resize[m
+[32m+[m[32m    const handleResize = () => {[m
+[32m+[m[32m      width = container.clientWidth;[m
+[32m+[m[32m      height = container.clientHeight;[m
+[32m+[m[32m      renderer.setSize(width, height);[m
+[32m+[m[32m      camera.aspect = width / height;[m
+[32m+[m[32m      camera.updateProjectionMatrix();[m
+[32m+[m[32m    };[m
+[32m+[m
+[32m+[m[32m    window.addEventListener('resize', handleResize);[m
+[32m+[m[32m    handleResize();[m
+[32m+[m
+[32m+[m[32m    return () => {[m
+[32m+[m[32m      if (mountRef.current && renderer.domElement) {[m
+[32m+[m[32m        mountRef.current.removeChild(renderer.domElement);[m
+[32m+[m[32m      }[m
+[32m+[m[32m      controls.dispose();[m
+[32m+[m[32m      window.removeEventListener('resize', handleResize);[m
+[32m+[m[32m    };[m
+[32m+[m[32m  }, []);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    updateDimensions(dimensions, cubeRef.current, clippingPlanesRef.current);[m
+[32m+[m[32m  }, [dimensions]);[m
+[32m+[m
+[32m+[m[32m  return ([m
+[32m+[m[32m    <div className={`${tileStyles['tile-content']} ${styles['three-d-scene-container']}`}>[m
+[32m+[m[32m      {errorMessage ? ([m
+[32m+[m[32m        <div style={{ color: 'red', padding: '20px' }}>[m
+[32m+[m[32m          <p>Error loading 3D model:</p>[m
+[32m+[m[32m          <pre>{errorMessage}</pre>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m      ) : ([m
+[32m+[m[32m        <div ref={mountRef} className={styles['3d-scene']}></div>[m
+[32m+[m[32m      )}[m
+[32m+[m[32m    </div>[m
+[32m+[m[32m  );[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mexport default ThreeDScene;[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/3DScene/Buildings.glb b/src/comps/dashboard/tiles/room/3DScene/Buildings.glb[m
+[1mnew file mode 100644[m
+[1mindex 0000000..cca6cb0[m
+Binary files /dev/null and b/src/comps/dashboard/tiles/room/3DScene/Buildings.glb differ
+[1mdiff --git a/src/comps/dashboard/tiles/room/Buildings2.glb b/src/comps/dashboard/tiles/room/3DScene/Buildings2.glb[m
+[1msimilarity index 100%[m
+[1mrename from src/comps/dashboard/tiles/room/Buildings2.glb[m
+[1mrename to src/comps/dashboard/tiles/room/3DScene/Buildings2.glb[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/3DScene/ClipCube.glb b/src/comps/dashboard/tiles/room/3DScene/ClipCube.glb[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6b112de[m
+Binary files /dev/null and b/src/comps/dashboard/tiles/room/3DScene/ClipCube.glb differ
+[1mdiff --git a/src/comps/dashboard/tiles/room/3DScene/ModelLoader.js b/src/comps/dashboard/tiles/room/3DScene/ModelLoader.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..cd2e44f[m
+[1m--- /dev/null[m
+[1m+++ b/src/comps/dashboard/tiles/room/3DScene/ModelLoader.js[m
+[36m@@ -0,0 +1,58 @@[m
+[32m+[m[32mimport * as THREE from 'three';[m
+[32m+[m[32mimport { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';[m
+[32m+[m[32mimport sceneModel from './Buildings2.glb';[m
+[32m+[m
+[32m+[m[32mexport const loadModel = (scene, camera, controls, renderer, setErrorMessage) => {[m
+[32m+[m[32m  const loader = new GLTFLoader();[m
+[32m+[m[32m  loader.load([m
+[32m+[m[32m    sceneModel,[m
+[32m+[m[32m    (gltf) => {[m
+[32m+[m[32m      const model = gltf.scene;[m
+[32m+[m[32m      scene.add(model);[m
+[32m+[m
+[32m+[m[32m      model.traverse((child) => {[m
+[32m+[m[32m        if (child.isMesh) {[m
+[32m+[m[32m          child.castShadow = true;[m
+[32m+[m[32m          child.receiveShadow = true;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        if (child.isLight) {[m
+[32m+[m[32m          child.castShadow = true;[m
+[32m+[m[32m          if (child.shadow) {[m
+[32m+[m[32m            child.shadow.mapSize.width = 1024;[m
+[32m+[m[32m            child.shadow.mapSize.height = 1024;[m
+[32m+[m[32m            child.shadow.camera.near = 0.5;[m
+[32m+[m[32m            child.shadow.camera.far = 50;[m
+[32m+[m[32m          }[m
+[32m+[m[32m        }[m
+[32m+[m[32m      });[m
+[32m+[m
+[32m+[m[32m      const box = new THREE.Box3().setFromObject(model);[m
+[32m+[m[32m      const center = box.getCenter(new THREE.Vector3());[m
+[32m+[m[32m      const sizeBox = box.getSize(new THREE.Vector3());[m
+[32m+[m
+[32m+[m[32m      const maxDim = Math.max(sizeBox.x, sizeBox.y, sizeBox.z);[m
+[32m+[m[32m      const fov = camera.fov * (Math.PI / 180);[m
+[32m+[m[32m      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));[m
+[32m+[m
+[32m+[m[32m      camera.position.set(center.x + cameraZ, center.y + cameraZ / 2, center.z + cameraZ);[m
+[32m+[m[32m      camera.lookAt(center);[m
+[32m+[m
+[32m+[m[32m      controls.target.copy(center);[m
+[32m+[m[32m      controls.update();[m
+[32m+[m
+[32m+[m[32m      const animate = () => {[m
+[32m+[m[32m        requestAnimationFrame(animate);[m
+[32m+[m[32m        controls.update();[m
+[32m+[m[32m        renderer.render(scene, camera);[m
+[32m+[m[32m      };[m
+[32m+[m[32m      animate();[m
+[32m+[m[32m    },[m
+[32m+[m[32m    (xhr) => {[m
+[32m+[m[32m      console.log((xhr.loaded / xhr.total) * 100 + '% loaded');[m
+[32m+[m[32m    },[m
+[32m+[m[32m    (error) => {[m
+[32m+[m[32m      console.error('Error loading 3D model:', error);[m
+[32m+[m[32m      setErrorMessage(`Error loading 3D model: ${error.message}`);[m
+[32m+[m[32m    }[m
+[32m+[m[32m  );[m
+[32m+[m[32m};[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/3DScene/RenderingSetup.js b/src/comps/dashboard/tiles/room/3DScene/RenderingSetup.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..5e5e9dd[m
+[1m--- /dev/null[m
+[1m+++ b/src/comps/dashboard/tiles/room/3DScene/RenderingSetup.js[m
+[36m@@ -0,0 +1,22 @@[m
+[32m+[m[32mimport * as THREE from 'three';[m
+[32m+[m[32mimport { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';[m
+[32m+[m
+[32m+[m[32mexport const setupRendering = (container, width, height) => {[m
+[32m+[m[32m  const scene = new THREE.Scene();[m
+[32m+[m[32m  const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);[m
+[32m+[m[32m  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });[m
+[32m+[m
+[32m+[m[32m  renderer.setSize(width, height);[m
+[32m+[m[32m  renderer.outputColorSpace = THREE.SRGBColorSpace;[m
+[32m+[m[32m  renderer.shadowMap.enabled = true;[m
+[32m+[m[32m  renderer.shadowMap.type = THREE.PCFSoftShadowMap;[m
+[32m+[m[32m  container.appendChild(renderer.domElement);[m
+[32m+[m
+[32m+[m[32m  const controls = new OrbitControls(camera, renderer.domElement);[m
+[32m+[m[32m  controls.enableDamping = true;[m
+[32m+[m[32m  controls.dampingFactor = 0.25;[m
+[32m+[m[32m  controls.screenSpacePanning = false;[m
+[32m+[m[32m  controls.maxPolarAngle = Math.PI / 2;[m
+[32m+[m
+[32m+[m[32m  return { scene, camera, renderer, controls };[m
+[32m+[m[32m};[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/3DScene/UpdateDimensions.js b/src/comps/dashboard/tiles/room/3DScene/UpdateDimensions.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..968bd08[m
+[1m--- /dev/null[m
+[1m+++ b/src/comps/dashboard/tiles/room/3DScene/UpdateDimensions.js[m
+[36m@@ -0,0 +1,21 @@[m
+[32m+[m[32mimport * as THREE from 'three';[m
+[32m+[m
+[32m+[m[32mexport const updateDimensions = (dimensions, cube, clippingPlanes) => {[m
+[32m+[m[32m  if (cube) {[m
+[32m+[m[32m    cube.geometry.dispose();[m
+[32m+[m[32m    cube.geometry = new THREE.BoxGeometry([m
+[32m+[m[32m      dimensions.sideLength,[m
+[32m+[m[32m      dimensions.height,[m
+[32m+[m[32m      dimensions.sideLength[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  if (clippingPlanes && clippingPlanes.length) {[m
+[32m+[m[32m    clippingPlanes[0].constant = dimensions.sideLength / 2;[m
+[32m+[m[32m    clippingPlanes[1].constant = dimensions.sideLength / 2;[m
+[32m+[m[32m    clippingPlanes[2].constant = dimensions.height / 2;[m
+[32m+[m[32m    clippingPlanes[3].constant = dimensions.height / 2;[m
+[32m+[m[32m    clippingPlanes[4].constant = dimensions.sideLength / 2;[m
+[32m+[m[32m    clippingPlanes[5].constant = dimensions.sideLength / 2;[m
+[32m+[m[32m  }[m
+[32m+[m[32m};[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/iso-metric-classroom.png b/src/comps/dashboard/tiles/room/3DScene/iso-metric-classroom.png[m
+[1msimilarity index 100%[m
+[1mrename from src/comps/dashboard/tiles/room/iso-metric-classroom.png[m
+[1mrename to src/comps/dashboard/tiles/room/3DScene/iso-metric-classroom.png[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/iso-metric-room.png b/src/comps/dashboard/tiles/room/3DScene/iso-metric-room.png[m
+[1msimilarity index 100%[m
+[1mrename from src/comps/dashboard/tiles/room/iso-metric-room.png[m
+[1mrename to src/comps/dashboard/tiles/room/3DScene/iso-metric-room.png[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/3Dscn.js b/src/comps/dashboard/tiles/room/3Dscn.js[m
+[1mdeleted file mode 100644[m
+[1mindex fa3b021..0000000[m
+[1m--- a/src/comps/dashboard/tiles/room/3Dscn.js[m
+[1m+++ /dev/null[m
+[36m@@ -1,162 +0,0 @@[m
+[31m-import React, { useRef, useEffect, useState } from 'react';[m
+[31m-import * as THREE from 'three';[m
+[31m-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';[m
+[31m-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';[m
+[31m-import styles from './Room.module.css';[m
+[31m-import tileStyles from '../Tile.module.css';[m
+[31m-import sceneModel from './Buildings2.glb';[m
+[31m-[m
+[31m-const ThreeDScene = ({ title, dimensions, airflow = 500 }) => {[m
+[31m-  const mountRef = useRef(null);[m
+[31m-  const sceneRef = useRef(null);[m
+[31m-  const cubeRef = useRef(null);[m
+[31m-  const clippingPlanesRef = useRef([]);[m
+[31m-  const [errorMessage, setErrorMessage] = useState(null);[m
+[31m-[m
+[31m-  useEffect(() => {[m
+[31m-    if (!mountRef.current) return;[m
+[31m-[m
+[31m-    const container = mountRef.current;[m
+[31m-    let width = container.clientWidth;[m
+[31m-    let height = container.clientHeight;[m
+[31m-[m
+[31m-    const scene = new THREE.Scene();[m
+[31m-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);[m
+[31m-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });[m
+[31m-[m
+[31m-    renderer.setSize(width, height);[m
+[31m-    renderer.outputColorSpace = THREE.SRGBColorSpace;[m
+[31m-    renderer.shadowMap.enabled = true;[m
+[31m-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;[m
+[31m-    container.appendChild(renderer.domElement);[m
+[31m-[m
+[31m-    const cubeGeometry = new THREE.BoxGeometry(dimensions.sideLength, dimensions.height, dimensions.sideLength);[m
+[31m-    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });[m
+[31m-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);[m
+[31m-    scene.add(cube);[m
+[31m-    cubeRef.current = cube;[m
+[31m-[m
+[31m-    const planes = [[m
+[31m-      new THREE.Plane(new THREE.Vector3(1, 0, 0), dimensions.sideLength / 2),[m
+[31m-      new THREE.Plane(new THREE.Vector3(-1, 0, 0), dimensions.sideLength / 2),[m
+[31m-      new THREE.Plane(new THREE.Vector3(0, 1, 0), dimensions.height / 2),[m
+[31m-      new THREE.Plane(new THREE.Vector3(0, -1, 0), dimensions.height / 2),[m
+[31m-      new THREE.Plane(new THREE.Vector3(0, 0, 1), dimensions.sideLength / 2),[m
+[31m-      new THREE.Plane(new THREE.Vector3(0, 0, -1), dimensions.sideLength / 2),[m
+[31m-    ];[m
+[31m-[m
+[31m-    clippingPlanesRef.current = planes;[m
+[31m-    renderer.clippingPlanes = planes;[m
+[31m-[m
+[31m-    const controls = new OrbitControls(camera, renderer.domElement);[m
+[31m-    controls.enableDamping = true;[m
+[31m-    controls.dampingFactor = 0.25;[m
+[31m-    controls.screenSpacePanning = false;[m
+[31m-    controls.maxPolarAngle = Math.PI / 2;[m
+[31m-[m
+[31m-    const loader = new GLTFLoader();[m
+[31m-    loader.load([m
+[31m-      sceneModel,[m
+[31m-      (gltf) => {[m
+[31m-        const model = gltf.scene;[m
+[31m-        scene.add(model);[m
+[31m-[m
+[31m-        model.traverse((child) => {[m
+[31m-          if (child.isMesh) {[m
+[31m-            child.castShadow = true;[m
+[31m-            child.receiveShadow = true;[m
+[31m-          }[m
+[31m-          if (child.isLight) {[m
+[31m-            child.castShadow = true;[m
+[31m-            if (child.shadow) {[m
+[31m-              child.shadow.mapSize.width = 1024;[m
+[31m-              child.shadow.mapSize.height = 1024;[m
+[31m-              child.shadow.camera.near = 0.5;[m
+[31m-              child.shadow.camera.far = 50;[m
+[31m-            }[m
+[31m-          }[m
+[31m-        });[m
+[31m-[m
+[31m-        const box = new THREE.Box3().setFromObject(model);[m
+[31m-        const center = box.getCenter(new THREE.Vector3());[m
+[31m-        const sizeBox = box.getSize(new THREE.Vector3());[m
+[31m-[m
+[31m-        const maxDim = Math.max(sizeBox.x, sizeBox.y, sizeBox.z);[m
+[31m-        const fov = camera.fov * (Math.PI / 180);[m
+[31m-        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));[m
+[31m-[m
+[31m-        camera.position.set(center.x + cameraZ, center.y + cameraZ / 2, center.z + cameraZ);[m
+[31m-        camera.lookAt(center);[m
+[31m-[m
+[31m-        controls.target.copy(center);[m
+[31m-        controls.update();[m
+[31m-[m
+[31m-        const animate = () => {[m
+[31m-          requestAnimationFrame(animate);[m
+[31m-          controls.update();[m
+[31m-          renderer.render(scene, camera);[m
+[31m-        };[m
+[31m-        animate();[m
+[31m-      },[m
+[31m-      (xhr) => {[m
+[31m-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');[m
+[31m-      },[m
+[31m-      (error) => {[m
+[31m-        console.error('Error loading 3D model:', error);[m
+[31m-        setErrorMessage(`Error loading 3D model: ${error.message}`);[m
+[31m-      }[m
+[31m-    );[m
+[31m-[m
+[31m-    sceneRef.current = { scene, camera, renderer, controls };[m
+[31m-[m
+[31m-    const handleResize = () => {[m
+[31m-      width = container.clientWidth;[m
+[31m-      height = container.clientHeight;[m
+[31m-      renderer.setSize(width, height);[m
+[31m-      camera.aspect = width / height;[m
+[31m-      camera.updateProjectionMatrix();[m
+[31m-    };[m
+[31m-[m
+[31m-    window.addEventListener('resize', handleResize);[m
+[31m-    handleResize();[m
+[31m-[m
+[31m-    return () => {[m
+[31m-      if (mountRef.current && renderer.domElement) {[m
+[31m-        mountRef.current.removeChild(renderer.domElement);[m
+[31m-      }[m
+[31m-      controls.dispose();[m
+[31m-      window.removeEventListener('resize', handleResize);[m
+[31m-    };[m
+[31m-  }, []);[m
+[31m-[m
+[31m-  useEffect(() => {[m
+[31m-    if (cubeRef.current) {[m
+[31m-      cubeRef.current.geometry.dispose();[m
+[31m-      cubeRef.current.geometry = new THREE.BoxGeometry(dimensions.sideLength, dimensions.height, dimensions.sideLength);[m
+[31m-    }[m
+[31m-[m
+[31m-    if (clippingPlanesRef.current.length) {[m
+[31m-      clippingPlanesRef.current[0].constant = dimensions.sideLength / 2;[m
+[31m-      clippingPlanesRef.current[1].constant = dimensions.sideLength / 2;[m
+[31m-      clippingPlanesRef.current[2].constant = dimensions.height / 2;[m
+[31m-      clippingPlanesRef.current[3].constant = dimensions.height / 2;[m
+[31m-      clippingPlanesRef.current[4].constant = dimensions.sideLength / 2;[m
+[31m-      clippingPlanesRef.current[5].constant = dimensions.sideLength / 2;[m
+[31m-    }[m
+[31m-  }, [dimensions]);[m
+[31m-[m
+[31m-  return ([m
+[31m-    <div className={`${tileStyles['tile-content']} ${styles['three-d-scene-container']}`}>[m
+[31m-      {errorMessage ? ([m
+[31m-        <div style={{ color: 'red', padding: '20px' }}>[m
+[31m-          <p>Error loading 3D model:</p>[m
+[31m-          <pre>{errorMessage}</pre>[m
+[31m-        </div>[m
+[31m-      ) : ([m
+[31m-        <div ref={mountRef} className={styles['3d-scene']}></div>[m
+[31m-      )}[m
+[31m-    </div>[m
+[31m-  );[m
+[31m-};[m
+[31m-[m
+[31m-export default ThreeDScene;[m
+\ No newline at end of file[m
+[1mdiff --git a/src/comps/dashboard/tiles/room/Room.js b/src/comps/dashboard/tiles/room/Room.js[m
+[1mindex 97bdef2..e24da10 100644[m
+[1m--- a/src/comps/dashboard/tiles/room/Room.js[m
+[1m+++ b/src/comps/dashboard/tiles/room/Room.js[m
+[36m@@ -2,7 +2,7 @@[m [mimport React, { useState, useEffect } from 'react';[m
+ import Tile from '../Tile';[m
+ import styles from './Room.module.css';[m
+ import tileStyles from '../Tile.module.css';[m
+[31m-import ThreeDScene from './3Dscn'; // Import the new component[m
+[32m+[m[32mimport ThreeDScene from './3DScene/3Dscene'; // Import the new component[m
+ import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } from '@mui/material';[m
+ import { useAppContext } from '../../../../context/AppContext';[m
+ import { debounce } from 'lodash'; // Import debounce from lodash[m

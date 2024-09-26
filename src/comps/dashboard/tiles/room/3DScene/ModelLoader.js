@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import sceneModel from './Buildings2.glb';
 
-export const loadModel = (scene, camera, controls, renderer, setErrorMessage) => {
+export const loadModel = (scene, camera, controls, renderer, setErrorMessage, onModelLoaded) => {
   const loader = new GLTFLoader();
   loader.load(
     sceneModel,
@@ -25,6 +25,10 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage) =>
           }
         }
       });
+
+      if (onModelLoaded) {
+        onModelLoaded(model);
+      }
 
       const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());

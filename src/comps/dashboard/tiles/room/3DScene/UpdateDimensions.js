@@ -1,21 +1,31 @@
 import * as THREE from 'three';
 
-export const updateDimensions = (dimensions, cube, clippingPlanes) => {
-  if (cube) {
-    cube.geometry.dispose();
-    cube.geometry = new THREE.BoxGeometry(
-      dimensions.sideLength,
-      dimensions.height,
-      dimensions.sideLength
-    );
+export const updateDimensions = (dimensions, wireframe, clippingPlanes) => {
+  console.log('UpdateDimensions called with:', { dimensions, wireframe, clippingPlanes });
+
+  const width = isNaN(dimensions.width) ? 1 : dimensions.width;
+  const length = isNaN(dimensions.length) ? 1 : dimensions.length;
+  const height = isNaN(dimensions.height) ? 1 : dimensions.height;
+
+  if (wireframe) {
+    wireframe.scale.set(width, height, length);
+    console.log('Updated wireframe scale:', wireframe.scale);
+  } else {
+    console.warn('Wireframe not available for update');
   }
 
-  if (clippingPlanes && clippingPlanes.length) {
-    clippingPlanes[0].constant = dimensions.sideLength / 2;
-    clippingPlanes[1].constant = dimensions.sideLength / 2;
-    clippingPlanes[2].constant = dimensions.height / 2;
-    clippingPlanes[3].constant = dimensions.height / 2;
-    clippingPlanes[4].constant = dimensions.sideLength / 2;
-    clippingPlanes[5].constant = dimensions.sideLength / 2;
+  if (clippingPlanes && clippingPlanes.length === 6) {
+    clippingPlanes[0].constant = width / 2;
+    clippingPlanes[1].constant = width / 2;
+    clippingPlanes[2].constant = height / 2;
+    clippingPlanes[3].constant = height / 2;
+    clippingPlanes[4].constant = length / 2;
+    clippingPlanes[5].constant = length / 2;
+    console.log('Updated clipping planes:', clippingPlanes.map(plane => plane.constant));
+  } else {
+    console.warn('Clipping planes not available or incorrect number');
   }
+
+  const floorArea = width * length;
+  console.log('Calculated floor area:', floorArea);
 };

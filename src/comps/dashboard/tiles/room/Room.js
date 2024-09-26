@@ -34,8 +34,15 @@ const Room = ({ buildingId, roomId, children }) => {
 
   useEffect(() => {
     if (room) {
-      const sideLength = Math.sqrt(room.floorArea); // Calculate side length from floor area
-      setDimensions({ height: room.height, floorArea: room.floorArea, sideLength }); // Update dimensions when room changes
+      console.log('Room data:', room);
+      const sideLength = Math.sqrt(room.floorArea);
+      setDimensions({
+        height: isNaN(room.height) ? 0 : room.height,
+        floorArea: isNaN(room.floorArea) ? 0 : room.floorArea,
+        sideLength: isNaN(sideLength) ? 0 : sideLength,
+        width: isNaN(sideLength) ? 0 : sideLength,
+        length: isNaN(sideLength) ? 0 : sideLength
+      });
     }
   }, [room]);
 
@@ -166,7 +173,15 @@ const Room = ({ buildingId, roomId, children }) => {
         {room ? (
           <>
             <div className={styles['room-image-container']}>
-              <ThreeDScene title="Room" size={200} dimensions={dimensionsInMeters} /> {/* Pass dimensions in meters as prop */}
+              <ThreeDScene
+                title="Room"
+                size={200}
+                dimensions={{
+                  width: dimensions.width,
+                  length: dimensions.length,
+                  height: dimensions.height
+                }}
+              />
             </div>
             <div className={styles['room-params']}>
               <TextField

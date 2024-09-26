@@ -1,60 +1,89 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import styles from '../Room.module.css';
 import tileStyles from '../../Tile.module.css';
 
 import { setupRendering } from './RenderingSetup';
 import { loadModel } from './ModelLoader';
 import { updateDimensions } from './UpdateDimensions';
+import clipCubeModel from './ClipCube.glb';
 
 const ThreeDScene = ({ title, dimensions, airflow = 500 }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
-  const cubeRef = useRef(null);
+  const wireframeRef = useRef(null);
   const clippingPlanesRef = useRef([]);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  const dimensionsInMeters = useMemo(() => ({
+    width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
+    length: isNaN(dimensions.length) ? 1 : dimensions.length * 0.3048,
+    height: isNaN(dimensions.height) ? 1 : dimensions.height * 0.3048,
+  }), [dimensions]);
+
   useEffect(() => {
-    if (!mountRef.current) return;
+    console.log('ThreeDScene effect running');
+    console.log('Dimensions:', dimensions);
+    console.log('Dimensions in meters:', dimensionsInMeters);
+    if (!mountRef.current) {
+      console.error('Mount ref is not available');
+      return;
+    }
 
-    const container = mountRef.current;
-    let width = container.clientWidth;
-    let height = container.clientHeight;
+    const { scene, camera, renderer, controls } = setupRendering(mountRef.current);
+    sceneRef.current = scene;
 
-    // Setup rendering environment
-    const { scene, camera, renderer, controls } = setupRendering(container, width, height);
-    sceneRef.current = { scene, camera, renderer, controls };
-
-    // Create cube and add to scene
-    const cubeGeometry = new THREE.BoxGeometry(
-      dimensions.sideLength,
-      dimensions.height,
-      dimensions.sideLength
+    console.log('Creating wireframe');
+    const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+    const wireframeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const wireframe = new THREE.LineSegments(
+      new THREE.EdgesGeometry(wireframeGeometry),
+      wireframeMaterial
     );
-    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    scene.add(cube);
-    cubeRef.current = cube;
+    wireframe.name = 'clipCubeWireframe';
+    scene.add(wireframe);
+    wireframeRef.current = wireframe;
+    console.log('Wireframe added to scene:', wireframe);
 
-    // Setup clipping planes
+    console.log('Creating clipping planes');
     const planes = [
-      new THREE.Plane(new THREE.Vector3(1, 0, 0), dimensions.sideLength / 2),
-      new THREE.Plane(new THREE.Vector3(-1, 0, 0), dimensions.sideLength / 2),
-      new THREE.Plane(new THREE.Vector3(0, 1, 0), dimensions.height / 2),
-      new THREE.Plane(new THREE.Vector3(0, -1, 0), dimensions.height / 2),
-      new THREE.Plane(new THREE.Vector3(0, 0, 1), dimensions.sideLength / 2),
-      new THREE.Plane(new THREE.Vector3(0, 0, -1), dimensions.sideLength / 2),
+      new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+      new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0),
+      new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+      new THREE.Plane(new THREE.Vector3(0, -1, 0), 0),
+      new THREE.Plane(new THREE.Vector3(0, 0, 1), 0),
+      new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
     ];
     clippingPlanesRef.current = planes;
     renderer.clippingPlanes = planes;
+    console.log('Clipping planes created:', planes);
 
-    // Load 3D model
-    loadModel(scene, camera, controls, renderer, setErrorMessage);
+    console.log('Initial update of dimensions');
+    updateDimensions(dimensionsInMeters, wireframe, clippingPlanesRef.current);
 
-    // Handle window resize
+    console.log('Loading model');
+    loadModel(scene, camera, controls, renderer, setErrorMessage, (model) => {
+      console.log('Model loaded, adjusting camera');
+      const sceneBox = new THREE.Box3().setFromObject(scene);
+      const sceneSize = sceneBox.getSize(new THREE.Vector3());
+      const sceneCenter = sceneBox.getCenter(new THREE.Vector3());
+
+      const fov = camera.fov * (Math.PI / 180);
+      const cameraDistance = Math.max(sceneSize.x, sceneSize.y, sceneSize.z) / (2 * Math.tan(fov / 2));
+
+      camera.position.copy(sceneCenter).add(new THREE.Vector3(0, 0, cameraDistance * 1.5));
+      camera.lookAt(sceneCenter);
+      controls.target.copy(sceneCenter);
+      controls.update();
+      console.log('Camera adjusted:', camera.position);
+    });
+
     const handleResize = () => {
-      width = container.clientWidth;
-      height = container.clientHeight;
+      console.log('Handling resize');
+      const container = mountRef.current;
+      let width = container.clientWidth;
+      let height = container.clientHeight;
       renderer.setSize(width, height);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -63,18 +92,33 @@ const ThreeDScene = ({ title, dimensions, airflow = 500 }) => {
     window.addEventListener('resize', handleResize);
     handleResize();
 
+    const animate = () => {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+    console.log('Animation loop started');
+
     return () => {
+      console.log('Cleanup function running');
       if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
       controls.dispose();
       window.removeEventListener('resize', handleResize);
+      scene.remove(scene.getObjectByName('clipCubeWireframe'));
     };
   }, []);
 
   useEffect(() => {
-    updateDimensions(dimensions, cubeRef.current, clippingPlanesRef.current);
-  }, [dimensions]);
+    console.log('Dimensions changed:', dimensionsInMeters);
+    if (wireframeRef.current && clippingPlanesRef.current.length) {
+      updateDimensions(dimensionsInMeters, wireframeRef.current, clippingPlanesRef.current);
+    } else {
+      console.warn('Wireframe or clipping planes not available for update');
+    }
+  }, [dimensionsInMeters]);
 
   return (
     <div className={`${tileStyles['tile-content']} ${styles['three-d-scene-container']}`}>
