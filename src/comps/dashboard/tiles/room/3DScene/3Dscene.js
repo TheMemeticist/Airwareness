@@ -15,6 +15,7 @@ const ThreeDScene = ({ dimensions }) => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [pivotCorner, setPivotCorner] = useState('topRightFront');
   const [position, setPosition] = useState({ x: 4, y: 4, z: 4 });
+  const controlsRef = useRef(null);
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -27,6 +28,7 @@ const ThreeDScene = ({ dimensions }) => {
 
     const { scene, camera, renderer, controls } = setupRendering(mountRef.current);
     sceneRef.current = scene;
+    controlsRef.current = controls;
 
     const planes = [
       new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
@@ -51,7 +53,10 @@ const ThreeDScene = ({ dimensions }) => {
     loadModel(scene, camera, controls, renderer, setErrorMessage);
 
     const handleResize = () => {
+      if (!mountRef.current || !renderer) return;
+
       const { clientWidth: width, clientHeight: height } = mountRef.current;
+      
       renderer.setSize(width, height);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -80,7 +85,7 @@ const ThreeDScene = ({ dimensions }) => {
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
       updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
-      
+
       planeHelpersRef.current.forEach((helper) => {
         helper.size = Math.max(dimensionsInMeters.width, dimensionsInMeters.length, dimensionsInMeters.height);
         helper.updateMatrixWorld();
