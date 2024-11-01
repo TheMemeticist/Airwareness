@@ -33,16 +33,35 @@ export const setupRendering = (container, width, height) => {
 
   container.appendChild(renderer.domElement);
 
+  // Create target cube with larger size and more visible appearance
+  const targetCubeGeometry = new THREE.BoxGeometry(1, 1, 1); // Increased size
+  const targetCubeMaterial = new THREE.MeshBasicMaterial({
+    color: 0x00ff00, // Changed to bright green for better visibility
+    wireframe: true,
+    wireframeLinewidth: 2, // Thicker lines
+    depthTest: false,
+    depthWrite: false,
+    transparent: true,
+    opacity: 0.8
+  });
+  const targetCube = new THREE.Mesh(targetCubeGeometry, targetCubeMaterial);
+  targetCube.position.set(-4, -2, -4.5); // Move it to a more visible position
+  scene.add(targetCube);
+
   const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.copy(targetCube.position);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.25;
-  controls.screenSpacePanning = false;
-  controls.maxPolarAngle = Math.PI / 2;
-  controls.enableZoom = true;
-  controls.zoomSpeed = 1.0;
-  controls.rotateSpeed = 1.0;
-  controls.panSpeed = 1.0;
+  controls.dampingFactor = 0.05;
+  controls.minDistance = 3;
+  controls.maxDistance = 20;
   controls.update();
 
-  return { scene, camera, renderer, controls };
+  camera.position.set(
+    targetCube.position.x + 5,
+    targetCube.position.y + 5,
+    targetCube.position.z + 5
+  );
+  camera.lookAt(targetCube.position);
+
+  return { scene, camera, renderer, controls, targetCube };
 };

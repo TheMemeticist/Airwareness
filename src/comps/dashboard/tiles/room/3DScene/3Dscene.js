@@ -16,6 +16,7 @@ const ThreeDScene = ({ dimensions }) => {
   const [pivotCorner, setPivotCorner] = useState('topRightFront');
   const [position, setPosition] = useState({ x: 4, y: 4, z: 4 });
   const controlsRef = useRef(null);
+  const targetCubeRef = useRef(null);
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -26,7 +27,13 @@ const ThreeDScene = ({ dimensions }) => {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    const { scene, camera, renderer, controls } = setupRendering(mountRef.current);
+    const { scene, camera, renderer, controls, targetCube } = setupRendering(
+      mountRef.current,
+      mountRef.current.clientWidth,
+      mountRef.current.clientHeight
+    );
+    
+    targetCubeRef.current = targetCube;
     sceneRef.current = scene;
     controlsRef.current = controls;
 
@@ -67,7 +74,18 @@ const ThreeDScene = ({ dimensions }) => {
 
     const animate = () => {
       requestAnimationFrame(animate);
-      controls.update();
+      
+      if (targetCubeRef.current && controlsRef.current) {
+        // Keep controls target synced with cube position
+        controlsRef.current.target.copy(targetCubeRef.current.position);
+        controlsRef.current.update();
+        
+        // Ensure target cube stays visible
+        targetCubeRef.current.renderOrder = 999;
+        targetCubeRef.current.material.needsUpdate = true;
+      }
+      
+      camera.lookAt(controlsRef.current.target);
       renderer.render(scene, camera);
     };
     animate();
