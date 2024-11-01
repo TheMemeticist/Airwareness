@@ -4,7 +4,7 @@ import styles from '../Room.module.css';
 import tileStyles from '../../Tile.module.css';
 
 import { setupRendering } from './RenderingSetup';
-import { loadModel } from './ModelLoader';
+import { loadModel, updateModelPosition } from './ModelLoader';
 import { updateDimensions } from './UpdateDimensions';
 
 const ThreeDScene = ({ dimensions }) => {
@@ -14,9 +14,10 @@ const ThreeDScene = ({ dimensions }) => {
   const planeHelpersRef = useRef([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [pivotCorner, setPivotCorner] = useState('topRightFront');
-  const [position, setPosition] = useState({ x: 4, y: 4, z: 4 });
+  const [position, setPosition] = useState({ x: 0, y: 4, z: 0 });
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
+  const [objectPosition, setObjectPosition] = useState({ x: 4, y: 3, z: 5 });
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -57,7 +58,7 @@ const ThreeDScene = ({ dimensions }) => {
 
     updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
 
-    loadModel(scene, camera, controls, renderer, setErrorMessage);
+    loadModel(scene, camera, controls, renderer, setErrorMessage, objectPosition);
 
     const handleResize = () => {
       if (!mountRef.current || !renderer) return;
@@ -111,12 +112,22 @@ const ThreeDScene = ({ dimensions }) => {
     }
   }, [dimensionsInMeters, pivotCorner, position]);
 
+  useEffect(() => {
+    if (sceneRef.current) {
+      updateModelPosition(sceneRef.current, objectPosition);
+    }
+  }, [objectPosition]);
+
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
   };
 
   const handlePositionChange = (axis, value) => {
     setPosition(prev => ({ ...prev, [axis]: parseFloat(value) }));
+  };
+
+  const handleObjectPositionChange = (axis, value) => {
+    setObjectPosition(prev => ({ ...prev, [axis]: parseFloat(value) }));
   };
 
   return (
@@ -141,9 +152,16 @@ const ThreeDScene = ({ dimensions }) => {
               <option value="bottomRightBack">Bottom Right Back</option>
             </select>
             <div>
+              <label>Clipping Position:</label>
               <label>X: <input type="number" value={position.x} onChange={(e) => handlePositionChange('x', e.target.value)} /></label>
               <label>Y: <input type="number" value={position.y} onChange={(e) => handlePositionChange('y', e.target.value)} /></label>
               <label>Z: <input type="number" value={position.z} onChange={(e) => handlePositionChange('z', e.target.value)} /></label>
+            </div>
+            <div>
+              <label>Object Position:</label>
+              <label>X: <input type="number" value={objectPosition.x} onChange={(e) => handleObjectPositionChange('x', e.target.value)} /></label>
+              <label>Y: <input type="number" value={objectPosition.y} onChange={(e) => handleObjectPositionChange('y', e.target.value)} /></label>
+              <label>Z: <input type="number" value={objectPosition.z} onChange={(e) => handleObjectPositionChange('z', e.target.value)} /></label>
             </div>
           </div>
         </>

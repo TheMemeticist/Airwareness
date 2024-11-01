@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import sceneModel from './Classroom.glb';
 
-export const loadModel = (scene, camera, controls, renderer, setErrorMessage, onModelLoaded) => {
+export const loadModel = (scene, camera, controls, renderer, setErrorMessage, objectPosition) => {
   const loader = new GLTFLoader();
 
   const fov = camera.fov * (Math.PI / 180);
@@ -13,6 +13,12 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, on
     sceneModel,
     (gltf) => {
       const model = gltf.scene;
+      
+      model.position.set(
+        objectPosition.x,
+        objectPosition.y,
+        objectPosition.z
+      );
 
       scene.add(model);
 
@@ -28,18 +34,32 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, on
 
       meshes.forEach(mesh => {
         mesh.castShadow = mesh.receiveShadow = true;
+        if (mesh.material) {
+          mesh.material.shadowSide = THREE.FrontSide;
+          mesh.material.needsUpdate = true;
+        }
       });
 
       lights.forEach(light => {
         light.castShadow = true;
-        light.intensity /= 100;
+        light.intensity = light.intensity / 10;
+        
+        if (light.isDirectionalLight) {
+          light.shadow.camera.left = -1000;
+          light.shadow.camera.right = 1000;
+          light.shadow.camera.top = 1000;
+          light.shadow.camera.bottom = -1000;
+          light.shadow.camera.near = 1;
+          light.shadow.camera.far = 2000;
+          light.shadow.mapSize.width = 4096;
+          light.shadow.mapSize.height = 4096;
+          light.shadow.bias = -0.0003;
+        }
+        
         if (light.shadow) {
-          Object.assign(light.shadow.mapSize, { width: 1024, height: 1024 });
-          Object.assign(light.shadow.camera, { near: 0.5, far: 50 });
+          light.shadow.needsUpdate = true;
         }
       });
-
-      if (onModelLoaded) onModelLoaded(model);
 
       const box = new THREE.Box3().setFromObject(model);
       box.getCenter(center);
@@ -57,12 +77,26 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, on
       controls.target.copy(center);
       controls.update();
 
+      scene.userData.loadedModel = model;
+
       const animate = () => {
         if (!model.parent) return;
         requestAnimationFrame(animate);
+
+        if (controls.enableReturn && Date.now() - controls.lastInteraction > controls.returnDelay) {
+          const t = Math.min(1, (Date.now() - (controls.lastInteraction + controls.returnDelay)) / controls.returnDuration);
+          const easeT = t * t * (3 - 2 * t); // Smooth easing function
+
+          camera.position.lerp(controls.initialPosition, easeT * 0.02);
+          controls.target.lerp(center, easeT * 0.02);
+        }
+
         controls.update();
         renderer.render(scene, camera);
       };
+      
+      controls.initialPosition.copy(camera.position);
+      
       animate();
     },
     (xhr) => {
@@ -73,4 +107,11 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, on
       setErrorMessage(`Error loading 3D model: ${error.message}`);
     }
   );
+};
+
+export const updateModelPosition = (scene, position) => {
+  const model = scene.userData.loadedModel;
+  if (model) {
+    model.position.set(position.x, position.y, position.z);
+  }
 };
