@@ -7,9 +7,11 @@ export class ParticleAnimator {
     // Transition states
     this.isTransitioning = false;
     this.transitionStartTime = 0;
-    this.transitionDuration = 1000;
-    this.fadeInDuration = 3000;
+    this.transitionDuration = 2000;
+    this.fadeInDuration = 2000;
+    this.repositionDuration = 500;
     this.pendingDimensions = null;
+    this.transitionPhase = 'none'; // 'fadeOut', 'reposition', 'fadeIn', 'none'
     
     // Cache vector for calculations
     this.vec3 = new THREE.Vector3();
@@ -19,12 +21,13 @@ export class ParticleAnimator {
     const currentTime = Date.now();
     const deltaTime = currentTime - system.lastUpdateTime;
 
+    // Always update particle positions, even during transition
+    this.updateParticles(system, deltaTime);
+    
     if (this.isTransitioning) {
       this.handleTransition(system, currentTime);
-      return;
     }
-
-    this.updateParticles(system, deltaTime);
+    
     system.lastUpdateTime = currentTime;
   }
 
@@ -60,19 +63,39 @@ export class ParticleAnimator {
 
   handleTransition(system, currentTime) {
     const elapsed = currentTime - this.transitionStartTime;
-    const progress = Math.min(elapsed / this.transitionDuration, 1);
+    
+    if (this.transitionPhase === 'fadeOut') {
+      const progress = Math.min(elapsed / this.transitionDuration, 1);
+      const size = system.baseParticleSize * (1 - progress);
+      system.particleMaterial.size = size;
 
-    if (progress >= 1) {
-      this.isTransitioning = false;
-      system.manager.dimensions = { ...this.pendingDimensions };
-      system.manager.clippingPlanes = this.clippingPlanes;
-      return;
-    }
+      if (progress >= 1) {
+        // Update room dimensions
+        system.manager.dimensions = { ...this.pendingDimensions };
+        system.manager.clippingPlanes = this.clippingPlanes;
+        
+        // Reset ALL particles with new room dimensions
+        system.manager.initializeParticles();
+        
+        this.transitionPhase = 'wait';
+        this.transitionStartTime = currentTime;
+      }
+    } else if (this.transitionPhase === 'wait') {
+      const progress = Math.min(elapsed / 1000, 1); // Wait 1 second
+      
+      if (progress >= 1) {
+        this.transitionPhase = 'fadeIn';
+        this.transitionStartTime = currentTime;
+      }
+    } else if (this.transitionPhase === 'fadeIn') {
+      const progress = Math.min(elapsed / this.fadeInDuration, 1);
+      const size = system.baseParticleSize * progress;
+      system.particleMaterial.size = size;
 
-    // During transition, gradually reset particles
-    const particlesToReset = Math.floor(system.activeParticles * progress);
-    for (let i = 0; i < particlesToReset; i++) {
-      system.manager.generateNewParticle(i);
+      if (progress >= 1) {
+        this.isTransitioning = false;
+        this.transitionPhase = 'none';
+      }
     }
   }
 
@@ -82,5 +105,6 @@ export class ParticleAnimator {
     this.pendingDimensions = { ...dimensions };
     this.clippingPlanes = clippingPlanes;
     this.roomPosition = { ...position };
+    this.transitionPhase = 'fadeOut';
   }
 } 
