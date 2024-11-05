@@ -96,7 +96,12 @@ const ThreeDScene = ({ dimensions }) => {
       }
       
       camera.lookAt(controlsRef.current.target);
-      composer.render();
+      
+      // Force shadow map update when needed
+      renderer.shadowMap.needsUpdate = true;
+      
+      // Use direct renderer instead of composer for better shadow quality
+      renderer.render(scene, camera);
     };
     animate();
 

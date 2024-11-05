@@ -2,17 +2,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 
 export const setupRendering = (container, width, height) => {
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xf5f5f5, 100, 1000);
 
   const camera = new THREE.PerspectiveCamera(
     75,
     width / height,
-    1,
+    0.01,
     1000
   );
 
@@ -21,50 +18,26 @@ export const setupRendering = (container, width, height) => {
     alpha: true,
     powerPreference: 'high-performance',
     precision: 'highp',
-    logarithmicDepthBuffer: true,
     stencil: false,
     depth: true
   });
 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(width, height);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  
-  // Setup post-processing with adjusted values
+  renderer.shadowMap.autoUpdate = true;
+  renderer.shadowMap.needsUpdate = true;
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
   composer.addPass(renderPass);
 
-  // Adjust SSAO settings
-  const ssaoPass = new SSAOPass(scene, camera, width, height);
-  ssaoPass.kernelRadius = 32;
-  ssaoPass.minDistance = 0.001;
-  ssaoPass.maxDistance = 0.2;
-  composer.addPass(ssaoPass);
-
-  // Reduce bloom effect
-  const bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(width, height),
-    0.2,
-    0.5,
-    0.9
-  );
-  composer.addPass(bloomPass);
-
-  // Enhanced environment mapping
-  const pmremGenerator = new THREE.PMREMGenerator(renderer);
-  pmremGenerator.compileEquirectangularShader();
-  const envScene = new THREE.Scene();
-  envScene.background = new THREE.Color(0x444444);
-  scene.environment = pmremGenerator.fromScene(envScene).texture;
-
   container.appendChild(renderer.domElement);
 
-  // Create target cube with larger size and more visible appearance
   const targetCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
   const targetCubeMaterial = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
@@ -124,6 +97,29 @@ export const setupRendering = (container, width, height) => {
     targetCube.position.z + 5
   );
   camera.lookAt(targetCube.position);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  scene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 8, 5);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 4096;
+  dirLight.shadow.mapSize.height = 4096;
+  dirLight.shadow.camera.near = 0.1;
+  dirLight.shadow.camera.far = 100;
+  dirLight.shadow.camera.left = -15;
+  dirLight.shadow.camera.right = 15;
+  dirLight.shadow.camera.top = 15;
+  dirLight.shadow.camera.bottom = -15;
+  dirLight.shadow.bias = -0.0001;
+  dirLight.shadow.normalBias = 0.001;
+  dirLight.shadow.radius = 2;
+  scene.add(dirLight);
+
+  // Add a helper to visualize the shadow camera (comment out in production)
+  // const helper = new THREE.CameraHelper(dirLight.shadow.camera);
+  // scene.add(helper);
 
   return { 
     scene, 

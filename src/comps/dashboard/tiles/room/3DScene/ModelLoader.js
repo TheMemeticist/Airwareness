@@ -14,10 +14,56 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
     (gltf) => {
       const model = gltf.scene;
       
-      // Remove existing scene lights first
-      scene.traverse((child) => {
+      // ONLY adjust light intensity and enable shadows
+      model.traverse((child) => {
         if (child.isLight) {
-          scene.remove(child);
+          child.intensity *= 0.05;
+          // Configure shadows for each light type
+          if (child.shadow) {
+            child.shadow.bias = -0.0001;
+            child.shadow.normalBias = 0.001;
+            child.shadow.mapSize.width = 4096;  // Increased resolution
+            child.shadow.mapSize.height = 4096; // Increased resolution
+            child.shadow.radius = 4; // Softer shadows
+            
+            // Adjust shadow camera based on light type
+            if (child.isDirectionalLight) {
+              child.shadow.camera.near = 0.1;
+              child.shadow.camera.far = 100;
+              child.shadow.camera.left = -20;
+              child.shadow.camera.right = 20;
+              child.shadow.camera.top = 20;
+              child.shadow.camera.bottom = -20;
+            } else if (child.isSpotLight) {
+              child.shadow.camera.near = 0.1;
+              child.shadow.camera.far = 100;
+              child.shadow.camera.fov = 30;
+            }
+          }
+        }
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          
+          // Enhanced material settings for better shadows
+          if (child.material) {
+            // Handle materials that might be in an array
+            const materials = Array.isArray(child.material) ? child.material : [child.material];
+            
+            materials.forEach(material => {
+              material.shadowSide = THREE.BackSide;  // Changed to BackSide for better self-shadowing
+              material.side = THREE.DoubleSide;      // Enable double-sided rendering
+              
+              // If using MeshStandardMaterial
+              if (material.isMeshStandardMaterial) {
+                material.envMapIntensity = 1.0;
+                material.metalness = Math.min(material.metalness, 0.9);
+                material.roughness = Math.max(material.roughness, 0.1);
+              }
+              
+              material.needsUpdate = true;
+            });
+          }
         }
       });
 
@@ -28,125 +74,6 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
       );
 
       scene.add(model);
-
-      const meshes = [];
-      const lights = [];
-      
-      // First pass: collect and normalize lights
-      model.traverse((child) => {
-        if (child.isMesh) {
-          meshes.push(child);
-          // Enhance material properties
-          if (child.material) {
-            child.material.roughness = 0.7;  // Slightly less rough for more light play
-            child.material.metalness = 0.1;  // Slight metallic feel
-            child.material.envMapIntensity = 1.2; // Enhance environment reflections
-          }
-        } else if (child.isLight) {
-          // Enhance each light type
-          if (child.isDirectionalLight) {
-            child.intensity = 0.8;
-            child.color.setHex(0xffffff);
-            child.position.set(5, 8, 5);  // Position for dramatic shadows
-          } else if (child.isPointLight) {
-            child.intensity = 0.6;
-            child.distance = 25;
-            child.decay = 1.5;  // Less decay for more reach
-            child.color.setHex(0xffeeb1);  // Warm color
-          } else if (child.isSpotLight) {
-            child.intensity = 0.8;
-            child.distance = 30;
-            child.angle = Math.PI / 3;  // Wider angle
-            child.penumbra = 0.3;  // Sharper edges
-            child.decay = 1.5;
-            child.color.setHex(0xffffff);
-          }
-          lights.push(child);
-        }
-      });
-
-      // Enhance materials for better light interaction
-      meshes.forEach(mesh => {
-        if (mesh.material) {
-          mesh.material.roughness = 0.65;
-          mesh.material.metalness = 0.15;
-          mesh.material.envMapIntensity = 1.5;
-          
-          // Add subtle emissive glow to certain materials (adjust based on your needs)
-          if (mesh.material.name.includes('screen') || mesh.material.name.includes('light')) {
-            mesh.material.emissive = new THREE.Color(0xffffff);
-            mesh.material.emissiveIntensity = 0.5;
-          }
-        }
-      });
-
-      // Clear existing lights
-      lights.forEach(light => model.remove(light));
-
-      // Add key light (main directional light)
-      const keyLight = new THREE.DirectionalLight(0xffffff, 1);
-      keyLight.position.set(10, 15, 10);
-      keyLight.castShadow = true;
-      keyLight.shadow.mapSize.width = 2048;
-      keyLight.shadow.mapSize.height = 2048;
-      keyLight.shadow.camera.near = 0.1;
-      keyLight.shadow.camera.far = 100;
-      keyLight.shadow.bias = -0.001;
-      model.add(keyLight);
-
-      // Add fill light
-      const fillLight = new THREE.DirectionalLight(0x8899ff, 0.5);
-      fillLight.position.set(-10, 5, -10);
-      model.add(fillLight);
-
-      // Add rim light for separation
-      const rimLight = new THREE.DirectionalLight(0xffffee, 0.7);
-      rimLight.position.set(0, -5, -10);
-      model.add(rimLight);
-
-      // Add point lights for local illumination
-      const pointLight1 = new THREE.PointLight(0xffd2b3, 0.8, 20);
-      pointLight1.position.set(5, 5, 5);
-      model.add(pointLight1);
-
-      const pointLight2 = new THREE.PointLight(0xb3d2ff, 0.6, 15);
-      pointLight2.position.set(-5, 3, -5);
-      model.add(pointLight2);
-
-      // Subtle ambient light
-      const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
-      model.add(ambientLight);
-
-      // Add hemisphere light for sky bounce
-      const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 0.4);
-      model.add(hemiLight);
-
-      // Second pass: check for and remove duplicate lights
-      const uniqueLights = new Map();
-      lights.forEach(light => {
-        const key = `${light.position.x.toFixed(2)},${light.position.y.toFixed(2)},${light.position.z.toFixed(2)}`;
-        if (!uniqueLights.has(key)) {
-          uniqueLights.set(key, light);
-        } else {
-          // If duplicate found, keep the one with better settings
-          const existing = uniqueLights.get(key);
-          if (light.intensity < existing.intensity) {
-            model.remove(existing);
-            uniqueLights.set(key, light);
-          } else {
-            model.remove(light);
-          }
-        }
-      });
-
-      // Debug output of final light setup
-      console.log('Final light setup:', 
-        Array.from(uniqueLights.values()).map(light => ({
-          type: light.type,
-          position: light.position.toArray(),
-          intensity: light.intensity
-        }))
-      );
 
       const box = new THREE.Box3().setFromObject(model);
       box.getCenter(center);
