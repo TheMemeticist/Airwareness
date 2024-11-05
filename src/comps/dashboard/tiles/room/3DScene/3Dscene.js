@@ -69,23 +69,27 @@ const ThreeDScene = ({ dimensions }) => {
 
     let frameId;
     let lastTime = 0;
-    const FPS = 30;
+    const FPS = 60;
     const fpsInterval = 1000 / FPS;
 
     const animate = (currentTime) => {
       frameId = requestAnimationFrame(animate);
 
+      currentTime = currentTime || 0;
+
       const elapsed = currentTime - lastTime;
       if (elapsed < fpsInterval) return;
       
-      lastTime = currentTime - (elapsed % fpsInterval);
+      lastTime = currentTime;
       
       if (controlsRef.current) {
-        controlsRef.current.target.copy(targetCubeRef.current.position);
+        const currentTarget = controlsRef.current.target;
+        const targetPosition = targetCubeRef.current.position;
+        
+        currentTarget.lerp(targetPosition, 0.1);
         controlsRef.current.update();
       }
       
-      // Simplified particle system animation call
       if (particleSystemRef.current) {
         particleSystemRef.current.animate();
       }
