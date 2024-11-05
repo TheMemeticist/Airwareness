@@ -6,7 +6,7 @@ import tileStyles from '../../Tile.module.css';
 import { setupRendering } from './RenderingSetup';
 import { loadModel, updateModelPosition } from './ModelLoader';
 import { updateDimensions } from './UpdateDimensions';
-import { ParticleSystem } from './ParticleSystem';
+import { ParticleSystem } from './particles/ParticleSystem';
 
 const ThreeDScene = ({ dimensions }) => {
   const mountRef = useRef(null);
@@ -63,44 +63,31 @@ const ThreeDScene = ({ dimensions }) => {
 
     loadModel(scene, camera, controls, renderer, setErrorMessage, objectPosition);
 
-    // Initialize particle system
+    // Updated particle system initialization
     particleSystemRef.current = new ParticleSystem(scene, dimensionsInMeters);
     particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
-    particleSystemRef.current.initialize();
 
     let frameId;
     let lastTime = 0;
-    const FPS = 30; // Limit FPS to 30 for better performance
+    const FPS = 30;
     const fpsInterval = 1000 / FPS;
 
     const animate = (currentTime) => {
       frameId = requestAnimationFrame(animate);
 
-      // Throttle render calls but keep it smooth
       const elapsed = currentTime - lastTime;
       if (elapsed < fpsInterval) return;
       
       lastTime = currentTime - (elapsed % fpsInterval);
       
-      // Smooth camera updates
-      if (targetCubeRef.current && controlsRef.current) {
+      if (controlsRef.current) {
         controlsRef.current.target.copy(targetCubeRef.current.position);
         controlsRef.current.update();
       }
       
+      // Simplified particle system animation call
       if (particleSystemRef.current) {
         particleSystemRef.current.animate();
-      }
-      
-      // Smooth camera transitions
-      if (controls.changed) {
-        camera.lookAt(controlsRef.current.target);
-        controls.changed = false;
-      }
-      
-      // Only update shadow maps when needed
-      if (renderer.shadowMap.needsUpdate) {
-        renderer.shadowMap.needsUpdate = false;
       }
       
       renderer.render(scene, camera);
@@ -149,29 +136,25 @@ const ThreeDScene = ({ dimensions }) => {
 
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
-      // First update room dimensions
       updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position, true);
 
-      // Update plane helpers
       planeHelpersRef.current.forEach((helper) => {
-        helper.size = Math.max(dimensionsInMeters.width, dimensionsInMeters.length, dimensionsInMeters.height);
+        helper.size = Math.max(
+          dimensionsInMeters.width, 
+          dimensionsInMeters.length, 
+          dimensionsInMeters.height
+        );
         helper.updateMatrixWorld();
       });
 
-      // Wait for next frame to ensure room and clipping planes are updated
-      requestAnimationFrame(() => {
-        // Then wait one more frame to ensure everything is stable
-        requestAnimationFrame(() => {
-          if (particleSystemRef.current) {
-            // Update particle system with new bounds
-            particleSystemRef.current.updateRoomBounds(
-              dimensionsInMeters,
-              clippingPlanesRef.current,
-              position
-            );
-          }
-        });
-      });
+      // Simplified particle system update
+      if (particleSystemRef.current) {
+        particleSystemRef.current.updateRoomBounds(
+          dimensionsInMeters,
+          clippingPlanesRef.current,
+          position
+        );
+      }
     }
   }, [dimensionsInMeters, pivotCorner, position]);
 
@@ -195,6 +178,7 @@ const ThreeDScene = ({ dimensions }) => {
     }
   }, [dimensionsInMeters]);
 
+  // Simplified particle intensity update
   useEffect(() => {
     if (particleSystemRef.current) {
       particleSystemRef.current.updateIntensity(particleIntensity);
