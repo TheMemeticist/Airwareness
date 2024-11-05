@@ -149,17 +149,28 @@ const ThreeDScene = ({ dimensions }) => {
 
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
+      // First update room dimensions
       updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position, true);
 
-      // Update particle system dimensions and clipping planes
-      if (particleSystemRef.current) {
-        particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
-        particleSystemRef.current.updateDimensions(dimensionsInMeters);
-      }
-
+      // Update plane helpers
       planeHelpersRef.current.forEach((helper) => {
         helper.size = Math.max(dimensionsInMeters.width, dimensionsInMeters.length, dimensionsInMeters.height);
         helper.updateMatrixWorld();
+      });
+
+      // Wait for next frame to ensure room and clipping planes are updated
+      requestAnimationFrame(() => {
+        // Then wait one more frame to ensure everything is stable
+        requestAnimationFrame(() => {
+          if (particleSystemRef.current) {
+            // Update particle system with new bounds
+            particleSystemRef.current.updateRoomBounds(
+              dimensionsInMeters,
+              clippingPlanesRef.current,
+              position
+            );
+          }
+        });
       });
     }
   }, [dimensionsInMeters, pivotCorner, position]);
