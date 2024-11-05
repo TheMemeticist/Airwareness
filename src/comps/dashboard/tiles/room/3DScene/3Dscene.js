@@ -6,6 +6,7 @@ import tileStyles from '../../Tile.module.css';
 import { setupRendering } from './RenderingSetup';
 import { loadModel, updateModelPosition } from './ModelLoader';
 import { updateDimensions } from './UpdateDimensions';
+import { ParticleSystem } from './ParticleSystem';
 
 const ThreeDScene = ({ dimensions }) => {
   const mountRef = useRef(null);
@@ -18,6 +19,8 @@ const ThreeDScene = ({ dimensions }) => {
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
   const [objectPosition, setObjectPosition] = useState({ x: 4, y: 3, z: 5 });
+  const [particleIntensity, setParticleIntensity] = useState(50);
+  const particleSystemRef = useRef(null);
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -28,7 +31,7 @@ const ThreeDScene = ({ dimensions }) => {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    const { scene, camera, renderer, controls, targetCube } = setupRendering(
+    const { scene, camera, renderer, controls, targetCube, composer } = setupRendering(
       mountRef.current,
       mountRef.current.clientWidth,
       mountRef.current.clientHeight
@@ -60,6 +63,11 @@ const ThreeDScene = ({ dimensions }) => {
 
     loadModel(scene, camera, controls, renderer, setErrorMessage, objectPosition);
 
+    // Initialize particle system
+    particleSystemRef.current = new ParticleSystem(scene, dimensionsInMeters);
+    particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
+    particleSystemRef.current.initialize();
+
     const handleResize = () => {
       if (!mountRef.current || !renderer) return;
 
@@ -77,17 +85,18 @@ const ThreeDScene = ({ dimensions }) => {
       requestAnimationFrame(animate);
       
       if (targetCubeRef.current && controlsRef.current) {
-        // Keep controls target synced with cube position
         controlsRef.current.target.copy(targetCubeRef.current.position);
         controlsRef.current.update();
-        
-        // Ensure target cube stays visible
         targetCubeRef.current.renderOrder = 999;
         targetCubeRef.current.material.needsUpdate = true;
       }
       
+      if (particleSystemRef.current) {
+        particleSystemRef.current.animate();
+      }
+      
       camera.lookAt(controlsRef.current.target);
-      renderer.render(scene, camera);
+      composer.render();
     };
     animate();
 
@@ -98,12 +107,21 @@ const ThreeDScene = ({ dimensions }) => {
       controls.dispose();
       window.removeEventListener('resize', handleResize);
       planeHelpersRef.current.forEach(helper => scene.remove(helper));
+      if (particleSystemRef.current) {
+        particleSystemRef.current.dispose();
+      }
     };
   }, []);
 
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
       updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
+
+      // Update particle system dimensions and clipping planes
+      if (particleSystemRef.current) {
+        particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
+        particleSystemRef.current.updateDimensions(dimensionsInMeters);
+      }
 
       planeHelpersRef.current.forEach((helper) => {
         helper.size = Math.max(dimensionsInMeters.width, dimensionsInMeters.length, dimensionsInMeters.height);
@@ -118,6 +136,26 @@ const ThreeDScene = ({ dimensions }) => {
     }
   }, [objectPosition]);
 
+  useEffect(() => {
+    if (sceneRef.current) {
+      // Store dimensions in scene's userData
+      sceneRef.current.userData.roomDimensions = dimensionsInMeters;
+      
+      // Update camera's ideal position
+      if (controlsRef.current?.calculateIdealCameraPosition) {
+        controlsRef.current.initialPosition.copy(
+          controlsRef.current.calculateIdealCameraPosition(dimensionsInMeters)
+        );
+      }
+    }
+  }, [dimensionsInMeters]);
+
+  useEffect(() => {
+    if (particleSystemRef.current) {
+      particleSystemRef.current.updateIntensity(particleIntensity);
+    }
+  }, [particleIntensity]);
+
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
   };
@@ -128,6 +166,10 @@ const ThreeDScene = ({ dimensions }) => {
 
   const handleObjectPositionChange = (axis, value) => {
     setObjectPosition(prev => ({ ...prev, [axis]: parseFloat(value) }));
+  };
+
+  const handleParticleIntensityChange = (value) => {
+    setParticleIntensity(Math.min(100, Math.max(0, parseFloat(value))));
   };
 
   return (
@@ -162,6 +204,17 @@ const ThreeDScene = ({ dimensions }) => {
               <label>X: <input type="number" value={objectPosition.x} onChange={(e) => handleObjectPositionChange('x', e.target.value)} /></label>
               <label>Y: <input type="number" value={objectPosition.y} onChange={(e) => handleObjectPositionChange('y', e.target.value)} /></label>
               <label>Z: <input type="number" value={objectPosition.z} onChange={(e) => handleObjectPositionChange('z', e.target.value)} /></label>
+            </div>
+            <div>
+              <label>Particle Intensity:</label>
+              <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={particleIntensity} 
+                onChange={(e) => handleParticleIntensityChange(e.target.value)} 
+              />
+              <span>{particleIntensity}</span>
             </div>
           </div>
         </>

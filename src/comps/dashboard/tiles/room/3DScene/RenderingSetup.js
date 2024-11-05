@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 
 export const setupRendering = (container, width, height) => {
   const scene = new THREE.Scene();
@@ -16,7 +20,8 @@ export const setupRendering = (container, width, height) => {
     antialias: true,
     alpha: true,
     powerPreference: 'high-performance',
-    precision: 'mediump',
+    precision: 'highp',
+    logarithmicDepthBuffer: true,
     stencil: false,
     depth: true
   });
@@ -24,12 +29,38 @@ export const setupRendering = (container, width, height) => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(width, height);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.shadowMap.autoUpdate = true;
-  renderer.shadowMap.needsUpdate = true;
-  renderer.capabilities.maxTextures = 16;
-  renderer.capabilities.maxVertexTextures = 16;
+  
+  // Setup post-processing with adjusted values
+  const composer = new EffectComposer(renderer);
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  // Adjust SSAO settings
+  const ssaoPass = new SSAOPass(scene, camera, width, height);
+  ssaoPass.kernelRadius = 32;
+  ssaoPass.minDistance = 0.001;
+  ssaoPass.maxDistance = 0.2;
+  composer.addPass(ssaoPass);
+
+  // Reduce bloom effect
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(width, height),
+    0.2,
+    0.5,
+    0.9
+  );
+  composer.addPass(bloomPass);
+
+  // Enhanced environment mapping
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader();
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x444444);
+  scene.environment = pmremGenerator.fromScene(envScene).texture;
 
   container.appendChild(renderer.domElement);
 
@@ -58,11 +89,28 @@ export const setupRendering = (container, width, height) => {
   controls.returnDelay = 2000;
   controls.returnDuration = 1000;
   controls.lastInteraction = Date.now();
-  controls.initialPosition = new THREE.Vector3(
-    targetCube.position.x + 5,
-    targetCube.position.y + 5,
-    targetCube.position.z + 5
-  );
+  
+  controls.calculateIdealCameraPosition = (dimensions) => {
+    const maxDimension = Math.max(dimensions.width, dimensions.length, dimensions.height);
+    
+    // Set minimum and maximum distances
+    const MIN_DISTANCE = 20;  // Minimum 5 meters from target
+    const MAX_DISTANCE = 300; // Maximum 30 meters from target
+    
+    // Calculate ideal distance based on room size
+    let distance = maxDimension * 1.5;
+    
+    // Clamp the distance between min and max values
+    distance = Math.max(MIN_DISTANCE, Math.min(MAX_DISTANCE, distance));
+    
+    return new THREE.Vector3(
+      targetCube.position.x + distance * 0.7,
+      targetCube.position.y + distance * 0.5,
+      targetCube.position.z + distance * 0.7
+    );
+  };
+  
+  controls.initialPosition = controls.calculateIdealCameraPosition({ width: 10, length: 10, height: 10 });
 
   controls.addEventListener('start', () => {
     controls.lastInteraction = Date.now();
@@ -77,5 +125,12 @@ export const setupRendering = (container, width, height) => {
   );
   camera.lookAt(targetCube.position);
 
-  return { scene, camera, renderer, controls, targetCube };
+  return { 
+    scene, 
+    camera, 
+    renderer, 
+    controls, 
+    targetCube,
+    composer  // Add composer to return object
+  };
 };
