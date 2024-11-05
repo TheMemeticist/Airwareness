@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 
-export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
+const TRANSITION_DURATION = 2000; // Match camera transition duration
+let currentTransition = null;
+
+export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }, animate = true) => {
   console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });
 
   const width = isNaN(dimensions.width) ? 1 : dimensions.width;
@@ -40,15 +43,54 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
         xOffset = width; yOffset = 0; zOffset = 0;
     }
 
-    // Update clipping planes based on pivot and position
-    clippingPlanes[0].constant = xOffset + position.x;        // Right
-    clippingPlanes[1].constant = width - xOffset + position.x; // Left
-    clippingPlanes[2].constant = yOffset + position.y;        // Top
-    clippingPlanes[3].constant = height - yOffset + position.y; // Bottom
-    clippingPlanes[4].constant = zOffset + position.z;        // Front
-    clippingPlanes[5].constant = length - zOffset + position.z; // Back
+    // Calculate target constants
+    const targetValues = [
+      xOffset + position.x,
+      width - xOffset + position.x,
+      yOffset + position.y,
+      height - yOffset + position.y,
+      zOffset + position.z,
+      length - zOffset + position.z
+    ];
 
-    console.log('Updated clipping planes:', clippingPlanes.map(plane => plane.constant));
+    if (animate) {
+      // Cancel any existing transition
+      if (currentTransition) {
+        cancelAnimationFrame(currentTransition.frameId);
+      }
+
+      // Store initial values
+      const initialValues = clippingPlanes.map(plane => plane.constant);
+      const startTime = Date.now();
+
+      const animateTransition = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(1, elapsed / TRANSITION_DURATION);
+        
+        // Ease function (cubic)
+        const easeProgress = progress * progress * (3 - 2 * progress);
+
+        // Update each plane's constant
+        clippingPlanes.forEach((plane, index) => {
+          plane.constant = initialValues[index] + (targetValues[index] - initialValues[index]) * easeProgress;
+        });
+
+        if (progress < 1) {
+          currentTransition = {
+            frameId: requestAnimationFrame(animateTransition)
+          };
+        } else {
+          currentTransition = null;
+        }
+      };
+
+      animateTransition();
+    } else {
+      // Immediate update without animation
+      clippingPlanes.forEach((plane, index) => {
+        plane.constant = targetValues[index];
+      });
+    }
   } else {
     console.warn('Clipping planes not available or incorrect number');
   }

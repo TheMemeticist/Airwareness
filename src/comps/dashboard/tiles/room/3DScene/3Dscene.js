@@ -31,7 +31,7 @@ const ThreeDScene = ({ dimensions }) => {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    const { scene, camera, renderer, controls, targetCube, composer } = setupRendering(
+    const { scene, camera, renderer, controls, targetCube } = setupRendering(
       mountRef.current,
       mountRef.current.clientWidth,
       mountRef.current.clientHeight
@@ -68,44 +68,68 @@ const ThreeDScene = ({ dimensions }) => {
     particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
     particleSystemRef.current.initialize();
 
-    const handleResize = () => {
-      if (!mountRef.current || !renderer) return;
+    let frameId;
+    let lastTime = 0;
+    const FPS = 30; // Limit FPS to 30 for better performance
+    const fpsInterval = 1000 / FPS;
 
-      const { clientWidth: width, clientHeight: height } = mountRef.current;
+    const animate = (currentTime) => {
+      frameId = requestAnimationFrame(animate);
+
+      // Throttle render calls but keep it smooth
+      const elapsed = currentTime - lastTime;
+      if (elapsed < fpsInterval) return;
       
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
-    const animate = () => {
-      requestAnimationFrame(animate);
+      lastTime = currentTime - (elapsed % fpsInterval);
       
+      // Smooth camera updates
       if (targetCubeRef.current && controlsRef.current) {
         controlsRef.current.target.copy(targetCubeRef.current.position);
         controlsRef.current.update();
-        targetCubeRef.current.renderOrder = 999;
-        targetCubeRef.current.material.needsUpdate = true;
       }
       
       if (particleSystemRef.current) {
         particleSystemRef.current.animate();
       }
       
-      camera.lookAt(controlsRef.current.target);
+      // Smooth camera transitions
+      if (controls.changed) {
+        camera.lookAt(controlsRef.current.target);
+        controls.changed = false;
+      }
       
-      // Force shadow map update when needed
-      renderer.shadowMap.needsUpdate = true;
+      // Only update shadow maps when needed
+      if (renderer.shadowMap.needsUpdate) {
+        renderer.shadowMap.needsUpdate = false;
+      }
       
-      // Use direct renderer instead of composer for better shadow quality
       renderer.render(scene, camera);
     };
-    animate();
+    
+    animate(0);
+
+    // Optimize resize handler
+    let resizeTimeout;
+    const handleResize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      
+      resizeTimeout = setTimeout(() => {
+        if (!mountRef.current || !renderer) return;
+
+        const width = mountRef.current.clientWidth;
+        const height = mountRef.current.clientHeight;
+        
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }, 250); // Debounce resize events
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
+      cancelAnimationFrame(frameId);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
       if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
@@ -115,12 +139,17 @@ const ThreeDScene = ({ dimensions }) => {
       if (particleSystemRef.current) {
         particleSystemRef.current.dispose();
       }
+      
+      // Dispose of geometries and materials
+      targetCube.geometry.dispose();
+      targetCube.material.dispose();
+      renderer.dispose();
     };
   }, []);
 
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
-      updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
+      updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position, true);
 
       // Update particle system dimensions and clipping planes
       if (particleSystemRef.current) {

@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 
 export const setupRendering = (container, width, height) => {
   const scene = new THREE.Scene();
@@ -9,7 +7,7 @@ export const setupRendering = (container, width, height) => {
   const camera = new THREE.PerspectiveCamera(
     75,
     width / height,
-    0.01,
+    0.1,
     1000
   );
 
@@ -27,14 +25,9 @@ export const setupRendering = (container, width, height) => {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = true;
-  renderer.shadowMap.needsUpdate = true;
-  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
-
-  const composer = new EffectComposer(renderer);
-  const renderPass = new RenderPass(scene, camera);
-  composer.addPass(renderPass);
 
   container.appendChild(renderer.domElement);
 
@@ -42,9 +35,6 @@ export const setupRendering = (container, width, height) => {
   const targetCubeMaterial = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
     wireframe: true,
-    wireframeLinewidth: 2,
-    depthTest: false,
-    depthWrite: false,
     transparent: true,
     opacity: 0.8
   });
@@ -53,15 +43,16 @@ export const setupRendering = (container, width, height) => {
   scene.add(targetCube);
 
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.copy(targetCube.position);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.minDistance = 0.3;
-  controls.maxDistance = 300;
+  controls.dampingFactor = 0.1;
+  controls.minDistance = 1;
+  controls.maxDistance = 200;
   controls.enableReturn = true;
   controls.returnDelay = 2000;
-  controls.returnDuration = 1000;
+  controls.returnDuration = 4000;
   controls.lastInteraction = Date.now();
+  controls.rotateSpeed = 0.8;
+  controls.zoomSpeed = 0.8;
   
   controls.calculateIdealCameraPosition = (dimensions) => {
     const maxDimension = Math.max(dimensions.width, dimensions.length, dimensions.height);
@@ -101,11 +92,11 @@ export const setupRendering = (container, width, height) => {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
   dirLight.position.set(5, 8, 5);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 4096;
-  dirLight.shadow.mapSize.height = 4096;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
   dirLight.shadow.camera.near = 0.1;
   dirLight.shadow.camera.far = 100;
   dirLight.shadow.camera.left = -15;
@@ -126,7 +117,6 @@ export const setupRendering = (container, width, height) => {
     camera, 
     renderer, 
     controls, 
-    targetCube,
-    composer  // Add composer to return object
+    targetCube
   };
 };
