@@ -7,6 +7,7 @@ import { setupRendering } from './RenderingSetup';
 import { loadModel, updateModelPosition } from './ModelLoader';
 import { updateDimensions } from './UpdateDimensions';
 import { ParticleSystem } from './particles/ParticleSystem';
+import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 
 const ThreeDScene = ({ dimensions }) => {
   const mountRef = useRef(null);
@@ -21,6 +22,7 @@ const ThreeDScene = ({ dimensions }) => {
   const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 1, z: 5 });
   const [particleIntensity, setParticleIntensity] = useState(50);
   const particleSystemRef = useRef(null);
+  const performanceMonitorRef = useRef(null);
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -30,6 +32,19 @@ const ThreeDScene = ({ dimensions }) => {
 
   useEffect(() => {
     if (!mountRef.current) return;
+
+    console.log('Initializing 3D Scene - Starting Performance Monitoring');
+    performanceMonitorRef.current = new PerformanceMonitor();
+    performanceMonitorRef.current.attach(mountRef.current);
+
+    // Log initial setup metrics
+    console.group('3D Scene Setup Metrics');
+    console.log('Window Dimensions:', {
+      width: mountRef.current.clientWidth,
+      height: mountRef.current.clientHeight
+    });
+    console.log('Room Dimensions (meters):', dimensionsInMeters);
+    console.groupEnd();
 
     const { scene, camera, renderer, controls, targetCube } = setupRendering(
       mountRef.current,
@@ -82,6 +97,9 @@ const ThreeDScene = ({ dimensions }) => {
       
       lastTime = currentTime;
       
+      // Start performance monitoring
+      const startTime = performanceMonitorRef.current.start();
+      
       if (controlsRef.current) {
         const currentTarget = controlsRef.current.target;
         const targetPosition = targetCubeRef.current.position;
@@ -95,6 +113,9 @@ const ThreeDScene = ({ dimensions }) => {
       }
       
       renderer.render(scene, camera);
+      
+      // End performance monitoring
+      performanceMonitorRef.current.end(startTime);
     };
     
     animate(0);
@@ -118,7 +139,34 @@ const ThreeDScene = ({ dimensions }) => {
 
     window.addEventListener('resize', handleResize);
 
+    // Add periodic performance logging
+    const performanceLoggingInterval = setInterval(() => {
+      if (performanceMonitorRef.current) {
+        console.group('3D Scene Performance Update');
+        const metrics = performanceMonitorRef.current.getAverageMetrics();
+        console.log('Performance Metrics:', {
+          fps: metrics.averageFPS + ' FPS',
+          renderTime: metrics.averageRenderTime + ' ms',
+          memoryUsage: metrics.averageMemory + ' MB',
+          sampleSize: metrics.samples
+        });
+        
+        // Log additional scene stats
+        if (sceneRef.current) {
+          console.log('Scene Statistics:', {
+            objects: sceneRef.current.children.length,
+            geometries: renderer.info.memory.geometries,
+            textures: renderer.info.memory.textures,
+            triangles: renderer.info.render.triangles
+          });
+        }
+        console.groupEnd();
+      }
+    }, 5000); // Log every 5 seconds
+
     return () => {
+      clearInterval(performanceLoggingInterval);
+      
       cancelAnimationFrame(frameId);
       if (resizeTimeout) clearTimeout(resizeTimeout);
       if (mountRef.current && renderer.domElement) {
@@ -135,6 +183,21 @@ const ThreeDScene = ({ dimensions }) => {
       targetCube.geometry.dispose();
       targetCube.material.dispose();
       renderer.dispose();
+      
+      // Final performance report
+      if (performanceMonitorRef.current) {
+        console.group('3D Scene Final Performance Report');
+        performanceMonitorRef.current.logMetrics();
+        console.log('Final Renderer Statistics:', {
+          geometries: renderer.info.memory.geometries,
+          textures: renderer.info.memory.textures,
+          triangles: renderer.info.render.triangles,
+          calls: renderer.info.render.calls
+        });
+        console.groupEnd();
+        
+        performanceMonitorRef.current.detach();
+      }
     };
   }, []);
 
