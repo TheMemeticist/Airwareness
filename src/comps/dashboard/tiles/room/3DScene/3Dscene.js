@@ -8,6 +8,7 @@ import { loadModel, updateModelPosition } from './ModelLoader';
 import { updateDimensions } from './UpdateDimensions';
 import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
+import { AnimationController } from './AnimationController';
 
 const ThreeDScene = ({ dimensions }) => {
   const mountRef = useRef(null);
@@ -23,6 +24,7 @@ const ThreeDScene = ({ dimensions }) => {
   const [particleIntensity, setParticleIntensity] = useState(50);
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
+  const animationControllerRef = useRef(null);
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
@@ -82,43 +84,39 @@ const ThreeDScene = ({ dimensions }) => {
     particleSystemRef.current = new ParticleSystem(scene, dimensionsInMeters);
     particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
 
+    // Initialize animation controller with scene center
+    const center = new THREE.Vector3(
+      dimensionsInMeters.width / 2,
+      dimensionsInMeters.height / 2,
+      dimensionsInMeters.length / 2
+    );
+    animationControllerRef.current = new AnimationController(
+      scene, 
+      camera, 
+      controls, 
+      center,
+      renderer,
+      targetCube
+    );
+    animationControllerRef.current.startAnimation();
+
+    // Remove the existing animation loop and replace with:
     let frameId;
-    let lastTime = 0;
-    const FPS = 60;
-    const fpsInterval = 1000 / FPS;
-
-    const animate = (currentTime) => {
+    const animate = () => {
       frameId = requestAnimationFrame(animate);
-
-      currentTime = currentTime || 0;
-
-      const elapsed = currentTime - lastTime;
-      if (elapsed < fpsInterval) return;
-      
-      lastTime = currentTime;
       
       // Start performance monitoring
       const startTime = performanceMonitorRef.current.start();
-      
-      if (controlsRef.current) {
-        const currentTarget = controlsRef.current.target;
-        const targetPosition = targetCubeRef.current.position;
-        
-        currentTarget.lerp(targetPosition, 0.1);
-        controlsRef.current.update();
-      }
       
       if (particleSystemRef.current) {
         particleSystemRef.current.animate();
       }
       
-      renderer.render(scene, camera);
-      
       // End performance monitoring
       performanceMonitorRef.current.end(startTime);
     };
     
-    animate(0);
+    animate();
 
     // Optimize resize handler
     let resizeTimeout;
@@ -197,6 +195,9 @@ const ThreeDScene = ({ dimensions }) => {
         console.groupEnd();
         
         performanceMonitorRef.current.detach();
+      }
+      if (animationControllerRef.current) {
+        animationControllerRef.current.stopAnimation();
       }
     };
   }, []);
