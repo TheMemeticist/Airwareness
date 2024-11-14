@@ -35,10 +35,10 @@ export class ParticleSystem {
       color: 0xFF0000,
       size: this.baseParticleSize,
       sizeAttenuation: true,
-      depthWrite: true,
-      transparent: false,
+      depthWrite: false,
+      transparent: true,
       opacity: 1.0,
-      blending: THREE.NoBlending
+      blending: THREE.NormalBlending
     });
 
     this.particles = new THREE.Points(this.particleGeometry, this.particleMaterial);

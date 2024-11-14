@@ -9,7 +9,7 @@ export class ParticleAnimator {
     this.transitionStartTime = 0;
     this.transitionDuration = 2000;
     this.fadeInDuration = 2000;
-    this.repositionDuration = 500;
+    this.repositionDuration = 50;
     this.pendingDimensions = null;
     this.transitionPhase = 'none'; // 'fadeOut', 'reposition', 'fadeIn', 'none'
     
@@ -66,9 +66,11 @@ export class ParticleAnimator {
     
     if (this.transitionPhase === 'fadeOut') {
       const progress = Math.min(elapsed / this.transitionDuration, 1);
-      const size = system.baseParticleSize * (1 - progress);
-      system.particleMaterial.size = size;
-
+      const eased = this.easeInOutQuad(1 - progress);
+      
+      system.particleMaterial.size = system.baseParticleSize * eased;
+      system.particleMaterial.opacity = eased;
+      
       if (progress >= 1) {
         // Update room dimensions
         system.manager.dimensions = { ...this.pendingDimensions };
@@ -77,26 +79,27 @@ export class ParticleAnimator {
         // Reset ALL particles with new room dimensions
         system.manager.initializeParticles();
         
-        this.transitionPhase = 'wait';
-        this.transitionStartTime = currentTime;
-      }
-    } else if (this.transitionPhase === 'wait') {
-      const progress = Math.min(elapsed / 1000, 1); // Wait 1 second
-      
-      if (progress >= 1) {
+        // Skip wait phase, go directly to fadeIn
         this.transitionPhase = 'fadeIn';
         this.transitionStartTime = currentTime;
       }
     } else if (this.transitionPhase === 'fadeIn') {
       const progress = Math.min(elapsed / this.fadeInDuration, 1);
-      const size = system.baseParticleSize * progress;
-      system.particleMaterial.size = size;
+      const eased = this.easeInOutQuad(progress);
+      
+      system.particleMaterial.size = system.baseParticleSize * eased;
+      system.particleMaterial.opacity = eased;
 
       if (progress >= 1) {
         this.isTransitioning = false;
         this.transitionPhase = 'none';
       }
     }
+  }
+
+  // Add easing function
+  easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 
   startTransition(dimensions, clippingPlanes, position) {
