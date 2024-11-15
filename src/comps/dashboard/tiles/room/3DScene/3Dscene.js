@@ -86,8 +86,12 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     loadModel(scene, camera, controls, renderer, setErrorMessage, objectPosition);
 
     // Updated particle system initialization
-    particleSystemRef.current = new ParticleSystem(scene, dimensionsInMeters);
-    particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
+    try {
+      particleSystemRef.current = new ParticleSystem(scene, dimensionsInMeters);
+      particleSystemRef.current.setClippingPlanes(clippingPlanesRef.current);
+    } catch (error) {
+      console.error('Failed to initialize particle system:', error);
+    }
 
     // Initialize animation controller with scene center
     const center = new THREE.Vector3(
@@ -110,15 +114,29 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     const animate = () => {
       frameId = requestAnimationFrame(animate);
       
-      // Start performance monitoring
-      const startTime = performanceMonitorRef.current.start();
-      
-      if (particleSystemRef.current) {
-        particleSystemRef.current.animate();
+      // Only monitor performance if in debug mode
+      if (debug && performanceMonitorRef.current) {
+        const startTime = performanceMonitorRef.current.start();
+        
+        if (particleSystemRef.current) {
+          try {
+            particleSystemRef.current.animate();
+          } catch (error) {
+            console.error('Particle animation error:', error);
+          }
+        }
+        
+        performanceMonitorRef.current.end(startTime);
+      } else {
+        // Regular animation without performance monitoring
+        if (particleSystemRef.current) {
+          try {
+            particleSystemRef.current.animate();
+          } catch (error) {
+            console.error('Particle animation error:', error);
+          }
+        }
       }
-      
-      // End performance monitoring
-      performanceMonitorRef.current.end(startTime);
     };
     
     animate();
@@ -171,29 +189,9 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     }
 
     return () => {
+      // Debug-specific cleanup
       if (debug) {
         clearInterval(performanceLoggingInterval);
-        
-        cancelAnimationFrame(frameId);
-        if (resizeTimeout) clearTimeout(resizeTimeout);
-        if (mountRef.current && renderer.domElement) {
-          mountRef.current.removeChild(renderer.domElement);
-        }
-        controls.dispose();
-        window.removeEventListener('resize', handleResize);
-        if (planeHelpersRef.current.length) {
-          planeHelpersRef.current.forEach(helper => scene.remove(helper));
-        }
-        if (particleSystemRef.current) {
-          particleSystemRef.current.dispose();
-        }
-        
-        // Dispose of geometries and materials
-        targetCube.geometry.dispose();
-        targetCube.material.dispose();
-        renderer.dispose();
-        
-        // Final performance report
         if (performanceMonitorRef.current) {
           console.group('3D Scene Final Performance Report');
           performanceMonitorRef.current.logMetrics();
@@ -204,12 +202,36 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
             calls: renderer.info.render.calls
           });
           console.groupEnd();
-          
           performanceMonitorRef.current.detach();
         }
-        if (animationControllerRef.current) {
-          animationControllerRef.current.stopAnimation();
-        }
+      }
+
+      // Always perform these cleanup operations
+      cancelAnimationFrame(frameId);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      if (controls) controls.dispose();
+      window.removeEventListener('resize', handleResize);
+      
+      if (planeHelpersRef.current.length) {
+        planeHelpersRef.current.forEach(helper => scene.remove(helper));
+      }
+      
+      if (particleSystemRef.current) {
+        particleSystemRef.current.dispose();
+      }
+      
+      if (targetCube) {
+        targetCube.geometry.dispose();
+        targetCube.material.dispose();
+      }
+      
+      if (renderer) renderer.dispose();
+      
+      if (animationControllerRef.current) {
+        animationControllerRef.current.stopAnimation();
       }
     };
   }, []);
