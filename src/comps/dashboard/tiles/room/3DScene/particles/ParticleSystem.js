@@ -71,6 +71,7 @@ export class ParticleSystem {
 
   updateIntensity(intensity) {
     this.manager.updateIntensity(intensity, this);
+    this.particleGeometry.attributes.position.needsUpdate = true;
   }
 
   updateRoomBounds(dimensions, clippingPlanes, position) {

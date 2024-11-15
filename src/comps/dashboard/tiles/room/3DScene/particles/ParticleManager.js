@@ -82,6 +82,18 @@ export class ParticleManager {
   updateIntensity(intensity, system) {
     const newParticleCount = Math.floor((intensity / 100) * this.particleCount);
     system.activeParticles = newParticleCount;
+    
+    // Clear positions of inactive particles
+    for (let i = newParticleCount; i < this.particleCount; i++) {
+        const idx = i * 3;
+        this.positions[idx] = 0;
+        this.positions[idx + 1] = -1000; // Move them far below the scene
+        this.positions[idx + 2] = 0;
+        this.velocities[idx] = 0;
+        this.velocities[idx + 1] = 0;
+        this.velocities[idx + 2] = 0;
+        this.lifespans[i] = 0;
+    }
   }
 
   checkBounds(position) {

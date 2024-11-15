@@ -32,8 +32,9 @@ export class ParticleAnimator {
   }
 
   updateParticles(system, deltaTime) {
-    const speedFactor = (deltaTime / 16.67) * 0.2; // Added multiplication by 0.2 to slow down
+    const speedFactor = (deltaTime / 16.67) * 0.2;
 
+    // Only update active particles
     for (let i = 0; i < system.activeParticles; i++) {
       const idx = i * 3;
       
@@ -65,35 +66,48 @@ export class ParticleAnimator {
     const elapsed = currentTime - this.transitionStartTime;
     
     if (this.transitionPhase === 'fadeOut') {
-      const progress = Math.min(elapsed / this.transitionDuration, 1);
-      const eased = this.easeInOutQuad(1 - progress);
-      
-      system.particleMaterial.size = system.baseParticleSize * eased;
-      system.particleMaterial.opacity = eased;
-      
-      if (progress >= 1) {
-        // Update room dimensions
-        system.manager.dimensions = { ...this.pendingDimensions };
-        system.manager.clippingPlanes = this.clippingPlanes;
+        const progress = Math.min(elapsed / this.transitionDuration, 1);
+        const eased = this.easeInOutQuad(1 - progress);
         
-        // Reset ALL particles with new room dimensions
-        system.manager.initializeParticles();
+        system.particleMaterial.size = system.baseParticleSize * eased;
+        system.particleMaterial.opacity = eased;
         
-        // Skip wait phase, go directly to fadeIn
-        this.transitionPhase = 'fadeIn';
-        this.transitionStartTime = currentTime;
-      }
+        if (progress >= 1) {
+            // Update room dimensions
+            system.manager.dimensions = { ...this.pendingDimensions };
+            system.manager.clippingPlanes = this.clippingPlanes;
+            
+            // Clean up all particles and reinitialize with current active count
+            const currentActive = system.activeParticles;
+            system.manager.initializeParticles();
+            
+            // Apply current intensity to new particles
+            for (let i = currentActive; i < system.manager.particleCount; i++) {
+                const idx = i * 3;
+                system.manager.positions[idx] = 0;
+                system.manager.positions[idx + 1] = -1000;
+                system.manager.positions[idx + 2] = 0;
+                system.manager.velocities[idx] = 0;
+                system.manager.velocities[idx + 1] = 0;
+                system.manager.velocities[idx + 2] = 0;
+                system.manager.lifespans[i] = 0;
+            }
+            
+            // Move to fade in phase
+            this.transitionPhase = 'fadeIn';
+            this.transitionStartTime = currentTime;
+        }
     } else if (this.transitionPhase === 'fadeIn') {
-      const progress = Math.min(elapsed / this.fadeInDuration, 1);
-      const eased = this.easeInOutQuad(progress);
-      
-      system.particleMaterial.size = system.baseParticleSize * eased;
-      system.particleMaterial.opacity = eased;
+        const progress = Math.min(elapsed / this.fadeInDuration, 1);
+        const eased = this.easeInOutQuad(progress);
+        
+        system.particleMaterial.size = system.baseParticleSize * eased;
+        system.particleMaterial.opacity = eased;
 
-      if (progress >= 1) {
-        this.isTransitioning = false;
-        this.transitionPhase = 'none';
-      }
+        if (progress >= 1) {
+            this.isTransitioning = false;
+            this.transitionPhase = 'none';
+        }
     }
   }
 
