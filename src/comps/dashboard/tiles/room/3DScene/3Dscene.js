@@ -10,7 +10,7 @@ import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 
-const ThreeDScene = ({ dimensions, debug = false }) => {
+const ThreeDScene = ({ dimensions, debug = true }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const clippingPlanesRef = useRef([]);
@@ -20,7 +20,7 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
   const [position, setPosition] = useState({ x: 0, y: 4, z: 0 });
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
-  const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 2.4, z: 5 });
+  const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 4.4, z: 5 });
   const [particleIntensity, setParticleIntensity] = useState(50);
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
