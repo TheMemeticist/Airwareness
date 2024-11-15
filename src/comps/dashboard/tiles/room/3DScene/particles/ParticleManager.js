@@ -41,16 +41,17 @@ export class ParticleManager {
   }
 
   initializePositions() {
+    const scaleFactor = 4;
     for (let i = 0; i < this.particleCount * 3; i += 3) {
-      this.positions[i] = (Math.random() * this.dimensions.width) - (this.dimensions.width / 2);
-      this.positions[i + 1] = (Math.random() * this.dimensions.height) - (this.dimensions.height / 2);
-      this.positions[i + 2] = (Math.random() * this.dimensions.length) - (this.dimensions.length / 2);
+      this.positions[i] = (Math.random() * this.dimensions.width * scaleFactor) - (this.dimensions.width * scaleFactor / 2);
+      this.positions[i + 1] = (Math.random() * this.dimensions.height * scaleFactor) - (this.dimensions.height * scaleFactor / 2);
+      this.positions[i + 2] = (Math.random() * this.dimensions.length * scaleFactor) - (this.dimensions.length * scaleFactor / 2);
     }
   }
 
   generateNewParticle(index) {
     const idx = index * 3;
-    const scaleFactor = 2;
+    const scaleFactor = 4;
     
     this.positions[idx] = (Math.random() * this.dimensions.width * scaleFactor) - (this.dimensions.width * scaleFactor / 2);
     this.positions[idx + 1] = (Math.random() * this.dimensions.height * scaleFactor) - (this.dimensions.height * scaleFactor / 2);

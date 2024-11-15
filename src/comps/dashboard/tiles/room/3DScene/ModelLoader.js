@@ -111,18 +111,27 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
         }
       });
 
+      const FEET_TO_METERS = 0.3048;
+      const SCALE_FACTOR = 1 / FEET_TO_METERS; // Convert from meters to feet
+
+      // Scale the model
+      model.scale.set(SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR);
+
+      // Adjust position to account for scale
       model.position.set(
-        objectPosition.x,
-        objectPosition.y,
-        objectPosition.z
+        objectPosition.x * SCALE_FACTOR,
+        objectPosition.y * SCALE_FACTOR,
+        objectPosition.z * SCALE_FACTOR
       );
 
       scene.add(model);
 
+      // Get scaled bounds
       const box = new THREE.Box3().setFromObject(model);
       box.getCenter(center);
       box.getSize(sizeBox);
 
+      // Adjust camera position for scaled model
       const maxDim = Math.max(sizeBox.x, sizeBox.y, sizeBox.z);
       const cameraZ = Math.abs(maxDim * 0.6 / Math.tan(fov / 2));
 
@@ -180,6 +189,13 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
 export const updateModelPosition = (scene, position) => {
   const model = scene.userData.loadedModel;
   if (model) {
-    model.position.set(position.x, position.y, position.z);
+    const FEET_TO_METERS = 0.3048;
+    const SCALE_FACTOR = 1 / FEET_TO_METERS;
+    
+    model.position.set(
+      position.x * SCALE_FACTOR,
+      position.y * SCALE_FACTOR,
+      position.z * SCALE_FACTOR
+    );
   }
 };

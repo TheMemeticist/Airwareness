@@ -20,16 +20,16 @@ const ThreeDScene = ({ dimensions }) => {
   const [position, setPosition] = useState({ x: 0, y: 4, z: 0 });
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
-  const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 1, z: 5 });
+  const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 2.4, z: 5 });
   const [particleIntensity, setParticleIntensity] = useState(50);
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
   const animationControllerRef = useRef(null);
 
   const dimensionsInMeters = useMemo(() => ({
-    width: isNaN(dimensions.width) ? 1 : dimensions.width * 0.3048,
-    length: isNaN(dimensions.length) ? 1 : dimensions.length * 0.3048,
-    height: isNaN(dimensions.height) ? 1 : dimensions.height * 0.3048,
+    width: isNaN(dimensions.width) ? 1 : dimensions.width * 1,
+    length: isNaN(dimensions.length) ? 1 : dimensions.length * 1,
+    height: isNaN(dimensions.height) ? 1 : dimensions.height * 1,
   }), [dimensions]);
 
   useEffect(() => {
@@ -59,12 +59,12 @@ const ThreeDScene = ({ dimensions }) => {
     controlsRef.current = controls;
 
     const planes = [
-      new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
-      new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0),
-      new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
-      new THREE.Plane(new THREE.Vector3(0, -1, 0), 0),
-      new THREE.Plane(new THREE.Vector3(0, 0, 1), 0),
-      new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
+      new THREE.Plane(new THREE.Vector3(1, 0, 0), dimensionsInMeters.width/-2),  // Left
+      new THREE.Plane(new THREE.Vector3(-1, 0, 0), dimensionsInMeters.width/-2), // Right
+      new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),                            // Bottom
+      new THREE.Plane(new THREE.Vector3(0, -1, 0), -dimensionsInMeters.height),  // Top
+      new THREE.Plane(new THREE.Vector3(0, 0, 1), dimensionsInMeters.length/-2), // Front
+      new THREE.Plane(new THREE.Vector3(0, 0, -1), dimensionsInMeters.length/-2) // Back
     ];
     clippingPlanesRef.current = planes;
     renderer.clippingPlanes = planes;
@@ -86,9 +86,9 @@ const ThreeDScene = ({ dimensions }) => {
 
     // Initialize animation controller with scene center
     const center = new THREE.Vector3(
-      dimensionsInMeters.width / 2,
-      dimensionsInMeters.height / 2,
-      dimensionsInMeters.length / 2
+      0,                              // Centered on X
+      dimensionsInMeters.height / 2,  // Half height from bottom
+      0                               // Centered on Z
     );
     animationControllerRef.current = new AnimationController(
       scene, 
