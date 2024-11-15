@@ -10,7 +10,7 @@ import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 
-const ThreeDScene = ({ dimensions, debug = true }) => {
+const ThreeDScene = ({ dimensions, debug = false }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const clippingPlanesRef = useRef([]);
