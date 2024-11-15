@@ -10,7 +10,7 @@ import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 
-const ThreeDScene = ({ dimensions }) => {
+const ThreeDScene = ({ dimensions, debug = false }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const clippingPlanesRef = useRef([]);
@@ -35,18 +35,21 @@ const ThreeDScene = ({ dimensions }) => {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    console.log('Initializing 3D Scene - Starting Performance Monitoring');
-    performanceMonitorRef.current = new PerformanceMonitor();
-    performanceMonitorRef.current.attach(mountRef.current);
+    // Only initialize performance monitoring in debug mode
+    if (debug) {
+      console.log('Initializing 3D Scene - Starting Performance Monitoring');
+      performanceMonitorRef.current = new PerformanceMonitor();
+      performanceMonitorRef.current.attach(mountRef.current);
 
-    // Log initial setup metrics
-    console.group('3D Scene Setup Metrics');
-    console.log('Window Dimensions:', {
-      width: mountRef.current.clientWidth,
-      height: mountRef.current.clientHeight
-    });
-    console.log('Room Dimensions (meters):', dimensionsInMeters);
-    console.groupEnd();
+      // Log initial setup metrics
+      console.group('3D Scene Setup Metrics');
+      console.log('Window Dimensions:', {
+        width: mountRef.current.clientWidth,
+        height: mountRef.current.clientHeight
+      });
+      console.log('Room Dimensions (meters):', dimensionsInMeters);
+      console.groupEnd();
+    }
 
     const { scene, camera, renderer, controls, targetCube } = setupRendering(
       mountRef.current,
@@ -69,12 +72,14 @@ const ThreeDScene = ({ dimensions }) => {
     clippingPlanesRef.current = planes;
     renderer.clippingPlanes = planes;
 
-    const planeHelpers = planes.map(plane => {
-      const helper = new THREE.PlaneHelper(plane, 10, 0xff0000);
-      scene.add(helper);
-      return helper;
-    });
-    planeHelpersRef.current = planeHelpers;
+    if (debug) {
+      const planeHelpers = planes.map(plane => {
+        const helper = new THREE.PlaneHelper(plane, 10, 0xff0000);
+        scene.add(helper);
+        return helper;
+      });
+      planeHelpersRef.current = planeHelpers;
+    }
 
     updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position);
 
@@ -137,67 +142,74 @@ const ThreeDScene = ({ dimensions }) => {
 
     window.addEventListener('resize', handleResize);
 
-    // Add periodic performance logging
-    const performanceLoggingInterval = setInterval(() => {
-      if (performanceMonitorRef.current) {
-        console.group('3D Scene Performance Update');
-        const metrics = performanceMonitorRef.current.getAverageMetrics();
-        console.log('Performance Metrics:', {
-          fps: metrics.averageFPS + ' FPS',
-          renderTime: metrics.averageRenderTime + ' ms',
-          memoryUsage: metrics.averageMemory + ' MB',
-          sampleSize: metrics.samples
-        });
-        
-        // Log additional scene stats
-        if (sceneRef.current) {
-          console.log('Scene Statistics:', {
-            objects: sceneRef.current.children.length,
-            geometries: renderer.info.memory.geometries,
-            textures: renderer.info.memory.textures,
-            triangles: renderer.info.render.triangles
+    // Only set up performance logging interval if in debug mode
+    let performanceLoggingInterval;
+    if (debug) {
+      performanceLoggingInterval = setInterval(() => {
+        if (performanceMonitorRef.current) {
+          console.group('3D Scene Performance Update');
+          const metrics = performanceMonitorRef.current.getAverageMetrics();
+          console.log('Performance Metrics:', {
+            fps: metrics.averageFPS + ' FPS',
+            renderTime: metrics.averageRenderTime + ' ms',
+            memoryUsage: metrics.averageMemory + ' MB',
+            sampleSize: metrics.samples
           });
+          
+          // Log additional scene stats
+          if (sceneRef.current) {
+            console.log('Scene Statistics:', {
+              objects: sceneRef.current.children.length,
+              geometries: renderer.info.memory.geometries,
+              textures: renderer.info.memory.textures,
+              triangles: renderer.info.render.triangles
+            });
+          }
+          console.groupEnd();
         }
-        console.groupEnd();
-      }
-    }, 5000); // Log every 5 seconds
+      }, 5000);
+    }
 
     return () => {
-      clearInterval(performanceLoggingInterval);
-      
-      cancelAnimationFrame(frameId);
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
-      }
-      controls.dispose();
-      window.removeEventListener('resize', handleResize);
-      planeHelpersRef.current.forEach(helper => scene.remove(helper));
-      if (particleSystemRef.current) {
-        particleSystemRef.current.dispose();
-      }
-      
-      // Dispose of geometries and materials
-      targetCube.geometry.dispose();
-      targetCube.material.dispose();
-      renderer.dispose();
-      
-      // Final performance report
-      if (performanceMonitorRef.current) {
-        console.group('3D Scene Final Performance Report');
-        performanceMonitorRef.current.logMetrics();
-        console.log('Final Renderer Statistics:', {
-          geometries: renderer.info.memory.geometries,
-          textures: renderer.info.memory.textures,
-          triangles: renderer.info.render.triangles,
-          calls: renderer.info.render.calls
-        });
-        console.groupEnd();
+      if (debug) {
+        clearInterval(performanceLoggingInterval);
         
-        performanceMonitorRef.current.detach();
-      }
-      if (animationControllerRef.current) {
-        animationControllerRef.current.stopAnimation();
+        cancelAnimationFrame(frameId);
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        if (mountRef.current && renderer.domElement) {
+          mountRef.current.removeChild(renderer.domElement);
+        }
+        controls.dispose();
+        window.removeEventListener('resize', handleResize);
+        if (planeHelpersRef.current.length) {
+          planeHelpersRef.current.forEach(helper => scene.remove(helper));
+        }
+        if (particleSystemRef.current) {
+          particleSystemRef.current.dispose();
+        }
+        
+        // Dispose of geometries and materials
+        targetCube.geometry.dispose();
+        targetCube.material.dispose();
+        renderer.dispose();
+        
+        // Final performance report
+        if (performanceMonitorRef.current) {
+          console.group('3D Scene Final Performance Report');
+          performanceMonitorRef.current.logMetrics();
+          console.log('Final Renderer Statistics:', {
+            geometries: renderer.info.memory.geometries,
+            textures: renderer.info.memory.textures,
+            triangles: renderer.info.render.triangles,
+            calls: renderer.info.render.calls
+          });
+          console.groupEnd();
+          
+          performanceMonitorRef.current.detach();
+        }
+        if (animationControllerRef.current) {
+          animationControllerRef.current.stopAnimation();
+        }
       }
     };
   }, []);
@@ -206,14 +218,16 @@ const ThreeDScene = ({ dimensions }) => {
     if (clippingPlanesRef.current.length) {
       updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position, true);
 
-      planeHelpersRef.current.forEach((helper) => {
-        helper.size = Math.max(
-          dimensionsInMeters.width, 
-          dimensionsInMeters.length, 
-          dimensionsInMeters.height
-        );
-        helper.updateMatrixWorld();
-      });
+      if (debug && planeHelpersRef.current.length) {
+        planeHelpersRef.current.forEach((helper) => {
+          helper.size = Math.max(
+            dimensionsInMeters.width, 
+            dimensionsInMeters.length, 
+            dimensionsInMeters.height
+          );
+          helper.updateMatrixWorld();
+        });
+      }
 
       // Simplified particle system update
       if (particleSystemRef.current) {
@@ -279,41 +293,43 @@ const ThreeDScene = ({ dimensions }) => {
       ) : (
         <>
           <div ref={mountRef} className={styles['3d-scene']}></div>
-          <div className={styles['controls']}>
-            <select value={pivotCorner} onChange={handlePivotChange}>
-              <option value="topLeftFront">Top Left Front</option>
-              <option value="topRightFront">Top Right Front</option>
-              <option value="bottomLeftFront">Bottom Left Front</option>
-              <option value="bottomRightFront">Bottom Right Front</option>
-              <option value="topLeftBack">Top Left Back</option>
-              <option value="topRightBack">Top Right Back</option>
-              <option value="bottomLeftBack">Bottom Left Back</option>
-              <option value="bottomRightBack">Bottom Right Back</option>
-            </select>
-            <div>
-              <label>Clipping Position:</label>
-              <label>X: <input type="number" value={position.x} onChange={(e) => handlePositionChange('x', e.target.value)} /></label>
-              <label>Y: <input type="number" value={position.y} onChange={(e) => handlePositionChange('y', e.target.value)} /></label>
-              <label>Z: <input type="number" value={position.z} onChange={(e) => handlePositionChange('z', e.target.value)} /></label>
+          {debug && (
+            <div className={styles['controls']}>
+              <select value={pivotCorner} onChange={handlePivotChange}>
+                <option value="topLeftFront">Top Left Front</option>
+                <option value="topRightFront">Top Right Front</option>
+                <option value="bottomLeftFront">Bottom Left Front</option>
+                <option value="bottomRightFront">Bottom Right Front</option>
+                <option value="topLeftBack">Top Left Back</option>
+                <option value="topRightBack">Top Right Back</option>
+                <option value="bottomLeftBack">Bottom Left Back</option>
+                <option value="bottomRightBack">Bottom Right Back</option>
+              </select>
+              <div>
+                <label>Clipping Position:</label>
+                <label>X: <input type="number" value={position.x} onChange={(e) => handlePositionChange('x', e.target.value)} /></label>
+                <label>Y: <input type="number" value={position.y} onChange={(e) => handlePositionChange('y', e.target.value)} /></label>
+                <label>Z: <input type="number" value={position.z} onChange={(e) => handlePositionChange('z', e.target.value)} /></label>
+              </div>
+              <div>
+                <label>Object Position:</label>
+                <label>X: <input type="number" value={objectPosition.x} onChange={(e) => handleObjectPositionChange('x', e.target.value)} /></label>
+                <label>Y: <input type="number" value={objectPosition.y} onChange={(e) => handleObjectPositionChange('y', e.target.value)} /></label>
+                <label>Z: <input type="number" value={objectPosition.z} onChange={(e) => handleObjectPositionChange('z', e.target.value)} /></label>
+              </div>
+              <div>
+                <label>Particle Intensity:</label>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={particleIntensity} 
+                  onChange={(e) => handleParticleIntensityChange(e.target.value)} 
+                />
+                <span>{particleIntensity}</span>
+              </div>
             </div>
-            <div>
-              <label>Object Position:</label>
-              <label>X: <input type="number" value={objectPosition.x} onChange={(e) => handleObjectPositionChange('x', e.target.value)} /></label>
-              <label>Y: <input type="number" value={objectPosition.y} onChange={(e) => handleObjectPositionChange('y', e.target.value)} /></label>
-              <label>Z: <input type="number" value={objectPosition.z} onChange={(e) => handleObjectPositionChange('z', e.target.value)} /></label>
-            </div>
-            <div>
-              <label>Particle Intensity:</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="100" 
-                value={particleIntensity} 
-                onChange={(e) => handleParticleIntensityChange(e.target.value)} 
-              />
-              <span>{particleIntensity}</span>
-            </div>
-          </div>
+          )}
         </>
       )}
     </div>
