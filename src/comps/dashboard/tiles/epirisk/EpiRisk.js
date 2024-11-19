@@ -211,8 +211,44 @@ const EpiRisk = () => {
 
   const handleQuantaRateChange = (event) => {
     const value = event.target.value;
-    if (value === '' || parseFloat(value) >= 1) {
+    
+    // Allow empty string for typing
+    if (value === '') {
+      setQuantaRate('');
+      return;
+    }
+
+    // Parse the value to a number
+    const numValue = parseFloat(value);
+    
+    // Validate the number
+    if (!isNaN(numValue) && numValue >= 1) {
       setQuantaRate(value);
+      
+      // Ensure we're dispatching a number, not a string
+      dispatch({
+        type: 'UPDATE_PATHOGEN',
+        payload: {
+          pathogenId: pathogen,
+          updates: { quantaRate: numValue }
+        }
+      });
+    }
+  };
+
+  // Add a blur handler to ensure valid value when focus leaves
+  const handleQuantaRateBlur = () => {
+    if (quantaRate === '' || isNaN(parseFloat(quantaRate))) {
+      // Reset to minimum value if empty or invalid
+      const minValue = '1';
+      setQuantaRate(minValue);
+      dispatch({
+        type: 'UPDATE_PATHOGEN',
+        payload: {
+          pathogenId: pathogen,
+          updates: { quantaRate: parseFloat(minValue) }
+        }
+      });
     }
   };
 
@@ -409,6 +445,7 @@ const EpiRisk = () => {
                 type="number"
                 value={quantaRate}
                 onChange={handleQuantaRateChange}
+                onBlur={handleQuantaRateBlur}
                 inputProps={{ 
                   min: 1, 
                   step: 25 

@@ -229,7 +229,7 @@ const Room = ({ buildingId, roomId, children }) => {
                 onChange={handleInputChange('floorArea')}
                 variant="outlined"
                 size="small"
-                inputProps={{ step: 100 }}
+                inputProps={{ step: 500 }}
               />
             </div>
             <div className={styles['room-icons-container']}>

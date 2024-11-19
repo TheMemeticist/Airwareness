@@ -106,6 +106,17 @@ function reducer(state, action) {
         ...state,
         currentPathogen: action.payload
       };
+    case 'UPDATE_PATHOGEN':
+      return {
+        ...state,
+        pathogens: {
+          ...state.pathogens,
+          [action.payload.pathogenId]: {
+            ...state.pathogens[action.payload.pathogenId],
+            ...action.payload.updates
+          }
+        }
+      };
     default:
       return state;
   }

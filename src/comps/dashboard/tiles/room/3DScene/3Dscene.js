@@ -283,16 +283,15 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     }
   }, [dimensionsInMeters]);
 
-  // Add effect to update particle system when pathogen changes
+  // Add effect to watch both currentPathogen AND pathogen updates
   useEffect(() => {
-    if (particleSystemRef.current && state.currentPathogen) {
+    if (particleSystemRef.current) {
       const pathogenData = state.pathogens[state.currentPathogen];
       const quantaRate = pathogenData.quantaRate;
-      
-      // Update particle system properties based on quanta rate
+      console.log('Updating particle system with quanta rate:', quantaRate);
       particleSystemRef.current.updateQuantaRate(quantaRate);
     }
-  }, [state.currentPathogen]);
+  }, [state.pathogens, state.currentPathogen]); // Watch both values
 
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);

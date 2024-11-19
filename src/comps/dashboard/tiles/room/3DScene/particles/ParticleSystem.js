@@ -25,6 +25,9 @@ export class ParticleSystem {
     
     this.quantaRate = 1;
     
+    // Increase particles per quanta for better visualization
+    this.particlesPerQuanta = 10;
+    
     this.initialize();
   }
 
@@ -84,21 +87,22 @@ export class ParticleSystem {
   }
 
   updateQuantaRate(rate) {
+    if (!rate || isNaN(rate)) return;
+    
     this.quantaRate = rate;
     
-    // Use quanta rate to determine number of active particles
-    const newParticleCount = Math.floor(rate);
-    this.activeParticles = Math.min(newParticleCount, this.particleCount);
+    // Direct 1:1 mapping of quanta to particles, capped at max
+    this.activeParticles = Math.min(Math.floor(rate), this.particleCount);
     
-    // Update manager's particle counts
-    this.manager.updateIntensity((this.activeParticles / this.particleCount) * 100, this);
+    // Convert to intensity percentage for manager
+    const intensity = (this.activeParticles / this.particleCount) * 100;
     
-    // Scale particle size slightly with rate for visual effect
-    this.particleMaterial.size = this.baseParticleSize * (1 + (Math.log10(rate) / 10));
+    // Update manager with new intensity
+    this.manager.updateIntensity(intensity, this);
     
-    // Update animator speed based on quanta rate
-    if (this.animator) {
-      this.animator.updateSpeed(rate);
+    // Force geometry update
+    if (this.particleGeometry) {
+      this.particleGeometry.attributes.position.needsUpdate = true;
     }
   }
 } 
