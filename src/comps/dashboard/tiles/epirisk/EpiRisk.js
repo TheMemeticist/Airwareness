@@ -156,22 +156,6 @@ const EpiRisk = () => {
     return parseFloat(activeRoom.height) * parseFloat(activeRoom.floorArea);
   }, [activeRoom]);
 
-  const validateAndSetPositivityRate = (value) => {
-    const minPercentage = getMinPositivityRate();
-    const maxPercentage = getMaxPositivityRate();
-    const parsedValue = parseFloat(value);
-
-    if (!isNaN(parsedValue)) {
-      const boundedValue = Math.max(
-        minPercentage, 
-        Math.min(maxPercentage, parsedValue)
-      );
-      const roundedValue = Number(boundedValue.toFixed(2));
-      setPositivityRate(roundedValue.toString());
-      setTempPositivityRate(roundedValue.toString());
-    }
-  };
-
   const handlePositivityRateChange = (event) => {
     const value = event.target.value;
     
@@ -195,17 +179,38 @@ const EpiRisk = () => {
       // Only update the actual rate if it's a valid number
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
-        validateAndSetPositivityRate(value);
+        // Update both temporary and actual values immediately
+        const minPercentage = getMinPositivityRate();
+        const maxPercentage = getMaxPositivityRate();
+        const boundedValue = Math.max(
+          minPercentage, 
+          Math.min(maxPercentage, numValue)
+        );
+        const roundedValue = Number(boundedValue.toFixed(2));
+        setPositivityRate(roundedValue.toString());
+        setTempPositivityRate(roundedValue.toString());
       }
     }
   };
 
   const handleBlur = () => {
     if (tempPositivityRate === '' || tempPositivityRate === '.') {
-      // Reset to minimum value if empty
-      validateAndSetPositivityRate(getMinPositivityRate());
+      const minValue = getMinPositivityRate();
+      setPositivityRate(minValue.toString());
+      setTempPositivityRate(minValue.toString());
     } else {
-      validateAndSetPositivityRate(tempPositivityRate);
+      const numValue = parseFloat(tempPositivityRate);
+      if (!isNaN(numValue)) {
+        const minPercentage = getMinPositivityRate();
+        const maxPercentage = getMaxPositivityRate();
+        const boundedValue = Math.max(
+          minPercentage, 
+          Math.min(maxPercentage, numValue)
+        );
+        const roundedValue = Number(boundedValue.toFixed(2));
+        setPositivityRate(roundedValue.toString());
+        setTempPositivityRate(roundedValue.toString());
+      }
     }
   };
 
@@ -352,6 +357,14 @@ const EpiRisk = () => {
     if (displayValue < 10) return displayValue.toFixed(1);
     return Math.round(displayValue);
   }, [displayValue]);
+
+  // Add this effect to update particle system when infectious count changes
+  useEffect(() => {
+    dispatch({
+      type: 'UPDATE_INFECTIOUS_COUNT',
+      payload: riskData.infectiousCount
+    });
+  }, [riskData.infectiousCount, dispatch]);
 
   return (
     <Tile 

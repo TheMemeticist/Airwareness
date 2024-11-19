@@ -293,6 +293,14 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     }
   }, [state.pathogens, state.currentPathogen]); // Watch both values
 
+  // Add effect to watch infectious count changes
+  useEffect(() => {
+    if (particleSystemRef.current) {
+      console.log('Updating particle system infectious count:', state.infectiousCount);
+      particleSystemRef.current.updateInfectiousCount(state.infectiousCount);
+    }
+  }, [state.infectiousCount]); // Watch infectious count changes
+
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
   };

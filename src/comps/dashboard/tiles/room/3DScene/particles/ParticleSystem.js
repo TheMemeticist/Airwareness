@@ -25,8 +25,7 @@ export class ParticleSystem {
     
     this.quantaRate = 1;
     
-    // Increase particles per quanta for better visualization
-    this.particlesPerQuanta = 10;
+    this.infectiousCount = 1;
     
     this.initialize();
   }
@@ -90,9 +89,30 @@ export class ParticleSystem {
     if (!rate || isNaN(rate)) return;
     
     this.quantaRate = rate;
+    this.updateParticleCount();
+  }
+
+  updateInfectiousCount(count) {
+    console.log('ParticleSystem updating infectious count:', count);
+    this.infectiousCount = Math.max(1, count);
+    this.updateParticleCount();
+  }
+
+  updateParticleCount() {
+    // Calculate total particles based ONLY on quanta rate and infectious count
+    const totalParticles = Math.floor(
+      this.quantaRate * 
+      this.infectiousCount
+    );
     
-    // Direct 1:1 mapping of quanta to particles, capped at max
-    this.activeParticles = Math.min(Math.floor(rate), this.particleCount);
+    console.log('Calculating new particle count:', {
+      quantaRate: this.quantaRate,
+      infectiousCount: this.infectiousCount,
+      totalParticles: totalParticles
+    });
+    
+    // Cap at maximum particle count
+    this.activeParticles = Math.min(totalParticles, this.particleCount);
     
     // Convert to intensity percentage for manager
     const intensity = (this.activeParticles / this.particleCount) * 100;

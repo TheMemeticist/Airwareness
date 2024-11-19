@@ -25,7 +25,8 @@ const initialState = {
     },
   ],
   pathogens: pathogenData,
-  currentPathogen: 'sars-cov-2'
+  currentPathogen: 'sars-cov-2',
+  infectiousCount: 0,
 };
 
 const AppContext = createContext();
@@ -116,6 +117,11 @@ function reducer(state, action) {
             ...action.payload.updates
           }
         }
+      };
+    case 'UPDATE_INFECTIOUS_COUNT':
+      return {
+        ...state,
+        infectiousCount: action.payload
       };
     default:
       return state;
