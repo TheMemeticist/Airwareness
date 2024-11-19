@@ -10,7 +10,7 @@
  * @param {number} exposureTime - Total exposure time (hours)
  * @param {number} roomVolume - Volume of the room (cubic feet)
  * @param {number} ventilationRate - Ventilation rate (air changes per hour, ACH)
- * @param {number} pathogenDecayRate - Pathogen decay rate (per hour)
+ * @param {number} pathogenHalfLifeHours - Time in hours for 50% of pathogens to decay (e.g., 0.5 = 30 minutes)
  * @returns {Object} - Object containing probability of infection and number of infectious individuals
  */
 export function calculateWellsRiley(
@@ -21,7 +21,7 @@ export function calculateWellsRiley(
     exposureTime,
     roomVolume,
     ventilationRate,
-    pathogenDecayRate
+    pathogenHalfLifeHours
   ) {
     // Calculate number of infectious individuals based on infection rate
     const infectiousIndividuals = Math.round((infectionRate / 100) * totalIndividuals);
@@ -29,6 +29,9 @@ export function calculateWellsRiley(
     // Calculate number of susceptible individuals
     const susceptibleIndividuals = totalIndividuals - infectiousIndividuals;
 
+    // Convert half-life hours to decay rate (per hour)
+    const pathogenDecayRate = Math.log(2) / pathogenHalfLifeHours;
+  
     // Total removal rate of infectious quanta from the air (per hour)
     const totalRemovalRate = ventilationRate + pathogenDecayRate;
   

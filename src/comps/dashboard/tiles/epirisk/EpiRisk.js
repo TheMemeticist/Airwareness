@@ -42,23 +42,23 @@ const EpiRisk = () => {
   
   const getMinPositivityRate = () => {
     const totalOccupants = getTotalOccupants();
-    return (1 / totalOccupants) * 100;
+    return Number(((1 / totalOccupants) * 100).toFixed(2));
   };
 
   const getMaxPositivityRate = () => {
     const totalOccupants = getTotalOccupants();
-    return ((totalOccupants - 1) / totalOccupants) * 100;
+    return Number((((totalOccupants - 1) / totalOccupants) * 100).toFixed(2));
   };
 
   // Round initial value to 2 decimal places
-  const initialPositivityRate = (Math.round(Math.max(0.1, getMinPositivityRate()) * 100) / 100).toString();
+  const initialPositivityRate = Math.max(0.1, getMinPositivityRate()).toFixed(2);
   
   // State declarations
   const [positivityRate, setPositivityRate] = useState(initialPositivityRate);
   const [tempPositivityRate, setTempPositivityRate] = useState(initialPositivityRate);
   const [pathogen, setPathogen] = useState('sars-cov-2');
-  const [quantaRate, setQuantaRate] = useState('1.0');
-  const [decayRate, setDecayRate] = useState('0.63');
+  const [quantaRate, setQuantaRate] = useState(quantaRates['sars-cov-2'].quantaRate.toString());
+  const [halfLife, setHalfLife] = useState('1.1');
   const [ventilationRate, setVentilationRate] = useState(4);
   const [breathingRate, setBreathingRate] = useState(360);
   const [exposureTime, setExposureTime] = useState(1);
@@ -83,10 +83,11 @@ const EpiRisk = () => {
     if (!isNaN(parsedValue)) {
       const boundedValue = Math.max(
         minPercentage, 
-        Math.min(maxPercentage, Math.round(parsedValue * 100) / 100)
+        Math.min(maxPercentage, parsedValue)
       );
-      setPositivityRate(boundedValue.toString());
-      setTempPositivityRate(boundedValue.toString());
+      const roundedValue = boundedValue.toFixed(2);
+      setPositivityRate(roundedValue);
+      setTempPositivityRate(roundedValue);
     }
   };
 
@@ -101,7 +102,7 @@ const EpiRisk = () => {
 
   const handleQuantaRateChange = (event) => {
     const value = event.target.value;
-    if (value === '' || (parseFloat(value) >= 0.1 && parseFloat(value) <= 100)) {
+    if (value === '' || (parseFloat(value) >= 1 && parseFloat(value) <= 1000)) {
       setQuantaRate(value);
     }
   };
@@ -110,13 +111,13 @@ const EpiRisk = () => {
     const selectedPathogen = event.target.value;
     setPathogen(selectedPathogen);
     setQuantaRate(quantaRates[selectedPathogen].quantaRate.toString());
-    setDecayRate(quantaRates[selectedPathogen].decayRate.toString());
+    setHalfLife(quantaRates[selectedPathogen].halfLife.toString());
   };
 
-  const handleDecayRateChange = (event) => {
+  const handleHalfLifeChange = (event) => {
     const value = event.target.value;
-    if (value === '' || (parseFloat(value) >= 0.01 && parseFloat(value) <= 10)) {
-      setDecayRate(value);
+    if (value === '' || (parseFloat(value) >= 0.1 && parseFloat(value) <= 24)) {
+      setHalfLife(value);
     }
   };
 
@@ -133,7 +134,7 @@ const EpiRisk = () => {
       exposureTime,
       currentRoomVolume,
       ventilationRate,
-      parseFloat(decayRate)
+      parseFloat(halfLife)
     );
   };
 
@@ -211,11 +212,15 @@ const EpiRisk = () => {
             <Box flex={1}>
               <TextField
                 className={tileStyles['tile-text-field']}
-                label="Quanta Rate (per minute)"
+                label="Quanta Rate (per hour)"
                 type="number"
                 value={quantaRate}
                 onChange={handleQuantaRateChange}
-                inputProps={{ min: 0.1, max: 100, step: 0.1 }}
+                inputProps={{ 
+                  min: 1, 
+                  max: 1000, 
+                  step: 1 
+                }}
                 fullWidth
                 variant="outlined"
                 size="small"
@@ -224,11 +229,15 @@ const EpiRisk = () => {
             <Box flex={1}>
               <TextField
                 className={tileStyles['tile-text-field']}
-                label="Decay Rate (per hour)"
+                label="Half-life (hours)"
                 type="number"
-                value={decayRate}
-                onChange={handleDecayRateChange}
-                inputProps={{ min: 0.01, max: 10, step: 0.01 }}
+                value={halfLife}
+                onChange={handleHalfLifeChange}
+                inputProps={{ 
+                  min: 0.1, 
+                  max: 24, 
+                  step: 0.1 
+                }}
                 fullWidth
                 variant="outlined"
                 size="small"
