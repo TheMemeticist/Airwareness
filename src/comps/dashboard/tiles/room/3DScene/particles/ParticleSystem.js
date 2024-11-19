@@ -23,6 +23,8 @@ export class ParticleSystem {
     this.vec3 = new THREE.Vector3();
     this.lastUpdateTime = Date.now();
     
+    this.quantaRate = 1;
+    
     this.initialize();
   }
 
@@ -70,11 +72,33 @@ export class ParticleSystem {
   }
 
   updateIntensity(intensity) {
+    const newParticleCount = Math.floor((intensity / 100) * this.particleCount);
+    this.activeParticles = newParticleCount;
+    
+    // Clear positions of inactive particles through manager
     this.manager.updateIntensity(intensity, this);
-    this.particleGeometry.attributes.position.needsUpdate = true;
   }
 
   updateRoomBounds(dimensions, clippingPlanes, position) {
     this.animator.startTransition(dimensions, clippingPlanes, position);
+  }
+
+  updateQuantaRate(rate) {
+    this.quantaRate = rate;
+    
+    // Use quanta rate to determine number of active particles
+    const newParticleCount = Math.floor(rate);
+    this.activeParticles = Math.min(newParticleCount, this.particleCount);
+    
+    // Update manager's particle counts
+    this.manager.updateIntensity((this.activeParticles / this.particleCount) * 100, this);
+    
+    // Scale particle size slightly with rate for visual effect
+    this.particleMaterial.size = this.baseParticleSize * (1 + (Math.log10(rate) / 10));
+    
+    // Update animator speed based on quanta rate
+    if (this.animator) {
+      this.animator.updateSpeed(rate);
+    }
   }
 } 

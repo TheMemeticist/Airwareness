@@ -15,6 +15,7 @@ export class ParticleAnimator {
     
     // Cache vector for calculations
     this.vec3 = new THREE.Vector3();
+    this.speedMultiplier = 1;
   }
 
   animate(system) {
@@ -32,7 +33,7 @@ export class ParticleAnimator {
   }
 
   updateParticles(system, deltaTime) {
-    const speedFactor = (deltaTime / 16.67) * 0.2;
+    const speedFactor = (deltaTime / 16.67) * 0.2 * this.speedMultiplier;
 
     // Only update active particles
     for (let i = 0; i < system.activeParticles; i++) {
@@ -123,5 +124,10 @@ export class ParticleAnimator {
     this.clippingPlanes = clippingPlanes;
     this.roomPosition = { ...position };
     this.transitionPhase = 'fadeOut';
+  }
+
+  updateSpeed(quantaRate) {
+    // Scale speed based on quanta rate (adjust formula as needed)
+    this.speedMultiplier = 1 + (quantaRate / 100);
   }
 } 

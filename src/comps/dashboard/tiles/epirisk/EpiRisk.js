@@ -5,7 +5,6 @@ import styles from './EpiRisk.module.css';
 import tileStyles from '../Tile.module.css';
 import { TextField, Select, MenuItem, FormControl, InputLabel, Box, Typography } from '@mui/material';
 import CoronavirusIcon from '@mui/icons-material/Coronavirus';
-import quantaRates from './PathogenInfo.json';
 import { calculateWellsRiley } from './transmission-models/Wells-Riley-Model';
 import { useAppContext } from '../../../../context/AppContext';
 import { alpha, keyframes } from '@mui/material';
@@ -84,7 +83,7 @@ const getRiskSize = (positivityRate) => {
 };
 
 const EpiRisk = () => {
-  const { state } = useAppContext();
+  const { state, dispatch } = useAppContext();
 
   // Move memoized helper inside component
   const memoizedCalculateRisk = React.useCallback((params) => {
@@ -134,7 +133,7 @@ const EpiRisk = () => {
   const [positivityRate, setPositivityRate] = useState(initialPositivityRate);
   const [tempPositivityRate, setTempPositivityRate] = useState(initialPositivityRate);
   const [pathogen, setPathogen] = useState('sars-cov-2');
-  const [quantaRate, setQuantaRate] = useState(quantaRates['sars-cov-2'].quantaRate.toString());
+  const [quantaRate, setQuantaRate] = useState(state.pathogens['sars-cov-2'].quantaRate.toString());
   const [halfLife, setHalfLife] = useState('1.1');
   const [ventilationRate, setVentilationRate] = useState(4);
   const [breathingRate, setBreathingRate] = useState(360);
@@ -220,8 +219,14 @@ const EpiRisk = () => {
   const handlePathogenChange = (event) => {
     const selectedPathogen = event.target.value;
     setPathogen(selectedPathogen);
-    setQuantaRate(quantaRates[selectedPathogen].quantaRate.toString());
-    setHalfLife(quantaRates[selectedPathogen].halfLife.toString());
+    setQuantaRate(state.pathogens[selectedPathogen].quantaRate.toString());
+    setHalfLife(state.pathogens[selectedPathogen].halfLife.toString());
+    
+    // Add this dispatch
+    dispatch({ 
+      type: 'SET_CURRENT_PATHOGEN',
+      payload: selectedPathogen
+    });
   };
 
   const handleHalfLifeChange = (event) => {
@@ -391,7 +396,7 @@ const EpiRisk = () => {
                   onChange={handlePathogenChange}
                   label="Pathogen"
                 >
-                  {Object.entries(quantaRates).map(([key, data]) => (
+                  {Object.entries(state.pathogens).map(([key, data]) => (
                     <MenuItem key={key} value={key}>{data.name}</MenuItem>
                   ))}
                 </Select>

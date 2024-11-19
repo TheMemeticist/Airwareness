@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import pathogenData from '../comps/dashboard/tiles/epirisk/PathogenInfo.json';
 
 const initialState = {
   buildings: [
@@ -23,6 +24,8 @@ const initialState = {
       ],
     },
   ],
+  pathogens: pathogenData,
+  currentPathogen: 'sars-cov-2'
 };
 
 const AppContext = createContext();
@@ -97,6 +100,11 @@ function reducer(state, action) {
               }
             : building
         ),
+      };
+    case 'SET_CURRENT_PATHOGEN':
+      return {
+        ...state,
+        currentPathogen: action.payload
       };
     default:
       return state;

@@ -9,8 +9,10 @@ import { updateDimensions } from './UpdateDimensions';
 import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
+import { useAppContext } from '../../../../../context/AppContext';
 
 const ThreeDScene = ({ dimensions, debug = false }) => {
+  const { state } = useAppContext();
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const clippingPlanesRef = useRef([]);
@@ -288,6 +290,17 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
       particleSystemRef.current.updateIntensity(particleIntensity);
     }
   }, [particleIntensity]);
+
+  // Add effect to update particle system when pathogen changes
+  useEffect(() => {
+    if (particleSystemRef.current && state.currentPathogen) {
+      const pathogenData = state.pathogens[state.currentPathogen];
+      const quantaRate = pathogenData.quantaRate;
+      
+      // Update particle system properties based on quanta rate
+      particleSystemRef.current.updateQuantaRate(quantaRate);
+    }
+  }, [state.currentPathogen]);
 
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
