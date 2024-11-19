@@ -17,23 +17,37 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
 
   const expandTile = () => {
     if (collapsible && isCollapsed) {
-      setIsCollapsed(false);
       setIsExpanded(true);
+      setTimeout(() => {
+        setIsCollapsed(false);
+      }, 50);
     }
   };
 
   const toggleTile = (e) => {
     e.stopPropagation();
     if (collapsible) {
-      setIsCollapsed(!isCollapsed);
-      setIsExpanded(false);
+      if (!isCollapsed) {
+        setIsCollapsed(true);
+        setTimeout(() => {
+          setIsExpanded(false);
+        }, 300);
+      } else {
+        setIsCollapsed(!isCollapsed);
+        setIsExpanded(false);
+      }
     }
   };
 
-  const tileClassName = `${styles.tile} ${isCollapsed ? styles.collapsed : ''} ${isRoomTile ? styles.roomTile : ''} ${isCollapsed ? styles.cursorPointer : ''} ${isExpanded ? styles.expanded : ''}`;
+  const tileClassName = `${styles.tile} ${isCollapsed ? styles.collapsed : ''} ${isRoomTile ? styles.roomTile : ''} ${
+    isCollapsed ? styles.cursorPointer : ''
+  } ${isExpanded ? styles.expanded : ''} ${isCollapsed ? '' : styles.uncollapsed}`;
+
+  const showPlaceholder = !isRoomTile && !isCollapsed;
 
   return (
     <>
+      {showPlaceholder && <div className={`${styles.placeholder} ${styles.visible}`} />}
       <div className={tileClassName} onClick={expandTile}>
         <div className={styles['tile-header-container']}>
           <Typography variant="h5" className={styles['tile-header']}>
@@ -61,8 +75,7 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
           typeof children === 'function' ? children({ isCollapsed }) : children
         )}
       </div>
-      {!isRoomTile && isExpanded && <div className={styles.backdrop} onClick={toggleTile}></div>}
-      {!isRoomTile && isExpanded && <div className={`${styles.tile} ${styles.placeholder}`} style={{width: '200px', height: '200px'}}></div>}
+      {!isRoomTile && !isCollapsed && <div className={styles.backdrop} onClick={toggleTile} />}
     </>
   );
 };

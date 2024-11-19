@@ -11,9 +11,10 @@ import { useAppContext } from '../../../../context/AppContext';
 import { alpha } from '@mui/material';
 
 const getRiskColor = (probability) => {
-  const percentage = probability * 100;
+  const cappedProbability = Math.min(probability, 0.99);
+  const percentage = cappedProbability * 100;
   if (percentage <= 0) return '#4caf50'; // green
-  if (percentage >= 100) return '#f44336'; // red
+  if (percentage >= 99) return '#f44336'; // red
   
   // Interpolate between green -> yellow -> red
   if (percentage <= 50) {
@@ -94,6 +95,12 @@ const EpiRisk = () => {
   const handlePositivityRateChange = (event) => {
     const value = event.target.value;
     setTempPositivityRate(value);
+    
+    // If the value is a valid number, update immediately
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      validateAndSetPositivityRate(value);
+    }
   };
 
   const handleBlur = () => {
@@ -116,7 +123,7 @@ const EpiRisk = () => {
 
   const handleHalfLifeChange = (event) => {
     const value = event.target.value;
-    if (value === '' || (parseFloat(value) >= 0.1 && parseFloat(value) <= 24)) {
+    if (value === '' || (parseFloat(value) >= 0.01 && parseFloat(value) <= 24)) {
       setHalfLife(value);
     }
   };
@@ -126,7 +133,7 @@ const EpiRisk = () => {
     const currentRoomVolume = getRoomVolume();
     const totalOccupants = getTotalOccupants();
     
-    return calculateWellsRiley(
+    const risk = calculateWellsRiley(
       totalOccupants,
       parseFloat(positivityRate),
       hourlyQuantaRate,
@@ -136,6 +143,11 @@ const EpiRisk = () => {
       ventilationRate,
       parseFloat(halfLife)
     );
+
+    return {
+      ...risk,
+      probability: Math.min(risk.probability, 0.99)
+    };
   };
 
   const riskData = calculateRisk();
@@ -158,7 +170,11 @@ const EpiRisk = () => {
       helpText={helpText}
       count={
         <Typography sx={{ color: 'var(--off-white)' }}>
-          {(riskData.probability * 100).toFixed(1)}%
+          {riskData.probability < 0.01 ? 
+            (riskData.probability * 100).toFixed(2) : 
+            riskData.probability < 0.1 ?
+              (riskData.probability * 100).toFixed(1) :
+              Math.round(riskData.probability * 100)}%
         </Typography>
       }
     >
@@ -169,14 +185,23 @@ const EpiRisk = () => {
             sx={{ color: riskColor }}
           />
           <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
-            {(riskData.probability * 100).toFixed(1)}%
+            {riskData.probability < 0.01 ? 
+              (riskData.probability * 100).toFixed(2) : 
+              riskData.probability < 0.1 ?
+                (riskData.probability * 100).toFixed(1) :
+                Math.round(riskData.probability * 100)}%
           </div>
           
           <Typography variant="body2" className={styles['epi-risk-description']}>
             {riskData.infectiousCount} infectious individuals out of {totalOccupants} total
           </Typography>
 
-          <Box display="flex" flexDirection="column" className={styles['epi-risk-params']} gap={2}>
+          <Box 
+            display="flex" 
+            flexDirection="column" 
+            className={styles['epi-risk-params']} 
+            gap={1}
+          >
             <Box flex={1}>
               <TextField
                 className={tileStyles['tile-text-field']}
@@ -193,6 +218,11 @@ const EpiRisk = () => {
                 fullWidth
                 variant="outlined"
                 size="small"
+                sx={{ 
+                  '& .MuiInputLabel-root': {
+                    backgroundColor: 'transparent'
+                  }
+                }}
               />
             </Box>
             <Box flex={1}>
@@ -219,11 +249,16 @@ const EpiRisk = () => {
                 inputProps={{ 
                   min: 1, 
                   max: 1000, 
-                  step: 1 
+                  step: 25 
                 }}
                 fullWidth
                 variant="outlined"
                 size="small"
+                sx={{ 
+                  '& .MuiInputLabel-root': {
+                    backgroundColor: 'transparent'
+                  }
+                }}
               />
             </Box>
             <Box flex={1}>
@@ -234,13 +269,18 @@ const EpiRisk = () => {
                 value={halfLife}
                 onChange={handleHalfLifeChange}
                 inputProps={{ 
-                  min: 0.1, 
+                  min: 0.01, 
                   max: 24, 
-                  step: 0.1 
+                  step: 0.05 
                 }}
                 fullWidth
                 variant="outlined"
                 size="small"
+                sx={{ 
+                  '& .MuiInputLabel-root': {
+                    backgroundColor: 'transparent'
+                  }
+                }}
               />
             </Box>
           </Box>

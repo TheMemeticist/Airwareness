@@ -9,12 +9,15 @@
   margin: 10px;
   box-sizing: border-box;
   position: relative;
-  display: inline-block; /* Change from float: right to inline-block */
-  vertical-align: top; /* Add this to align tiles at the top */
+  display: inline-block;
+  vertical-align: top;
   flex-direction: column;
   transition: all 0.3s ease-in-out;
   color: var(--off-white);
   font-size: 1vw;
+  transform-origin: center center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, width, height, min-height, max-height;
 }
 
 .tile:not(.roomTile):not(.collapsed) {
@@ -27,7 +30,6 @@
   max-width: 1200px;
   height: 80vh;
   max-height: 800px;
-  transition: all 0.3s ease-in-out, background 0.3s ease;
 }
 
 .tile:not(.roomTile):not(.collapsed):hover {
@@ -37,6 +39,7 @@
 .roomTile {
   position: relative;
   float: left;
+  transition: none; /* Disable transitions for room tiles */
 }
 
 .tile.collapsed {
@@ -48,6 +51,41 @@
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
+  transform: scale(1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: none; /* Disable animations for room tiles */
+}
+
+/* Add animation for expanding state */
+.tile.uncollapsed {
+  animation: expandTile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add animation for collapsing state */
+.tile.collapsed {
+  animation: collapseTile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes expandTile {
+  from {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes collapseTile {
+  from {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Remove or comment out this block */
@@ -66,10 +104,12 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
 }
 
 .tile:not(.roomTile):not(.collapsed) + .backdrop {
-  display: block;
+  opacity: 1;
 }
 
 @media (max-width: 1024px) {
@@ -427,8 +467,73 @@
   }
 }
 
-/* Add this new class */
+/* Update placeholder styles */
 .placeholder {
+  display: inline-block;
   visibility: hidden;
-  transition: all 0.3s ease-in-out;
+  width: 200px;
+  height: 200px;
+  min-height: unset;
+  max-height: unset;
+  margin: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.placeholder.visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Update collapsed tile styles */
+.tile.collapsed {
+  width: 200px;
+  height: 200px;
+  min-height: unset;
+  max-height: unset;
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Ensure proper stacking context */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.backdrop.visible {
+  opacity: 1;
+}
+
+/* Media queries for placeholder */
+@media (max-width: 768px) {
+  .placeholder {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .tile.collapsed {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .placeholder {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .tile.collapsed {
+    width: 150px;
+    height: 150px;
+  }
 }
