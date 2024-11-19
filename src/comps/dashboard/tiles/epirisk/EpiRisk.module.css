@@ -39,7 +39,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: pulse 2s infinite ease-in-out;
+  transition: color 0.3s ease;
 }
 
 .epi-risk-params {
@@ -131,12 +131,6 @@
 
 .select-icon:hover {
   transform: translateY(2px);
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.85; }
-  100% { opacity: 1; }
 }
 
 /* Responsive Design */

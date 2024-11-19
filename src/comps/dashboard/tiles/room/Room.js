@@ -24,6 +24,12 @@ const Room = ({ buildingId, roomId, children }) => {
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   const [dimensions, setDimensions] = useState({ height: 0, floorArea: 0, sideLength: 0 }); // Add state for dimensions
 
+  // Add state for input values
+  const [inputValues, setInputValues] = useState({
+    height: '',
+    floorArea: ''
+  });
+
   const building = state.buildings.find(b => b.id === buildingId);
   const rooms = building?.rooms || [];
   const room = rooms.find(r => r.id === selectedRoomId);
@@ -34,14 +40,16 @@ const Room = ({ buildingId, roomId, children }) => {
 
   useEffect(() => {
     if (room) {
-      console.log('Room data:', room);
-      const sideLength = Math.sqrt(room.floorArea);
+      setInputValues({
+        height: room.height || '',
+        floorArea: room.floorArea || ''
+      });
       setDimensions({
-        height: isNaN(room.height) ? 0 : room.height,
-        floorArea: isNaN(room.floorArea) ? 0 : room.floorArea,
-        sideLength: isNaN(sideLength) ? 0 : sideLength,
-        width: isNaN(sideLength) ? 0 : sideLength,
-        length: isNaN(sideLength) ? 0 : sideLength
+        height: parseFloat(room.height) || 0,
+        floorArea: parseFloat(room.floorArea) || 0,
+        sideLength: Math.sqrt(parseFloat(room.floorArea)) || 0,
+        width: Math.sqrt(parseFloat(room.floorArea)) || 0,
+        length: Math.sqrt(parseFloat(room.floorArea)) || 0
       });
     }
   }, [room]);
@@ -60,8 +68,10 @@ const Room = ({ buildingId, roomId, children }) => {
 
   const { name, height, floorArea } = room;
 
-  const updateRoom = debounce((field, value) => {
-    console.log(`Updating ${field} to ${value}`);
+  const handleInputChange = (field) => (event) => {
+    const value = event.target.value;
+    
+    // Immediately update the room in context
     dispatch({
       type: 'UPDATE_ROOM',
       payload: {
@@ -70,14 +80,31 @@ const Room = ({ buildingId, roomId, children }) => {
         roomData: { [field]: value }
       }
     });
+    
+    // Update local state
+    setInputValues(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Update dimensions for 3D view
     setDimensions(prev => {
-      const newDimensions = { ...prev, [field]: value };
-      if (field === 'floorArea') {
-        newDimensions.sideLength = Math.sqrt(value); // Update side length when floor area changes
+      const newDimensions = { ...prev };
+      const numValue = parseFloat(value) || 0;
+      
+      if (field === 'height') {
+        newDimensions.height = numValue;
+      } else if (field === 'floorArea') {
+        newDimensions.floorArea = numValue;
+        const sideLength = Math.sqrt(numValue);
+        newDimensions.sideLength = sideLength;
+        newDimensions.width = sideLength;
+        newDimensions.length = sideLength;
       }
+      
       return newDimensions;
-    }); // Update dimensions state
-  }, 300); // Debounce with 300ms delay
+    });
+  };
 
   const handleRoomChange = (event) => {
     setSelectedRoomId(event.target.value);
@@ -188,8 +215,8 @@ const Room = ({ buildingId, roomId, children }) => {
                 className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
                 label="Height (ft)"
                 type="number"
-                value={room.height || ''}
-                onChange={(e) => updateRoom('height', e.target.value)}
+                value={inputValues.height}
+                onChange={handleInputChange('height')}
                 variant="outlined"
                 size="small"
                 inputProps={{ step: 5 }}
@@ -198,8 +225,8 @@ const Room = ({ buildingId, roomId, children }) => {
                 className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
                 label="Floor Area (ft²)"
                 type="number"
-                value={room.floorArea || ''}
-                onChange={(e) => updateRoom('floorArea', e.target.value)}
+                value={inputValues.floorArea}
+                onChange={handleInputChange('floorArea')}
                 variant="outlined"
                 size="small"
                 inputProps={{ step: 100 }}

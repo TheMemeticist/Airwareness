@@ -86,6 +86,27 @@ const getRiskSize = (positivityRate) => {
 const EpiRisk = () => {
   const { state } = useAppContext();
 
+  // Move memoized helper inside component
+  const memoizedCalculateRisk = React.useCallback((params) => {
+    const { totalOccupants, positivityRate, quantaRate, breathingRate, exposureTime, roomVolume, ventilationRate, halfLife } = params;
+    
+    const risk = calculateWellsRiley(
+      totalOccupants,
+      parseFloat(positivityRate),
+      quantaRate,
+      breathingRate,
+      exposureTime,
+      roomVolume,
+      ventilationRate,
+      parseFloat(halfLife)
+    );
+
+    return {
+      ...risk,
+      probability: Math.min(risk.probability, 0.99)
+    };
+  }, []);
+
   const getTotalOccupants = () => {
     const activeBuilding = state.buildings.find(b => b.rooms.length > 0);
     if (!activeBuilding?.rooms[0]?.occupants?.groups) return 100;
@@ -120,17 +141,21 @@ const EpiRisk = () => {
   const [exposureTime, setExposureTime] = useState(1);
   const [rotation, setRotation] = useState(0);
 
+  // Add new state for animated value
+  const [displayValue, setDisplayValue] = useState(0);
+
   const helpText = "Calculates infection risk using the Wells-Riley model. Different pathogens produce varying amounts of infectious particles (quanta) per minute, affecting transmission probability.";
 
-  const getRoomVolume = () => {
+  // Add room dimensions dependency to recalculate risk
+  const activeRoom = React.useMemo(() => {
     const activeBuilding = state.buildings.find(b => b.rooms.length > 0);
-    if (!activeBuilding) return 1000;
+    return activeBuilding?.rooms[0];
+  }, [state.buildings]);
 
-    const activeRoom = activeBuilding.rooms[0];
+  const getRoomVolume = React.useCallback(() => {
     if (!activeRoom?.height || !activeRoom?.floorArea) return 1000;
-
-    return activeRoom.height * activeRoom.floorArea;
-  };
+    return parseFloat(activeRoom.height) * parseFloat(activeRoom.floorArea);
+  }, [activeRoom]);
 
   const validateAndSetPositivityRate = (value) => {
     const minPercentage = getMinPositivityRate();
@@ -206,53 +231,86 @@ const EpiRisk = () => {
     }
   };
 
-  const calculateRisk = () => {
-    const hourlyQuantaRate = quantaRate;
-    const currentRoomVolume = getRoomVolume();
-    const totalOccupants = getTotalOccupants();
-    
-    const risk = calculateWellsRiley(
-      totalOccupants,
-      parseFloat(positivityRate),
-      hourlyQuantaRate,
+  // Memoize risk calculation
+  const riskData = React.useMemo(() => {
+    return memoizedCalculateRisk({
+      totalOccupants: getTotalOccupants(),
+      positivityRate,
+      quantaRate,
       breathingRate,
       exposureTime,
-      currentRoomVolume,
+      roomVolume: getRoomVolume(),
       ventilationRate,
-      parseFloat(halfLife)
-    );
+      halfLife
+    });
+  }, [
+    positivityRate, 
+    quantaRate, 
+    breathingRate,
+    exposureTime, 
+    ventilationRate, 
+    halfLife,
+    memoizedCalculateRisk,
+    getTotalOccupants,
+    getRoomVolume
+  ]);
 
-    return {
-      ...risk,
-      probability: Math.min(risk.probability, 0.99)
-    };
-  };
-
-  const riskData = calculateRisk();
   const totalOccupants = getTotalOccupants();
   const riskColor = getRiskColor(riskData.probability);
 
   // Use useEffect to create continuous rotation
   useEffect(() => {
-    let animationFrame;
+    // Cache the parsed quanta rate
+    const parsedQuantaRate = parseFloat(quantaRate);
+    const degreesPerMs = (parsedQuantaRate * 0.05 * 360) / (60 * 1000);
     let lastTime = performance.now();
+    let animationFrame;
     
     const animate = (currentTime) => {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
-      
-      // Calculate rotation speed based on quanta rate
-      // (quantaRate * 0.05) = revolutions per minute
-      // Convert to degrees per millisecond
-      const degreesPerMs = (parseFloat(quantaRate) * 0.05 * 360) / (60 * 1000);
-      
-      setRotation(prev => prev + deltaTime * degreesPerMs);
+      setRotation(prev => (prev + deltaTime * degreesPerMs) % 360); // Prevent unbounded growth
       animationFrame = requestAnimationFrame(animate);
     };
     
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
   }, [quantaRate]);
+
+  // Animate risk value changes
+  useEffect(() => {
+    const targetValue = riskData.probability * 100;
+    const startValue = displayValue;
+    const duration = 1200; // increased from 500 to 1200ms
+    const steps = 60;     // increased from 20 to 60 steps for smoother animation
+    const stepDuration = duration / steps;
+    const increment = (targetValue - startValue) / steps;
+    
+    let currentStep = 0;
+    
+    const animateValue = () => {
+      if (currentStep < steps) {
+        setDisplayValue(prev => {
+          const newValue = startValue + (increment * (currentStep + 1));
+          // Smoother decimal handling
+          if (newValue < 1) return Number(newValue.toFixed(2));
+          if (newValue < 10) return Number(newValue.toFixed(1));
+          return Number(newValue.toFixed(0));
+        });
+        currentStep++;
+        setTimeout(animateValue, stepDuration);
+      }
+    };
+
+    animateValue();
+  }, [riskData.probability]);
+
+  // Replace the direct risk display with animated value
+  const formattedDisplayValue = React.useMemo(() => {
+    if (displayValue < 1) return displayValue.toFixed(2);
+    if (displayValue < 10) return displayValue.toFixed(1);
+    return Math.round(displayValue);
+  }, [displayValue]);
 
   return (
     <Tile 
@@ -270,11 +328,7 @@ const EpiRisk = () => {
       helpText={helpText}
       count={
         <Typography sx={{ color: 'var(--off-white)' }}>
-          {riskData.probability < 0.01 ? 
-            (riskData.probability * 100).toFixed(2) : 
-            riskData.probability < 0.1 ?
-              (riskData.probability * 100).toFixed(1) :
-              Math.round(riskData.probability * 100)}%
+          {formattedDisplayValue}%
         </Typography>
       }
     >
@@ -293,11 +347,7 @@ const EpiRisk = () => {
             />
           </div>
           <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
-            {riskData.probability < 0.01 ? 
-              (riskData.probability * 100).toFixed(2) : 
-              riskData.probability < 0.1 ?
-                (riskData.probability * 100).toFixed(1) :
-                Math.round(riskData.probability * 100)}%
+            {formattedDisplayValue}%
           </div>
           
           <Typography variant="body2" className={styles['epi-risk-description']}>
