@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tile from '../Tile';
 import BiohazardIcon from './BiohazardIcon';
 import styles from './EpiRisk.module.css';
@@ -8,25 +8,68 @@ import CoronavirusIcon from '@mui/icons-material/Coronavirus';
 import quantaRates from './PathogenInfo.json';
 import { calculateWellsRiley } from './transmission-models/Wells-Riley-Model';
 import { useAppContext } from '../../../../context/AppContext';
-import { alpha } from '@mui/material';
+import { alpha, keyframes } from '@mui/material';
 
-const getRiskColor = (probability) => {
-  const cappedProbability = Math.min(probability, 0.99);
-  const percentage = cappedProbability * 100;
-  if (percentage <= 0) return '#4caf50'; // green
-  if (percentage >= 99) return '#f44336'; // red
-  
-  // Interpolate between green -> yellow -> red
-  if (percentage <= 50) {
-    // Green to Yellow
-    const ratio = percentage / 50;
-    return `rgb(${76 + (179 * ratio)}, ${175 - (30 * ratio)}, ${80 - (80 * ratio)})`;
-  } else {
-    // Yellow to Red
-    const ratio = (percentage - 50) / 50;
-    return `rgb(${255 - (11 * ratio)}, ${145 - (121 * ratio)}, ${0 + (54 * ratio)})`;
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
   }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const getRiskColor = (risk) => {
+  const riskValue = risk * 100;  // Convert from decimal to percentage
+  
+  if (riskValue === 0) return '#4caf50';  // Green
+  if (riskValue <= 50) {
+    // Interpolate between green and yellow (0-50%)
+    return alpha(
+      mix(
+        '#4caf50',  // Green
+        '#ffeb3b',  // Yellow
+        riskValue / 50
+      ),
+      1
+    );
+  }
+  // Interpolate between yellow and red (50-99%)
+  return alpha(
+    mix(
+      '#ffeb3b',  // Yellow
+      '#f44336',  // Red
+      (riskValue - 50) / 49
+    ),
+    1
+  );
 };
+
+// Helper function to mix colors
+function mix(color1, color2, weight) {
+  const d2h = (d) => d.toString(16).padStart(2, '0');
+  const h2d = (h) => parseInt(h, 16);
+
+  weight = Math.max(0, Math.min(1, weight));
+  
+  const c1 = {
+    r: h2d(color1.slice(1, 3)),
+    g: h2d(color1.slice(3, 5)),
+    b: h2d(color1.slice(5, 7))
+  };
+  
+  const c2 = {
+    r: h2d(color2.slice(1, 3)),
+    g: h2d(color2.slice(3, 5)),
+    b: h2d(color2.slice(5, 7))
+  };
+
+  const r = Math.round(c1.r * (1 - weight) + c2.r * weight);
+  const g = Math.round(c1.g * (1 - weight) + c2.g * weight);
+  const b = Math.round(c1.b * (1 - weight) + c2.b * weight);
+
+  return `#${d2h(r)}${d2h(g)}${d2h(b)}`;
+}
 
 const EpiRisk = () => {
   const { state } = useAppContext();
@@ -63,6 +106,7 @@ const EpiRisk = () => {
   const [ventilationRate, setVentilationRate] = useState(4);
   const [breathingRate, setBreathingRate] = useState(360);
   const [exposureTime, setExposureTime] = useState(1);
+  const [rotation, setRotation] = useState(0);
 
   const helpText = "Calculates infection risk using the Wells-Riley model. Different pathogens produce varying amounts of infectious particles (quanta) per minute, affecting transmission probability.";
 
@@ -109,7 +153,7 @@ const EpiRisk = () => {
 
   const handleQuantaRateChange = (event) => {
     const value = event.target.value;
-    if (value === '' || (parseFloat(value) >= 1 && parseFloat(value) <= 1000)) {
+    if (value === '' || parseFloat(value) >= 1) {
       setQuantaRate(value);
     }
   };
@@ -154,6 +198,28 @@ const EpiRisk = () => {
   const totalOccupants = getTotalOccupants();
   const riskColor = getRiskColor(riskData.probability);
 
+  // Use useEffect to create continuous rotation
+  useEffect(() => {
+    let animationFrame;
+    let lastTime = performance.now();
+    
+    const animate = (currentTime) => {
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      
+      // Calculate rotation speed based on quanta rate
+      // (quantaRate * 0.05) = revolutions per minute
+      // Convert to degrees per millisecond
+      const degreesPerMs = (parseFloat(quantaRate) * 0.05 * 360) / (60 * 1000);
+      
+      setRotation(prev => prev + deltaTime * degreesPerMs);
+      animationFrame = requestAnimationFrame(animate);
+    };
+    
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [quantaRate]);
+
   return (
     <Tile 
       title="Epi-Risk" 
@@ -163,7 +229,7 @@ const EpiRisk = () => {
           className={styles['tile-icon']} 
           sx={{ 
             color: riskColor,
-            [`&.${styles['minimized-icon']}`]: { color: riskColor }
+            [`&.${styles['minimized-icon']}`]: { color: riskColor },
           }} 
         />
       }
@@ -180,10 +246,15 @@ const EpiRisk = () => {
     >
       <div className={styles['epi-risk-container']}>
         <div className={tileStyles['tile-content']}>
-          <CoronavirusIcon 
-            className={styles['epi-risk-icon']} 
-            sx={{ color: riskColor }}
-          />
+          <div 
+            className={styles['epi-risk-icon-wrapper']}
+            style={{ transform: `rotate(${rotation}deg)` }}
+          >
+            <CoronavirusIcon 
+              className={styles['epi-risk-icon']} 
+              sx={{ color: riskColor }}
+            />
+          </div>
           <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
             {riskData.probability < 0.01 ? 
               (riskData.probability * 100).toFixed(2) : 
@@ -248,7 +319,6 @@ const EpiRisk = () => {
                 onChange={handleQuantaRateChange}
                 inputProps={{ 
                   min: 1, 
-                  max: 1000, 
                   step: 25 
                 }}
                 fullWidth

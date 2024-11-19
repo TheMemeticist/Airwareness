@@ -13,8 +13,16 @@
   font-size: 12rem !important;
   color: var(--bright-teal);
   margin-bottom: 0.5rem;
-  transition: transform 0.3s ease-in-out;
-  animation: rotate 20s linear infinite;
+  transform-origin: center center;
+}
+
+.epi-risk-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-origin: center center;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .epi-risk-icon:hover {
@@ -127,15 +135,6 @@
   0% { opacity: 1; }
   50% { opacity: 0.85; }
   100% { opacity: 1; }
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Responsive Design */
