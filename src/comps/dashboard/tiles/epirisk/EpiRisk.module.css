@@ -10,8 +10,7 @@
 }
 
 .epi-risk-icon {
-  font-size: 12rem !important;
-  color: var(--bright-teal);
+  font-size: 12rem;
   margin-bottom: 0.5rem;
   transform-origin: center center;
 }
@@ -21,8 +20,11 @@
   justify-content: center;
   align-items: center;
   transform-origin: center center;
-  width: fit-content;
+  width: 12rem;
+  height: 12rem;
   margin: 0 auto;
+  position: relative;
+  overflow: hidden;
 }
 
 .epi-risk-icon:hover {
@@ -140,7 +142,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .epi-risk-icon {
-    font-size: 8rem !important;
+    font-size: 8rem;
   }
   
   .epi-risk-value {
@@ -152,11 +154,15 @@
     max-width: 100%;
     margin: 0.5rem auto;
   }
+  .epi-risk-icon-wrapper {
+    width: 10rem;
+    height: 10rem;
+  }
 }
 
 @media (max-width: 480px) {
   .epi-risk-icon {
-    font-size: 6rem !important;
+    font-size: 6rem;
   }
   
   .epi-risk-value {
@@ -191,6 +197,10 @@
   .epi-risk-description {
     max-width: 95%;
     font-size: 0.8rem;
+  }
+  .epi-risk-icon-wrapper {
+    width: 8rem;
+    height: 8rem;
   }
 }
 

@@ -71,6 +71,18 @@ function mix(color1, color2, weight) {
   return `#${d2h(r)}${d2h(g)}${d2h(b)}`;
 }
 
+const getRiskSize = (positivityRate) => {
+  // Convert from string to number and from percentage to decimal
+  const rate = parseFloat(positivityRate) / 100;
+  
+  // Base size is 8rem (smaller default)
+  const baseSize = 8;
+  // Scale factor between 1 and 1.5 based on positivity rate
+  const scale = 1 + (rate * 0.5); // This will give us 1× at 0% and 1.5× at 100%
+  
+  return `${baseSize * scale}rem`;
+};
+
 const EpiRisk = () => {
   const { state } = useAppContext();
 
@@ -130,25 +142,47 @@ const EpiRisk = () => {
         minPercentage, 
         Math.min(maxPercentage, parsedValue)
       );
-      const roundedValue = boundedValue.toFixed(2);
-      setPositivityRate(roundedValue);
-      setTempPositivityRate(roundedValue);
+      const roundedValue = Number(boundedValue.toFixed(2));
+      setPositivityRate(roundedValue.toString());
+      setTempPositivityRate(roundedValue.toString());
     }
   };
 
   const handlePositivityRateChange = (event) => {
     const value = event.target.value;
-    setTempPositivityRate(value);
     
-    // If the value is a valid number, update immediately
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue)) {
-      validateAndSetPositivityRate(value);
+    // Allow empty string for typing
+    if (value === '') {
+      setTempPositivityRate('');
+      return;
+    }
+
+    // Allow typing decimal points
+    if (value === '.' || value.endsWith('.')) {
+      setTempPositivityRate(value);
+      return;
+    }
+
+    // Allow typing numbers with up to 2 decimal places
+    const regex = /^\d*\.?\d{0,2}$/;
+    if (regex.test(value)) {
+      setTempPositivityRate(value);
+      
+      // Only update the actual rate if it's a valid number
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        validateAndSetPositivityRate(value);
+      }
     }
   };
 
   const handleBlur = () => {
-    validateAndSetPositivityRate(tempPositivityRate);
+    if (tempPositivityRate === '' || tempPositivityRate === '.') {
+      // Reset to minimum value if empty
+      validateAndSetPositivityRate(getMinPositivityRate());
+    } else {
+      validateAndSetPositivityRate(tempPositivityRate);
+    }
   };
 
   const handleQuantaRateChange = (event) => {
@@ -252,7 +286,10 @@ const EpiRisk = () => {
           >
             <CoronavirusIcon 
               className={styles['epi-risk-icon']} 
-              sx={{ color: riskColor }}
+              sx={{ 
+                color: riskColor,
+                fontSize: getRiskSize(positivityRate)
+              }}
             />
           </div>
           <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
@@ -277,14 +314,14 @@ const EpiRisk = () => {
               <TextField
                 className={tileStyles['tile-text-field']}
                 label="Positivity Rate (%)"
-                type="number"
                 value={tempPositivityRate}
                 onChange={handlePositivityRateChange}
                 onBlur={handleBlur}
+                type="number"
                 inputProps={{ 
                   min: getMinPositivityRate(), 
-                  max: getMaxPositivityRate(), 
-                  step: 5 
+                  max: getMaxPositivityRate(),
+                  step: 5
                 }}
                 fullWidth
                 variant="outlined"
