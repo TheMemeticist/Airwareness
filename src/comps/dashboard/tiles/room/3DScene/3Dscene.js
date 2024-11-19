@@ -23,7 +23,6 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
   const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 4.4, z: 5 });
-  const [particleIntensity, setParticleIntensity] = useState(50);
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
   const animationControllerRef = useRef(null);
@@ -284,13 +283,6 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     }
   }, [dimensionsInMeters]);
 
-  // Simplified particle intensity update
-  useEffect(() => {
-    if (particleSystemRef.current) {
-      particleSystemRef.current.updateIntensity(particleIntensity);
-    }
-  }, [particleIntensity]);
-
   // Add effect to update particle system when pathogen changes
   useEffect(() => {
     if (particleSystemRef.current && state.currentPathogen) {
@@ -314,10 +306,6 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     setObjectPosition(prev => ({ ...prev, [axis]: parseFloat(value) }));
   };
 
-  const handleParticleIntensityChange = (value) => {
-    setParticleIntensity(Math.min(100, Math.max(0, parseFloat(value))));
-  };
-
   return (
     <div className={`${tileStyles['tile-content']} ${styles['three-d-scene-container']}`}>
       {errorMessage ? (
@@ -327,9 +315,8 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
         </div>
       ) : (
         <>
-          <div ref={mountRef} className={styles['3d-scene']}></div>
           {debug && (
-            <div className={styles['controls']}>
+            <div className={styles['debug-controls']}>
               <select value={pivotCorner} onChange={handlePivotChange}>
                 <option value="topLeftFront">Top Left Front</option>
                 <option value="topRightFront">Top Right Front</option>
@@ -352,19 +339,9 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
                 <label>Y: <input type="number" value={objectPosition.y} onChange={(e) => handleObjectPositionChange('y', e.target.value)} /></label>
                 <label>Z: <input type="number" value={objectPosition.z} onChange={(e) => handleObjectPositionChange('z', e.target.value)} /></label>
               </div>
-              <div>
-                <label>Particle Intensity:</label>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="100" 
-                  value={particleIntensity} 
-                  onChange={(e) => handleParticleIntensityChange(e.target.value)} 
-                />
-                <span>{particleIntensity}</span>
-              </div>
             </div>
           )}
+          <div ref={mountRef} className={styles['3d-scene']}></div>
         </>
       )}
     </div>

@@ -246,3 +246,36 @@
     min-height: unset;
   }
 }
+
+.debug-controls {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.debug-controls select,
+.debug-controls input {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #666;
+  border-radius: 3px;
+  padding: 2px 5px;
+  margin: 0 5px;
+  width: 60px;
+}
+
+.debug-controls select {
+  width: auto;
+}
+
+.three-d-scene-container {
+  position: relative;
+}
