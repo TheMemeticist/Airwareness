@@ -1,12 +1,166 @@
+.epi-risk-container {
+  position: relative;
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .epi-risk-icon {
-  font-size: 24rem !important;
+  font-size: 12rem !important;
   color: var(--bright-teal);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  transition: transform 0.3s ease-in-out;
+  animation: rotate 20s linear infinite;
+}
+
+.epi-risk-icon:hover {
+  transform: scale(1.05);
 }
 
 .epi-risk-value {
-  font-size: 4rem;
-  margin-top: 1rem;
+  font-size: 3rem;
+  margin: 0.5rem 0;
+  font-weight: 600;
+  background: linear-gradient(45deg, var(--bright-teal), #2196f3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse 2s infinite ease-in-out;
 }
 
-/* Media queries remain unchanged */
+.epi-risk-params {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+  color: var(--off-white);
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.epi-risk-params:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.epi-risk-params :global(.MuiSelect-select),
+.epi-risk-params :global(.MuiMenuItem-root) {
+  color: var(--off-white) !important;
+}
+
+.epi-risk-params :global(.MuiOutlinedInput-root) {
+  background-color: var(--off-black-1) !important;
+  width: 100% !important;
+}
+
+.epi-risk-params :global(.MuiPaper-root) {
+  background-color: var(--off-black-1) !important;
+  color: var(--off-white) !important;
+}
+
+.epi-risk-params :global(.MuiList-root) {
+  background-color: var(--off-black-1) !important;
+  padding: 0 !important;
+}
+
+.epi-risk-params :global(.MuiMenuItem-root) {
+  width: 100% !important;
+  background-color: var(--off-black-1) !important;
+}
+
+.epi-risk-params :global(.MuiMenuItem-root:hover) {
+  background-color: var(--off-black-2) !important;
+}
+
+.epi-risk-params :global(.MuiSelect-icon) {
+  color: var(--off-white) !important;
+}
+
+.epi-risk-params :global(.MuiInputLabel-root) {
+  color: var(--off-white) !important;
+}
+
+.epi-risk-params :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+.epi-risk-params :global(.MuiSelect-select) {
+  min-width: 120px !important;
+  padding-right: 32px !important;
+  width: auto !important;
+}
+
+.epi-risk-params :global(.MuiOutlinedInput-root) {
+  width: auto !important;
+  min-width: 120px !important;
+}
+
+.select-icon {
+  transition: transform 0.2s ease;
+}
+
+.select-icon:hover {
+  transform: translateY(2px);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .epi-risk-icon {
+    font-size: 8rem !important;
+  }
+  
+  .epi-risk-value {
+    font-size: 2.5rem;
+  }
+  
+  .epi-risk-params {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .epi-risk-icon {
+    font-size: 6rem !important;
+  }
+  
+  .epi-risk-value {
+    font-size: 2rem;
+  }
+  
+  .epi-risk-container {
+    padding: 0.75rem;
+  }
+}
+
+.epi-risk-description {
+  color: var(--off-white);
+  opacity: 0.8;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  max-width: 80%;
+  text-align: center;
+}
+
+/* Adjust spacing in the form controls */
+.epi-risk-params :global(.MuiFormControl-root) {
+  margin-bottom: 0.5rem;
+}

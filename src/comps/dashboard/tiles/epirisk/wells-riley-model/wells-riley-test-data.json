@@ -1,0 +1,54 @@
+[
+    {
+      "scenario": "Classroom Setting with Influenza Transmission",
+      "inputs": {
+        "room_volume_ft3": 3000,
+        "exposure_time_hr": 1,
+        "infected_individuals": 1,
+        "susceptible_individuals": 30,
+        "breathing_rate_ft3_per_hr": 17.7,
+        "quanta_generation_rate_quanta_per_hr": 100,
+        "ventilation_rate_air_changes_per_hr": 3,
+        "pathogen_decay_rate_per_hr": 0.1
+      },
+      "outputs": {
+        "infection_risk_percent": 12
+      },
+      "reference": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2857926/"
+    },
+    {
+      "scenario": "Hospital Waiting Room with Tuberculosis Exposure",
+      "inputs": {
+        "room_volume_ft3": 5000,
+        "exposure_time_hr": 2,
+        "infected_individuals": 1,
+        "susceptible_individuals": 20,
+        "breathing_rate_ft3_per_hr": 17.7,
+        "quanta_generation_rate_quanta_per_hr": 13,
+        "ventilation_rate_air_changes_per_hr": 6,
+        "pathogen_decay_rate_per_hr": 0.35
+      },
+      "outputs": {
+        "infection_risk_percent": 5
+      },
+      "reference": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2093988/"
+    },
+    {
+      "scenario": "Office Space with COVID-19 Exposure",
+      "inputs": {
+        "room_volume_ft3": 10000,
+        "exposure_time_hr": 8,
+        "infected_individuals": 1,
+        "susceptible_individuals": 50,
+        "breathing_rate_ft3_per_hr": 17.7,
+        "quanta_generation_rate_quanta_per_hr": 50,
+        "ventilation_rate_air_changes_per_hr": 2,
+        "pathogen_decay_rate_per_hr": 0.63
+      },
+      "outputs": {
+        "infection_risk_percent": 15
+      },
+      "reference": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7293495/"
+    }
+  ]
+  

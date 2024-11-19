@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 
-const TRANSITION_DURATION = 2.0; // 2 seconds to match camera transition
+const TRANSITION_DURATION = 6.0; // 6 seconds (3x longer than original 2 seconds)
 
 export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
   console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });

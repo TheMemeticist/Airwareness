@@ -1,0 +1,17 @@
+{
+  "sars-cov-2": {
+    "name": "SARS-CoV-2",
+    "quantaRate": 1.0,
+    "decayRate": 0.63
+  },
+  "measles": {
+    "name": "Measles",
+    "quantaRate": 5.0,
+    "decayRate": 0.1
+  },
+  "influenza": {
+    "name": "Influenza",
+    "quantaRate": 0.5,
+    "decayRate": 0.1
+  }
+} 
