@@ -8,6 +8,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 const Tile = ({ title, children, collapsible = true, icon, count, helpText, renderHelpIcon = true, isRoomTile = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(collapsible);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     if (!collapsible) {
@@ -17,10 +18,8 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
 
   const expandTile = () => {
     if (collapsible && isCollapsed) {
+      setIsCollapsed(false);
       setIsExpanded(true);
-      setTimeout(() => {
-        setIsCollapsed(false);
-      }, 50);
     }
   };
 
@@ -28,10 +27,14 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
     e.stopPropagation();
     if (collapsible) {
       if (!isCollapsed) {
+        setIsTransitioning(true);
         setIsCollapsed(true);
         setTimeout(() => {
           setIsExpanded(false);
-        }, 300);
+          setTimeout(() => {
+            setIsTransitioning(false);
+          }, 50);
+        }, 400);
       } else {
         setIsCollapsed(!isCollapsed);
         setIsExpanded(false);
@@ -43,11 +46,16 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
     isCollapsed ? styles.cursorPointer : ''
   } ${isExpanded ? styles.expanded : ''} ${isCollapsed ? '' : styles.uncollapsed}`;
 
-  const showPlaceholder = !isRoomTile && !isCollapsed;
+  const showPlaceholder = !isRoomTile && (!isCollapsed || isExpanded || isTransitioning);
 
   return (
     <>
-      {showPlaceholder && <div className={`${styles.placeholder} ${styles.visible}`} />}
+      {showPlaceholder && (
+        <div 
+          className={`${styles.placeholder} ${(!isCollapsed || isExpanded || isTransitioning) ? styles.visible : ''}`} 
+          style={{ transition: 'opacity 0.4s cubic-bezier(0.2, 0, 0, 1)' }}
+        />
+      )}
       <div className={tileClassName} onClick={expandTile}>
         <div className={styles['tile-header-container']}>
           <Typography variant="h5" className={styles['tile-header']}>
@@ -75,7 +83,9 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
           typeof children === 'function' ? children({ isCollapsed }) : children
         )}
       </div>
-      {!isRoomTile && !isCollapsed && <div className={styles.backdrop} onClick={toggleTile} />}
+      {!isRoomTile && (!isCollapsed || isTransitioning) && (
+        <div className={styles.backdrop} onClick={toggleTile} />
+      )}
     </>
   );
 };

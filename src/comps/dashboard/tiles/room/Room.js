@@ -192,6 +192,7 @@ const Room = ({ buildingId, roomId, children }) => {
                 onChange={(e) => updateRoom('height', e.target.value)}
                 variant="outlined"
                 size="small"
+                inputProps={{ step: 5 }}
               />
               <TextField
                 className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
@@ -201,6 +202,7 @@ const Room = ({ buildingId, roomId, children }) => {
                 onChange={(e) => updateRoom('floorArea', e.target.value)}
                 variant="outlined"
                 size="small"
+                inputProps={{ step: 100 }}
               />
             </div>
             <div className={styles['room-icons-container']}>

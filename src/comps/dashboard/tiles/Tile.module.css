@@ -12,24 +12,26 @@
   display: inline-block;
   vertical-align: top;
   flex-direction: column;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
   color: var(--off-white);
   font-size: 1vw;
   transform-origin: center center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, width, height, min-height, max-height;
+  will-change: transform, width, height, min-height, max-height, opacity, position;
+  transform: translate(0, 0);
 }
 
 .tile:not(.roomTile):not(.collapsed) {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1);
   z-index: 1000;
   width: 80%;
   max-width: 1200px;
   height: 80vh;
   max-height: 800px;
+  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  opacity: 1;
 }
 
 .tile:not(.roomTile):not(.collapsed):hover {
@@ -43,56 +45,17 @@
 }
 
 .tile.collapsed {
+  position: relative;
+  transform: none;
   width: 200px;
   height: 200px;
   min-height: unset;
   max-height: unset;
-  display: inline-flex; /* Change from flex to inline-flex */
+  display: inline-flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease-in-out;
-  transform: scale(1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: none; /* Disable animations for room tiles */
+  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
-
-/* Add animation for expanding state */
-.tile.uncollapsed {
-  animation: expandTile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Add animation for collapsing state */
-.tile.collapsed {
-  animation: collapseTile 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes expandTile {
-  from {
-    transform: translate(-50%, -50%) scale(0.7);
-    opacity: 0;
-  }
-  to {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes collapseTile {
-  from {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Remove or comment out this block */
-/*.tile:hover {
-  transition: background-color 1s ease;
-  background: linear-gradient(to bottom, var(--off-black-1), transparent);
-}*/
 
 /* Add a backdrop for the expanded tile */
 .backdrop {
@@ -104,8 +67,9 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
+  pointer-events: none;
 }
 
 .tile:not(.roomTile):not(.collapsed) + .backdrop {
@@ -470,47 +434,34 @@
 /* Update placeholder styles */
 .placeholder {
   display: inline-block;
-  visibility: hidden;
+  visibility: visible;
   width: 200px;
   height: 200px;
   min-height: unset;
   max-height: unset;
   margin: 10px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  pointer-events: none;
 }
 
 .placeholder.visible {
-  visibility: visible;
   opacity: 1;
 }
 
-/* Update collapsed tile styles */
-.tile.collapsed {
-  width: 200px;
-  height: 200px;
-  min-height: unset;
-  max-height: unset;
-  display: inline-flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Ensure proper stacking context */
-.backdrop {
+/* Ensure the expanded tile doesn't affect layout */
+.tile:not(.roomTile):not(.collapsed) {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  z-index: 1000;
 }
 
-.backdrop.visible {
-  opacity: 1;
+/* Keep collapsed tiles in normal flow */
+.tile.collapsed {
+  position: relative;
+  transform: none;
 }
 
 /* Media queries for placeholder */
@@ -537,3 +488,12 @@
     height: 150px;
   }
 }
+/* Add smooth transition for non-expanding tiles */
+.tile:not(:not(.roomTile):not(.collapsed)) {
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1),
+              left 0.4s cubic-bezier(0.2, 0, 0, 1),
+              top 0.4s cubic-bezier(0.2, 0, 0, 1),
+              width 0.4s cubic-bezier(0.2, 0, 0, 1),
+              height 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
