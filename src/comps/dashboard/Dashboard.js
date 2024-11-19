@@ -126,13 +126,13 @@ const Dashboard = () => {
                 <Room buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
               </div>
               <div className={styles['secondary-components']}>
+                <EpiRisk />
                 <Occupants buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
-                <Co2 />
+                {/* <Co2 />
                 <Pm />
                 <CentralVentilation />
                 <AirPurifier />
-                <Aqi />
-                <EpiRisk />
+                <Aqi /> */}
               </div>
             </div>
           ) : (

@@ -164,3 +164,11 @@
 .epi-risk-params :global(.MuiFormControl-root) {
   margin-bottom: 0.5rem;
 }
+
+.minimized-icon {
+  color: inherit;
+}
+
+.tile-icon {
+  color: inherit;
+}

@@ -3,17 +3,19 @@
 /**
  * Calculates the probability of infection using the Wells-Riley model with time-dependent concentration.
  *
- * @param {number} infectiousIndividuals - Number of infectious individuals (persons)
+ * @param {number} totalIndividuals - Total number of individuals in the room
+ * @param {number} infectionRate - Percentage of population that is infectious (0-100)
  * @param {number} quantaGenerationRate - Quanta generation rate per infectious individual (quanta/hour)
  * @param {number} susceptibleBreathingRate - Breathing rate of a susceptible individual (cubic feet/hour)
  * @param {number} exposureTime - Total exposure time (hours)
  * @param {number} roomVolume - Volume of the room (cubic feet)
  * @param {number} ventilationRate - Ventilation rate (air changes per hour, ACH)
  * @param {number} pathogenDecayRate - Pathogen decay rate (per hour)
- * @returns {number} - Probability of infection (between 0 and 1)
+ * @returns {Object} - Object containing probability of infection and number of infectious individuals
  */
-function calculateWellsRileyInfectionProbability(
-    infectiousIndividuals,
+export function calculateWellsRiley(
+    totalIndividuals,
+    infectionRate,
     quantaGenerationRate,
     susceptibleBreathingRate,
     exposureTime,
@@ -21,6 +23,12 @@ function calculateWellsRileyInfectionProbability(
     ventilationRate,
     pathogenDecayRate
   ) {
+    // Calculate number of infectious individuals based on infection rate
+    const infectiousIndividuals = Math.round((infectionRate / 100) * totalIndividuals);
+    
+    // Calculate number of susceptible individuals
+    const susceptibleIndividuals = totalIndividuals - infectiousIndividuals;
+
     // Total removal rate of infectious quanta from the air (per hour)
     const totalRemovalRate = ventilationRate + pathogenDecayRate;
   
@@ -43,5 +51,9 @@ function calculateWellsRileyInfectionProbability(
     // Probability of infection for the susceptible individual
     const infectionProbability = 1 - Math.exp(-inhaledDose);
   
-    return infectionProbability;
+    return {
+      probability: infectionProbability,
+      infectiousCount: infectiousIndividuals,
+      susceptibleCount: susceptibleIndividuals
+    };
   }

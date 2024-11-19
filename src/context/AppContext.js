@@ -14,7 +14,8 @@ const initialState = {
           floorArea: '900',
           occupants: {
             groups: [
-              { name: 'Group 1', count: 1, age: '18' }
+              { name: 'Teacher', count: 1, age: '35' },
+              { name: 'Students', count: 22, age: '13' }
             ],
             activityLevel: 2
           }

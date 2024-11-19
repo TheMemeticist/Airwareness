@@ -56,7 +56,17 @@ const Occupants = ({ buildingId, roomId }) => {
   };
 
   const addGroup = () => {
-    updateOccupants([...groups, { name: `Group ${groups.length + 1}`, count: 1, age: '18' }], activityLevel, maskRate, maskFiltration);  // Default age set to 18
+    if (groups.length === 0) {
+      console.log('Initializing default classroom');
+      const defaultGroups = [
+        { name: 'Teacher', count: 1, age: '35' },
+        { name: 'Students', count: 22, age: '13' }
+      ];
+      console.log('Default groups:', defaultGroups);
+      updateOccupants(defaultGroups, 2, 0, 0);
+    } else {
+      updateOccupants([...groups, { name: `Group ${groups.length + 1}`, count: 1, age: '18' }], activityLevel, maskRate, maskFiltration);
+    }
   };
 
   const removeGroup = (index) => {
