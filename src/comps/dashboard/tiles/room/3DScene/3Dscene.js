@@ -11,7 +11,7 @@ import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 import { useAppContext } from '../../../../../context/AppContext';
 
-const ThreeDScene = ({ dimensions, debug = true }) => {
+const ThreeDScene = ({ dimensions, debug = false }) => {
   const { state } = useAppContext();
   const mountRef = useRef(null);
   const sceneRef = useRef(null);

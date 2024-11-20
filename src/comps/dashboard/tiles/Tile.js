@@ -64,7 +64,9 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
       <div className={tileClassName} onClick={expandTile}>
         <div className={styles['tile-header-container']}>
           <Typography variant="h5" className={styles['tile-header']}>
-            {title}
+            {typeof title === 'function' 
+              ? title({ isCollapsed: tileState.isCollapsed }) 
+              : title}
           </Typography>
           <div className={styles['tile-header-icons']}>
             {helpText && renderHelpIcon && !tileState.isCollapsed && (
@@ -85,7 +87,9 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
             <Typography>{count}</Typography>
           </div>
         ) : (
-          typeof children === 'function' ? children({ isCollapsed: tileState.isCollapsed }) : children
+          typeof children === 'function' 
+            ? children({ isCollapsed: tileState.isCollapsed }) 
+            : children
         )}
       </div>
       {!isRoomTile && (!tileState.isCollapsed || tileState.isTransitioning) && (

@@ -220,3 +220,85 @@
 .tile-icon {
   color: inherit;
 }
+
+.pathogen-title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.pathogen-select-container {
+  flex: 0 1 auto;
+  min-width: 200px !important;
+  max-width: 300px !important;
+  position: relative;
+}
+
+.pathogen-select {
+  width: 100%;
+  color: var(--off-white) !important;
+}
+
+.pathogen-select-label {
+  color: var(--off-white) !important;
+}
+
+.pathogen-actions-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pathogen-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  min-width: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+}
+
+.add-pathogen-button {
+  background-color: var(--bright-teal) !important;
+}
+
+.delete-pathogen-button {
+  background-color: var(--error-red) !important;
+}
+
+.button-content {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Remove the old pathogen selector styles */
+.epi-risk-params .MuiFormControl-root:nth-child(2) {
+  display: none;
+}
+
+.pathogen-select :global(.MuiSelect-select) {
+  color: var(--off-white) !important;
+  background-color: var(--off-black-1) !important;
+}
+
+.pathogen-select :global(.MuiOutlinedInput-root) {
+  background-color: var(--off-black-1) !important;
+}
+
+.pathogen-select :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+/* Remove any conflicting menu styles */
+.epi-risk-params :global(.MuiPaper-root),
+.epi-risk-params :global(.MuiList-root) {
+  background-color: unset;
+}

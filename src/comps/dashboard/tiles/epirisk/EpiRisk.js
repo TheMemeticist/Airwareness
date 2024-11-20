@@ -3,11 +3,12 @@ import Tile from '../Tile';
 import BiohazardIcon from './BiohazardIcon';
 import styles from './EpiRisk.module.css';
 import tileStyles from '../Tile.module.css';
-import { TextField, Select, MenuItem, FormControl, InputLabel, Box, Typography } from '@mui/material';
+import { TextField, Select, MenuItem, FormControl, InputLabel, Box, Typography, Button } from '@mui/material';
 import CoronavirusIcon from '@mui/icons-material/Coronavirus';
 import { calculateWellsRiley } from './transmission-models/Wells-Riley-Model';
 import { useAppContext } from '../../../../context/AppContext';
 import { alpha, keyframes } from '@mui/material';
+import ArrowDownIcon from '@mui/icons-material/ArrowDownward';
 
 const spin = keyframes`
   from {
@@ -85,6 +86,23 @@ const getRiskSize = (positivityRate) => {
 const EpiRisk = () => {
   const { state, dispatch } = useAppContext();
 
+  // Ensure we have a valid initial pathogen
+  const [pathogen, setPathogen] = useState(() => {
+    const currentPathogen = state.currentPathogen;
+    return state.pathogens[currentPathogen] ? currentPathogen : Object.keys(state.pathogens)[0];
+  });
+
+  // Get initial values safely
+  const [quantaRate, setQuantaRate] = useState(() => {
+    const currentPathogenData = state.pathogens[pathogen];
+    return currentPathogenData ? currentPathogenData.quantaRate.toString() : '25';
+  });
+
+  const [halfLife, setHalfLife] = useState(() => {
+    const currentPathogenData = state.pathogens[pathogen];
+    return currentPathogenData ? currentPathogenData.halfLife.toString() : '1.1';
+  });
+
   // Move memoized helper inside component
   const memoizedCalculateRisk = React.useCallback((params) => {
     const { totalOccupants, positivityRate, quantaRate, breathingRate, exposureTime, roomVolume, ventilationRate, halfLife } = params;
@@ -132,9 +150,6 @@ const EpiRisk = () => {
   // State declarations
   const [positivityRate, setPositivityRate] = useState(initialPositivityRate);
   const [tempPositivityRate, setTempPositivityRate] = useState(initialPositivityRate);
-  const [pathogen, setPathogen] = useState('sars-cov-2');
-  const [quantaRate, setQuantaRate] = useState(state.pathogens['sars-cov-2'].quantaRate.toString());
-  const [halfLife, setHalfLife] = useState('1.1');
   const [ventilationRate, setVentilationRate] = useState(4);
   const [breathingRate, setBreathingRate] = useState(360);
   const [exposureTime, setExposureTime] = useState(1);
@@ -366,9 +381,144 @@ const EpiRisk = () => {
     });
   }, [riskData.infectiousCount, dispatch]);
 
+  const handleDeletePathogen = () => {
+    // Get all pathogen IDs
+    const pathogens = Object.keys(state.pathogens);
+    
+    // Don't allow deletion if there's only one pathogen
+    if (pathogens.length <= 1) return;
+    
+    // Find the next available pathogen that isn't the current one
+    const nextPathogen = pathogens.find(p => p !== pathogen);
+    
+    if (!nextPathogen) return; // Safety check
+    
+    // Update local state first
+    setPathogen(nextPathogen);
+    setQuantaRate(state.pathogens[nextPathogen].quantaRate.toString());
+    setHalfLife(state.pathogens[nextPathogen].halfLife.toString());
+    
+    // Update global state
+    dispatch({
+      type: 'SET_CURRENT_PATHOGEN',
+      payload: nextPathogen
+    });
+    
+    // Wait for state updates to complete before deleting
+    setTimeout(() => {
+      dispatch({
+        type: 'DELETE_PATHOGEN',
+        payload: {
+          pathogenId: pathogen,
+          nextPathogenId: nextPathogen
+        }
+      });
+    }, 0);
+  };
+
   return (
     <Tile 
-      title="Epi-Risk" 
+      title={({ isCollapsed }) => (
+        <Box className={styles['pathogen-title-container']}>
+          {isCollapsed ? (
+            <Typography className={styles['pathogen-name']}>
+              {state.pathogens[pathogen]?.name || 'Loading...'}
+            </Typography>
+          ) : (
+            <>
+              <FormControl variant="outlined" size="small" className={styles['pathogen-select-container']}>
+                <InputLabel id="pathogen-select-label" className={styles['pathogen-select-label']}>Pathogen</InputLabel>
+                <Select
+                  labelId="pathogen-select-label"
+                  id="pathogen-select"
+                  value={pathogen}
+                  onChange={handlePathogenChange}
+                  label="Select a Pathogen"
+                  className={styles['pathogen-select']}
+                  IconComponent={ArrowDownIcon}
+                  MenuProps={{
+                    sx: { 
+                      '& .MuiPaper-root': {
+                        backgroundColor: 'var(--off-black-1)',
+                        color: 'var(--off-white)',
+                        borderRadius: '4px',
+                        marginTop: '4px',
+                      },
+                      '& .MuiList-root': {
+                        padding: 0,
+                      },
+                      '& .MuiMenuItem-root': {
+                        backgroundColor: 'var(--off-black-1)',
+                        '&:hover': {
+                          backgroundColor: 'var(--off-black-2)',
+                        },
+                      },
+                    },
+                    // Keep menu aligned with select box
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'left'
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'left'
+                    },
+                    // Prevent portal rendering
+                    container: document.getElementById('root'),
+                    slotProps: {
+                      paper: {
+                        style: {
+                          maxHeight: '300px',
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {Object.entries(state.pathogens).map(([key, data]) => (
+                    <MenuItem key={key} value={key}>
+                      {data.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Box className={styles['pathogen-actions-container']}>
+                <Box className={styles['pathogen-actions']}>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      const newId = `pathogen-${Date.now()}`;
+                      dispatch({
+                        type: 'ADD_PATHOGEN',
+                        payload: {
+                          id: newId,
+                          pathogen: {
+                            name: `New Pathogen`,
+                            quantaRate: 25,
+                            halfLife: 1.1
+                          }
+                        }
+                      });
+                      setPathogen(newId);
+                    }}
+                    className={`${styles['action-button']} ${styles['add-pathogen-button']}`}
+                  >
+                    <span className={styles['button-content']}>+</span>
+                  </Button>
+                  {Object.keys(state.pathogens).length > 1 && (
+                    <Button
+                      variant="contained"
+                      onClick={handleDeletePathogen}
+                      className={`${styles['action-button']} ${styles['delete-pathogen-button']}`}
+                    >
+                      <span className={styles['button-content']}>-</span>
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            </>
+          )}
+        </Box>
+      )}
       collapsible={true} 
       icon={
         <CoronavirusIcon 
@@ -438,18 +588,28 @@ const EpiRisk = () => {
               />
             </Box>
             <Box flex={1}>
-              <FormControl variant="outlined" size="small" fullWidth>
-                <InputLabel>Pathogen</InputLabel>
-                <Select
-                  value={pathogen}
-                  onChange={handlePathogenChange}
-                  label="Pathogen"
-                >
-                  {Object.entries(state.pathogens).map(([key, data]) => (
-                    <MenuItem key={key} value={key}>{data.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <TextField
+                className={tileStyles['tile-text-field']}
+                label="Pathogen Name"
+                value={state.pathogens[pathogen].name}
+                onChange={(e) => {
+                  dispatch({
+                    type: 'UPDATE_PATHOGEN',
+                    payload: {
+                      pathogenId: pathogen,
+                      updates: { name: e.target.value }
+                    }
+                  });
+                }}
+                fullWidth
+                variant="outlined"
+                size="small"
+                sx={{ 
+                  '& .MuiInputLabel-root': {
+                    backgroundColor: 'transparent'
+                  }
+                }}
+              />
             </Box>
             <Box flex={1}>
               <TextField

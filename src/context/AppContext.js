@@ -24,7 +24,9 @@ const initialState = {
       ],
     },
   ],
-  pathogens: pathogenData,
+  pathogens: {
+    ...pathogenData
+  },
   currentPathogen: 'sars-cov-2',
   infectiousCount: 0,
 };
@@ -123,6 +125,24 @@ function reducer(state, action) {
         ...state,
         infectiousCount: action.payload
       };
+    case 'ADD_PATHOGEN':
+      return {
+        ...state,
+        pathogens: {
+          ...state.pathogens,
+          [action.payload.id]: action.payload.pathogen
+        }
+      };
+    case 'DELETE_PATHOGEN': {
+      const newPathogens = { ...state.pathogens };
+      delete newPathogens[action.payload.pathogenId];
+      
+      return {
+        ...state,
+        pathogens: newPathogens,
+        currentPathogen: action.payload.nextPathogenId
+      };
+    }
     default:
       return state;
   }
