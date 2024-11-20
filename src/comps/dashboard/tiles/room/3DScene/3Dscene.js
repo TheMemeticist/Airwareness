@@ -11,7 +11,7 @@ import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 import { useAppContext } from '../../../../../context/AppContext';
 
-const ThreeDScene = ({ dimensions, debug = false }) => {
+const ThreeDScene = ({ dimensions, debug = true }) => {
   const { state } = useAppContext();
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -26,6 +26,7 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
   const animationControllerRef = useRef(null);
+  let resizeTimeout;
 
   const dimensionsInMeters = useMemo(() => ({
     width: isNaN(dimensions.width) ? 1 : dimensions.width * 1,
@@ -33,6 +34,27 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     height: isNaN(dimensions.height) ? 1 : dimensions.height * 1,
   }), [dimensions]);
 
+  // Separate resize handler
+  const handleResize = (camera, renderer, scene) => {
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+    
+    resizeTimeout = setTimeout(() => {
+      if (!mountRef.current || !renderer) return;
+
+      const width = mountRef.current.clientWidth;
+      const height = mountRef.current.clientHeight;
+      
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      
+      renderer.setSize(width, height);
+      
+      // Force render after resize
+      renderer.render(scene, camera);
+    }, 100);
+  };
+
+  // Main setup effect
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -142,25 +164,12 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     
     animate();
 
-    // Optimize resize handler
-    let resizeTimeout;
-    const handleResize = () => {
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      
-      resizeTimeout = setTimeout(() => {
-        if (!mountRef.current || !renderer) return;
+    // Setup resize observer
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize(camera, renderer, scene);
+    });
 
-        const container = mountRef.current.parentElement;
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        
-        camera.aspect = 1; // Force square aspect ratio
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height, false); // Add false to prevent style changes
-      }, 250);
-    };
-
-    window.addEventListener('resize', handleResize);
+    resizeObserver.observe(mountRef.current);
 
     // Only set up performance logging interval if in debug mode
     let performanceLoggingInterval;
@@ -235,6 +244,7 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
       if (animationControllerRef.current) {
         animationControllerRef.current.stopAnimation();
       }
+      resizeObserver.disconnect();
     };
   }, []);
 

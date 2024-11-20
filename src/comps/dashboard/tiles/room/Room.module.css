@@ -253,6 +253,7 @@
   height: 100%;
   margin: 0;
   padding: 0;
+  transition: width 0.3s ease, height 0.3s ease;
 }
 
 .3d-scene {
@@ -261,6 +262,7 @@
   display: block;
   margin: 0;
   padding: 0;
+  transition: width 0.3s ease, height 0.3s ease;
 }
 
 /* Responsive adjustments */

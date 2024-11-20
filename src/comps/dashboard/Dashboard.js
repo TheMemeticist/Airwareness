@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import styles from './Dashboard.module.css';
 import Room from './tiles/room/Room';
 import Co2 from './tiles/co2/Co2';
@@ -11,7 +11,7 @@ import Occupants from './tiles/occupants/Occupants';
 import { useAppContext } from '../../context/AppContext';
 import { FormControl, InputLabel, Select, MenuItem, Box, Button } from '@mui/material';
 
-const ArrowDownIcon = () => (
+const ArrowDownIcon = React.memo(() => (
   <svg
     className={styles['select-icon']}
     focusable="false"
@@ -20,55 +20,64 @@ const ArrowDownIcon = () => (
   >
     <path d="M7 10l5 5 5-5z"></path>
   </svg>
-);
+));
 
-const Dashboard = () => {
+const Dashboard = React.memo(() => {
   const { state, dispatch } = useAppContext();
-  const [selectedBuildingId, setSelectedBuildingId] = useState('');
+  const [selectedBuildingId, setSelectedBuildingId] = useState(() => 
+    state.buildings.length > 0 ? state.buildings[0].id : ''
+  );
 
-  useEffect(() => {
-    if (state.buildings.length > 0 && !state.buildings.find(b => b.id === selectedBuildingId)) {
-      setSelectedBuildingId(state.buildings[0].id);
-    }
+  const selectedBuilding = useMemo(() => {
+    return state.buildings.find(b => b.id === selectedBuildingId);
   }, [state.buildings, selectedBuildingId]);
 
-  const selectedBuilding = state.buildings.find(b => b.id === selectedBuildingId);
-
-  const handleBuildingChange = (event) => {
+  const handleBuildingChange = useCallback((event) => {
     setSelectedBuildingId(event.target.value);
-  };
+  }, []);
 
-  const createNewBuilding = () => {
+  const createNewBuilding = useCallback(() => {
+    const sourceBuilding = state.buildings[state.buildings.length - 1];
     const newBuildingId = String(Date.now());
-    const newRoomId = String(Date.now() + 1); // Ensure unique ID for the room
-    const sourceBuilding = state.buildings[state.buildings.length - 1]; // Get the last building
-    const newBuilding = {
-      id: newBuildingId,
-      name: `${sourceBuilding.name} (copy)`,
-      sourceId: sourceBuilding.id,
-      rooms: [{
-        id: newRoomId,
-        name: 'Room 1',
-        height: '10',
-        floorArea: '900',
-      }],
-    };
+    const newRoomId = String(Date.now() + 1);
+    
     dispatch({
       type: 'ADD_BUILDING',
-      payload: newBuilding,
+      payload: {
+        id: newBuildingId,
+        name: `${sourceBuilding.name} (copy)`,
+        sourceId: sourceBuilding.id,
+        rooms: [{
+          id: newRoomId,
+          name: 'Room 1',
+          height: '10',
+          floorArea: '900',
+        }],
+      },
     });
     setSelectedBuildingId(newBuildingId);
-  };
+  }, [state.buildings, dispatch]);
 
-  const deleteBuilding = () => {
+  const deleteBuilding = useCallback(() => {
     if (state.buildings.length <= 1) return;
-    const newBuildings = state.buildings.filter(b => b.id !== selectedBuildingId);
     dispatch({
       type: 'DELETE_BUILDING',
       payload: { buildingId: selectedBuildingId },
     });
-    setSelectedBuildingId(newBuildings[0].id);
-  };
+    setSelectedBuildingId(state.buildings[0].id);
+  }, [state.buildings, selectedBuildingId, dispatch]);
+
+  const buildingMenuItems = useMemo(() => {
+    return state.buildings.map((building) => (
+      <MenuItem 
+        key={building.id} 
+        value={building.id} 
+        className={styles['building-select-item']}
+      >
+        {building.name}
+      </MenuItem>
+    ));
+  }, [state.buildings]);
 
   return (
     <div className={styles['dashboard-wrapper']}>
@@ -89,15 +98,7 @@ const Dashboard = () => {
                 classes: { paper: styles['menu-paper'] }
               }}
             >
-              {state.buildings.map((building) => (
-                <MenuItem 
-                  key={building.id} 
-                  value={building.id} 
-                  className={styles['building-select-item']}
-                >
-                  {building.name}
-                </MenuItem>
-              ))}
+              {buildingMenuItems}
             </Select>
           </FormControl>
           <Box className={styles['building-actions-container']}>
@@ -142,6 +143,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Dashboard;

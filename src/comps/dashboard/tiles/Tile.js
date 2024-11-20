@@ -1,58 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import styles from './Tile.module.css';
 import { IconButton, Typography } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-const Tile = ({ title, children, collapsible = true, icon, count, helpText, renderHelpIcon = true, isRoomTile = false }) => {
-  const [isCollapsed, setIsCollapsed] = useState(collapsible);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+const Tile = React.memo(({ title, children, collapsible = true, icon, count, helpText, renderHelpIcon = true, isRoomTile = false }) => {
+  const [tileState, setTileState] = useState({
+    isCollapsed: collapsible,
+    isExpanded: false,
+    isTransitioning: false
+  });
 
-  useEffect(() => {
-    if (!collapsible) {
-      setIsCollapsed(false);
+  const expandTile = useCallback((e) => {
+    e?.stopPropagation();
+    if (collapsible && tileState.isCollapsed) {
+      setTileState(prev => ({ ...prev, isCollapsed: false, isExpanded: true }));
     }
+  }, [collapsible, tileState.isCollapsed]);
+
+  const toggleTile = useCallback((e) => {
+    e.stopPropagation();
+    if (!collapsible) return;
+
+    setTileState(prev => {
+      if (!prev.isCollapsed) {
+        requestAnimationFrame(() => {
+          setTileState(p => ({ ...p, isExpanded: false }));
+          requestAnimationFrame(() => {
+            setTileState(p => ({ ...p, isTransitioning: false }));
+          });
+        });
+        return { ...prev, isTransitioning: true, isCollapsed: true };
+      }
+      return { ...prev, isCollapsed: !prev.isCollapsed, isExpanded: false };
+    });
   }, [collapsible]);
 
-  const expandTile = () => {
-    if (collapsible && isCollapsed) {
-      setIsCollapsed(false);
-      setIsExpanded(true);
-    }
-  };
+  const tileClassName = useMemo(() => {
+    const classes = [
+      styles.tile,
+      tileState.isCollapsed && styles.collapsed,
+      isRoomTile && styles.roomTile,
+      tileState.isCollapsed && styles.cursorPointer,
+      tileState.isExpanded && styles.expanded,
+      !tileState.isCollapsed && styles.uncollapsed
+    ].filter(Boolean).join(' ');
+    return classes;
+  }, [tileState.isCollapsed, tileState.isExpanded, isRoomTile]);
 
-  const toggleTile = (e) => {
-    e.stopPropagation();
-    if (collapsible) {
-      if (!isCollapsed) {
-        setIsTransitioning(true);
-        setIsCollapsed(true);
-        setTimeout(() => {
-          setIsExpanded(false);
-          setTimeout(() => {
-            setIsTransitioning(false);
-          }, 50);
-        }, 400);
-      } else {
-        setIsCollapsed(!isCollapsed);
-        setIsExpanded(false);
-      }
-    }
-  };
-
-  const tileClassName = `${styles.tile} ${isCollapsed ? styles.collapsed : ''} ${isRoomTile ? styles.roomTile : ''} ${
-    isCollapsed ? styles.cursorPointer : ''
-  } ${isExpanded ? styles.expanded : ''} ${isCollapsed ? '' : styles.uncollapsed}`;
-
-  const showPlaceholder = !isRoomTile && (!isCollapsed || isExpanded || isTransitioning);
+  const showPlaceholder = useMemo(() => (
+    !isRoomTile && (!tileState.isCollapsed || tileState.isExpanded || tileState.isTransitioning)
+  ), [isRoomTile, tileState]);
 
   return (
     <>
       {showPlaceholder && (
         <div 
-          className={`${styles.placeholder} ${(!isCollapsed || isExpanded || isTransitioning) ? styles.visible : ''}`} 
+          className={`${styles.placeholder} ${(!tileState.isCollapsed || tileState.isExpanded || tileState.isTransitioning) ? styles.visible : ''}`} 
           style={{ transition: 'opacity 0.4s cubic-bezier(0.2, 0, 0, 1)' }}
         />
       )}
@@ -62,32 +67,32 @@ const Tile = ({ title, children, collapsible = true, icon, count, helpText, rend
             {title}
           </Typography>
           <div className={styles['tile-header-icons']}>
-            {helpText && renderHelpIcon && !isCollapsed && (
+            {helpText && renderHelpIcon && !tileState.isCollapsed && (
               <div className={styles['help-icon-container']} title={helpText}>
                 <HelpOutlineIcon className={styles['help-icon']} />
               </div>
             )}
             {collapsible && (
               <IconButton size="small" onClick={toggleTile}>
-                {isCollapsed ? <ExpandMoreIcon sx={{ color: 'var(--off-white)' }} /> : <ExpandLessIcon sx={{ color: 'var(--off-white)' }} />}
+                {tileState.isCollapsed ? <ExpandMoreIcon sx={{ color: 'var(--off-white)' }} /> : <ExpandLessIcon sx={{ color: 'var(--off-white)' }} />}
               </IconButton>
             )}
           </div>
         </div>
-        {isCollapsed ? (
+        {tileState.isCollapsed ? (
           <div className={styles['collapsed-content']}>
             <div className={styles['minimized-icon']}>{icon}</div>
             <Typography>{count}</Typography>
           </div>
         ) : (
-          typeof children === 'function' ? children({ isCollapsed }) : children
+          typeof children === 'function' ? children({ isCollapsed: tileState.isCollapsed }) : children
         )}
       </div>
-      {!isRoomTile && (!isCollapsed || isTransitioning) && (
+      {!isRoomTile && (!tileState.isCollapsed || tileState.isTransitioning) && (
         <div className={styles.backdrop} onClick={toggleTile} />
       )}
     </>
   );
-};
+});
 
 export default Tile;
