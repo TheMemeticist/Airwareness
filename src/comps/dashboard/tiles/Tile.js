@@ -32,7 +32,6 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
     e?.stopPropagation();
     if (collapsible && tileState.isCollapsed) {
       const position = capturePosition();
-      setBackdropVisible(true);
       setTileState(prev => ({ 
         ...prev, 
         isCollapsed: false, 
@@ -40,6 +39,9 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
         isTransitioning: true,
         originalPosition: position 
       }));
+      requestAnimationFrame(() => {
+        setBackdropVisible(true);
+      });
       
       setTimeout(() => {
         setTileState(prev => ({
@@ -56,6 +58,7 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
 
     setTileState(prev => {
       if (!prev.isCollapsed) {
+        setBackdropVisible(false);
         requestAnimationFrame(() => {
           setTileState(p => ({ ...p, isExpanded: false }));
           setTimeout(() => {
@@ -64,13 +67,14 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
               isTransitioning: false,
               originalPosition: null 
             }));
-            setBackdropVisible(false);
           }, 400);
         });
         return { ...prev, isTransitioning: true, isCollapsed: true };
       }
       const position = capturePosition();
-      setBackdropVisible(true);
+      requestAnimationFrame(() => {
+        setBackdropVisible(true);
+      });
       return { 
         ...prev, 
         isCollapsed: false, 

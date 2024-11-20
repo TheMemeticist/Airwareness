@@ -17,6 +17,7 @@
   overflow: hidden;
   transform-origin: center center;
   z-index: 1;
+  opacity: 1 !important;
 }
 
 .tile:not(.roomTile):not(.collapsed) {
@@ -29,8 +30,12 @@
   max-width: 1200px;
   height: 80vh;
   max-height: 800px;
-  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
-  opacity: 1;
+  margin: 0;
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1),
+              width 0.4s cubic-bezier(0.2, 0, 0, 1),
+              height 0.4s cubic-bezier(0.2, 0, 0, 1),
+              top 0.4s cubic-bezier(0.2, 0, 0, 1),
+              left 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .tile:not(.roomTile):not(.collapsed):hover {
@@ -55,9 +60,9 @@
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
   z-index: 1;
+  opacity: 1;
 }
 
-/* Add a backdrop for the expanded tile */
 .backdrop {
   position: fixed;
   top: 0;
@@ -66,29 +71,22 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
-  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
   opacity: 0;
-  pointer-events: auto;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1),
+              visibility 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .backdrop.visible {
   opacity: 1;
-}
-
-/* Show backdrop when tile is expanded */
-.tile:not(.roomTile):not(.collapsed) + .backdrop {
-  opacity: 1;
   pointer-events: auto;
-}
-
-/* Keep backdrop visible but fade out during collapse */
-.tile.isTransitioning + .backdrop {
-  pointer-events: auto;
+  visibility: visible;
 }
 
 @media (max-width: 1024px) {
   .tile {
-    width: calc(100% - 20px); /* Adjust width to account for margins */
+    width: calc(100% - 20px);
     margin: 10px;
     font-size: 1.5vw;
     transition: all 0.3s ease-in-out;
@@ -97,11 +95,50 @@
   .tile:not(.roomTile):not(.collapsed) {
     width: 90%;
     height: 90vh;
-    transition: all 0.3s ease-in-out;
   }
 }
 
+@media (max-width: 768px) {
+  .tile {
+    font-size: 2vw;
+  }
+  
+  .tile.collapsed,
+  .placeholder {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .minimized-icon svg {
+    width: 60%;
+    height: 60%;
+  }
+  
+  .collapsed-content Typography {
+    font-size: 1rem;
+  }
+}
 
+@media (max-width: 480px) {
+  .tile {
+    font-size: 2.5vw;
+  }
+  
+  .tile.collapsed,
+  .placeholder {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .minimized-icon svg {
+    width: 50%;
+    height: 50%;
+  }
+  
+  .collapsed-content Typography {
+    font-size: 0.9rem;
+  }
+}
 
 .tile-header-container {
   display: flex;
@@ -166,34 +203,6 @@
   transition: opacity 0.3s, visibility 0.3s;
 }
 
-@media (max-width: 768px) {
-  .tile {
-    font-size: 2vw;
-  }
-  
-  .tile-header {
-    font-size: 3em;
-  }
-  
-  .help-icon {
-    font-size: 2em;
-  }
-}
-
-@media (max-width: 480px) {
-  .tile {
-    font-size: 2.5vw;
-  }
-  
-  .tile-header {
-    font-size: 2.5em;
-  }
-  
-  .help-icon {
-    font-size: 1.5em;
-  }
-}
-
 .tile-content {
   position: relative;
   width: 100%;
@@ -227,130 +236,6 @@
   align-items: center;
   font-size: 15em;
   top: 10%;
-}
-
-@media (max-width: 768px) {
-  .icon-container {
-    width: 85%;
-    height: 75%;
-  }
-}
-
-@media (max-width: 480px) {
-  .icon-container {
-    width: 90%;
-    height: 70%;
-  }
-}
-
-.tile-text-field {
-  color: var(--off-white) !important;
-  font-size: 1em !important;
-  width: 100% !important;
-}
-
-.tile-text-field :global(.MuiInputBase-input) {
-  color: var(--off-white) !important;
-  font-size: 1.1em !important;
-  padding: 12px !important;
-}
-
-.tile-text-field :global(.MuiInputLabel-root) {
-  color: var(--off-white) !important;
-  font-size: 1.1em !important;
-}
-
-.tile-text-field :global(.MuiOutlinedInput-root) {
-  background-color: rgba(1, 1, 1, 0.5) !important;
-  border-radius: 8px !important;
-}
-
-.tile-text-field :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline),
-.tile-text-field :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
-  border-color: var(--off-white) !important;
-}
-
-.tile-text-field :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--off-white) !important;
-}
-
-@media (min-width: 600px) {
-  .tile-text-field :global(.MuiInputBase-input) {
-    font-size: 1.2rem !important;
-    padding: 14px !important;
-  }
-
-  .tile-text-field :global(.MuiInputLabel-root) {
-    font-size: 1.2rem !important;
-  }
-}
-
-@media (min-width: 960px) {
-  .tile-text-field :global(.MuiInputBase-input) {
-    font-size: 1.3rem !important;
-    padding: 16px !important;
-  }
-
-  .tile-text-field :global(.MuiInputLabel-root) {
-    font-size: 1.3rem !important;
-  }
-}
-
-.tile-select {
-  color: var(--off-white) !important;
-  font-size: 1em !important;
-  width: calc(100% - 8px) !important;
-}
-
-.tile-select :global(.MuiSelect-select) {
-  color: var(--off-white) !important;
-  font-size: 1.1em !important;
-  padding: 12px !important;
-}
-
-.select-label {
-  color: var(--off-white) !important;
-  font-size: 1.1em !important;
-}
-
-.tile-select :global(.MuiOutlinedInput-root) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px !important;
-}
-
-.tile-select :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--off-white) !important;
-}
-
-.tile-select:hover :global(.MuiOutlinedInput-notchedOutline),
-.tile-select.Mui-focused :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--off-white) !important;
-}
-
-.tile-select :global(.MuiSelect-icon) {
-  color: var(--off-white) !important;
-}
-
-@media (min-width: 600px) {
-  .tile-select :global(.MuiSelect-select) {
-    font-size: 1.2rem !important;
-    padding: 14px !important;
-  }
-
-  .select-label {
-    font-size: 1.2rem !important;
-  }
-}
-
-@media (min-width: 960px) {
-  .tile-select :global(.MuiSelect-select) {
-    font-size: 1.3rem !important;
-    padding: 16px !important;
-  }
-
-  .select-label {
-    font-size: 1.3rem !important;
-  }
 }
 
 .minimized-icon {
@@ -409,39 +294,7 @@
   width: 100%;
 }
 
-@media (max-width: 768px) {
-  .tile.collapsed {
-    width: 180px;
-    height: 180px;
-  }
-
-  .minimized-icon svg {
-    width: 60%;
-    height: 60%;
-  }
-
-  .collapsed-content Typography {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .tile.collapsed {
-    width: 150px;
-    height: 150px;
-  }
-
-  .minimized-icon svg {
-    width: 50%;
-    height: 50%;
-  }
-
-  .collapsed-content Typography {
-    font-size: 0.9rem;
-  }
-}
-
-/* Update placeholder styles to maintain layout during transitions */
+/* Consolidate placeholder styles */
 .placeholder {
   display: inline-block;
   width: 200px;
@@ -476,19 +329,6 @@
   z-index: 1;
 }
 
-/* Update backdrop styles */
-.backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  opacity: 1;
-  pointer-events: auto;
-  display: block;
-}
 
 /* Media queries for placeholder */
 @media (max-width: 768px) {
@@ -531,33 +371,82 @@
   }
 }
 
-/* Add this new class for transitioning tiles */
+/* Update the transitioning tile styles */
 .tile.isTransitioning {
-  z-index: 1000 !important; /* Ensure it stays on top during transition */
+  z-index: 1000 !important; /* Force highest z-index during transition */
   transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Update backdrop to be below the transitioning tile */
-.backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999; /* Keep backdrop below the tile */
-  opacity: 1;
-  pointer-events: auto;
-  display: block;
-}
-
-.tile.isTransitioning,
-.tile:not(.roomTile):not(.collapsed) {
-  z-index: 1000 !important; /* Ensure expanded and transitioning tiles stay on top */
-}
-
-/* Ensure other tiles stay at their normal z-index */
-.tile.collapsed {
+/* Update collapsed state to only apply after transition is complete */
+.tile.collapsed:not(.isTransitioning) {
   z-index: 1;
+}
+
+/* Consolidate Material-UI text field styles */
+.tile-text-field {
+  color: var(--off-white) !important;
+  font-size: 1em !important;
+  width: 100% !important;
+}
+
+.tile-text-field :global(.MuiInputBase-input),
+.tile-text-field :global(.MuiInputLabel-root) {
+  color: var(--off-white) !important;
+  font-size: 1.1em !important;
+  padding: 12px !important;
+}
+
+.tile-text-field :global(.MuiOutlinedInput-root),
+.tile-select :global(.MuiOutlinedInput-root) {
+  background-color: rgba(1, 1, 1, 0.5) !important;
+  border-radius: 8px !important;
+}
+
+.tile-text-field :global(.MuiOutlinedInput-notchedOutline),
+.tile-select :global(.MuiOutlinedInput-notchedOutline),
+.tile-text-field :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline),
+.tile-text-field :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline),
+.tile-select:hover :global(.MuiOutlinedInput-notchedOutline),
+.tile-select.Mui-focused :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white) !important;
+}
+
+/* Consolidate Material-UI select styles */
+.tile-select {
+  color: var(--off-white) !important;
+  font-size: 1em !important;
+  width: calc(100% - 8px) !important;
+}
+
+.tile-select :global(.MuiSelect-select),
+.select-label {
+  color: var(--off-white) !important;
+  font-size: 1.1em !important;
+  padding: 12px !important;
+}
+
+.tile-select :global(.MuiSelect-icon) {
+  color: var(--off-white) !important;
+}
+
+/* Consolidate shared Material-UI responsive styles */
+@media (min-width: 600px) {
+  .tile-text-field :global(.MuiInputBase-input),
+  .tile-text-field :global(.MuiInputLabel-root),
+  .tile-select :global(.MuiSelect-select),
+  .select-label {
+    font-size: 1.2rem !important;
+    padding: 14px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .tile-text-field :global(.MuiInputBase-input),
+  .tile-text-field :global(.MuiInputLabel-root),
+  .tile-select :global(.MuiSelect-select),
+  .select-label {
+    font-size: 1.3rem !important;
+    padding: 16px !important;
+  }
 }
 
