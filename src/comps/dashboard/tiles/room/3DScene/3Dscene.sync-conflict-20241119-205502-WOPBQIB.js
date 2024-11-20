@@ -9,10 +9,8 @@ import { updateDimensions } from './UpdateDimensions';
 import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
-import { useAppContext } from '../../../../../context/AppContext';
 
-const ThreeDScene = ({ dimensions, debug = false }) => {
-  const { state } = useAppContext();
+const ThreeDScene = ({ dimensions, debug = true }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const clippingPlanesRef = useRef([]);
@@ -23,6 +21,7 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
   const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 4.4, z: 5 });
+  const [particleIntensity, setParticleIntensity] = useState(50);
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
   const animationControllerRef = useRef(null);
@@ -151,12 +150,12 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
         if (!mountRef.current || !renderer) return;
 
         const width = mountRef.current.clientWidth;
-        const height = mountRef.current.clientWidth;
+        const height = mountRef.current.clientHeight;
         
+        renderer.setSize(width, height);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
-      }, 250);
+      }, 250); // Debounce resize events
     };
 
     window.addEventListener('resize', handleResize);
@@ -283,23 +282,12 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     }
   }, [dimensionsInMeters]);
 
-  // Add effect to watch both currentPathogen AND pathogen updates
+  // Simplified particle intensity update
   useEffect(() => {
     if (particleSystemRef.current) {
-      const pathogenData = state.pathogens[state.currentPathogen];
-      const quantaRate = pathogenData.quantaRate;
-      console.log('Updating particle system with quanta rate:', quantaRate);
-      particleSystemRef.current.updateQuantaRate(quantaRate);
+      particleSystemRef.current.updateIntensity(particleIntensity);
     }
-  }, [state.pathogens, state.currentPathogen]); // Watch both values
-
-  // Add effect to watch infectious count changes
-  useEffect(() => {
-    if (particleSystemRef.current) {
-      console.log('Updating particle system infectious count:', state.infectiousCount);
-      particleSystemRef.current.updateInfectiousCount(state.infectiousCount);
-    }
-  }, [state.infectiousCount]); // Watch infectious count changes
+  }, [particleIntensity]);
 
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
@@ -313,6 +301,10 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     setObjectPosition(prev => ({ ...prev, [axis]: parseFloat(value) }));
   };
 
+  const handleParticleIntensityChange = (value) => {
+    setParticleIntensity(Math.min(100, Math.max(0, parseFloat(value))));
+  };
+
   return (
     <div className={`${tileStyles['tile-content']} ${styles['three-d-scene-container']}`}>
       {errorMessage ? (
@@ -322,8 +314,9 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
         </div>
       ) : (
         <>
+          <div ref={mountRef} className={styles['3d-scene']}></div>
           {debug && (
-            <div className={styles['debug-controls']}>
+            <div className={styles['controls']}>
               <select value={pivotCorner} onChange={handlePivotChange}>
                 <option value="topLeftFront">Top Left Front</option>
                 <option value="topRightFront">Top Right Front</option>
@@ -346,9 +339,19 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
                 <label>Y: <input type="number" value={objectPosition.y} onChange={(e) => handleObjectPositionChange('y', e.target.value)} /></label>
                 <label>Z: <input type="number" value={objectPosition.z} onChange={(e) => handleObjectPositionChange('z', e.target.value)} /></label>
               </div>
+              <div>
+                <label>Particle Intensity:</label>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={particleIntensity} 
+                  onChange={(e) => handleParticleIntensityChange(e.target.value)} 
+                />
+                <span>{particleIntensity}</span>
+              </div>
             </div>
           )}
-          <div ref={mountRef} className={styles['3d-scene']}></div>
         </>
       )}
     </div>

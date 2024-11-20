@@ -194,15 +194,13 @@ const Room = ({ buildingId, roomId, children }) => {
       }
       helptxt={helpText}
       isRoomTile={true}
-      collapsible={false}  // Add this line
+      collapsible={false}
     >
       <div className={`${tileStyles['tile-content']} ${styles['room-content']}`}>
         {room ? (
           <>
             <div className={styles['room-image-container']}>
               <ThreeDScene
-                title="Room"
-                size={200}
                 dimensions={{
                   width: dimensions.width,
                   length: dimensions.length,
