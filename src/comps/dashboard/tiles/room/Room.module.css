@@ -1,7 +1,11 @@
 .room-content {
   position: relative;
   width: 100%;
-  padding-top:100%;
+  height: 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .room-image-container {
@@ -10,6 +14,8 @@
   left: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .room-image {
@@ -245,6 +251,8 @@
   left: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .3d-scene {

@@ -150,12 +150,13 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
       resizeTimeout = setTimeout(() => {
         if (!mountRef.current || !renderer) return;
 
-        const width = mountRef.current.clientWidth;
-        const height = mountRef.current.clientWidth;
+        const container = mountRef.current.parentElement;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
         
-        camera.aspect = width / height;
+        camera.aspect = 1; // Force square aspect ratio
         camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
+        renderer.setSize(width, height, false); // Add false to prevent style changes
       }, 250);
     };
 
