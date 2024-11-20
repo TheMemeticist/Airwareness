@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
@@ -6,6 +6,7 @@ import ThreeDScene from './3DScene/3Dscene'; // Import the new component
 import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
+import ReactDOM from 'react-dom';
 
 // Custom arrow down icon
 const ArrowDownIcon = () => (
@@ -19,40 +20,130 @@ const ArrowDownIcon = () => (
   </svg>
 );
 
-const Room = ({ buildingId, roomId, children }) => {
+// Memoize expensive calculations
+const calculateDimensions = (floorArea, height) => ({
+  height: parseFloat(height) || 0,
+  floorArea: parseFloat(floorArea) || 0,
+  sideLength: Math.sqrt(parseFloat(floorArea)) || 0,
+  width: Math.sqrt(parseFloat(floorArea)) || 0,
+  length: Math.sqrt(parseFloat(floorArea)) || 0
+});
+
+// Memoize conversion function
+const toMeters = {
+  length: (ft) => ft * 0.3048,
+  area: (sqft) => sqft * 0.092903
+};
+
+const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
-  const [dimensions, setDimensions] = useState({ height: 0, floorArea: 0, sideLength: 0 }); // Add state for dimensions
+  
+  // Memoize building and rooms lookup
+  const { building, rooms } = useMemo(() => {
+    const building = state.buildings.find(b => b.id === buildingId);
+    return {
+      building,
+      rooms: building?.rooms || []
+    };
+  }, [state.buildings, buildingId]);
 
-  // Add state for input values
+  // Memoize room lookup
+  const room = useMemo(() => 
+    rooms.find(r => r.id === selectedRoomId),
+    [rooms, selectedRoomId]
+  );
+
+  // Initialize input values with room data
   const [inputValues, setInputValues] = useState({
-    height: '',
-    floorArea: ''
+    height: room?.height || '',
+    floorArea: room?.floorArea || ''
   });
 
-  const building = state.buildings.find(b => b.id === buildingId);
-  const rooms = building?.rooms || [];
-  const room = rooms.find(r => r.id === selectedRoomId);
-
-  useEffect(() => {
-    setSelectedRoomId(roomId);
-  }, [roomId]);
-
+  // Update input values when room changes
   useEffect(() => {
     if (room) {
       setInputValues({
         height: room.height || '',
         floorArea: room.floorArea || ''
       });
-      setDimensions({
-        height: parseFloat(room.height) || 0,
-        floorArea: parseFloat(room.floorArea) || 0,
-        sideLength: Math.sqrt(parseFloat(room.floorArea)) || 0,
-        width: Math.sqrt(parseFloat(room.floorArea)) || 0,
-        length: Math.sqrt(parseFloat(room.floorArea)) || 0
-      });
     }
   }, [room]);
+
+  // Memoize dimensions calculations
+  const dimensions = useMemo(() => 
+    calculateDimensions(room?.floorArea, room?.height),
+    [room?.floorArea, room?.height]
+  );
+
+  // Debounce dimension updates
+  const debouncedDimensionUpdate = useMemo(() => 
+    debounce((newDimensions) => {
+      dispatch({
+        type: 'UPDATE_ROOM',
+        payload: {
+          buildingId,
+          roomId: selectedRoomId,
+          roomData: newDimensions
+        }
+      });
+    }, 100),
+    [buildingId, selectedRoomId, dispatch]
+  );
+
+  // Optimize input handler with batched updates
+  const handleInputChange = useCallback((field) => (event) => {
+    const value = event.target.value;
+    
+    // Batch state updates
+    ReactDOM.unstable_batchedUpdates(() => {
+      setInputValues(prev => ({...prev, [field]: value}));
+      
+      const newDimensions = calculateDimensions(
+        field === 'floorArea' ? value : inputValues.floorArea,
+        field === 'height' ? value : inputValues.height
+      );
+      
+      debouncedDimensionUpdate(newDimensions);
+    });
+  }, [buildingId, selectedRoomId, inputValues, dispatch]);
+
+  // Cleanup debounced function
+  useEffect(() => {
+    return () => debouncedDimensionUpdate.cancel();
+  }, []);
+
+  // Memoize room actions with rooms dependency
+  const roomActions = useMemo(() => ({
+    createNewRoom: () => {
+      const newRoomId = String(Date.now());
+      dispatch({
+        type: 'ADD_ROOM',
+        payload: {
+          buildingId,
+          room: {
+            id: newRoomId,
+            name: `${room?.name || 'New Room'} (copy)`,
+            height: room?.height || '',
+            floorArea: room?.floorArea || '',
+          },
+        },
+      });
+      setSelectedRoomId(newRoomId);
+    },
+    deleteRoom: () => {
+      if (rooms.length <= 1) return;
+      dispatch({
+        type: 'DELETE_ROOM',
+        payload: { buildingId, roomId: selectedRoomId }
+      });
+      setSelectedRoomId(rooms[0].id);
+    }
+  }), [buildingId, room, rooms, selectedRoomId, dispatch]);
+
+  useEffect(() => {
+    setSelectedRoomId(roomId);
+  }, [roomId]);
 
   if (!room) {
     return (
@@ -68,77 +159,8 @@ const Room = ({ buildingId, roomId, children }) => {
 
   const { name, height, floorArea } = room;
 
-  const handleInputChange = (field) => (event) => {
-    const value = event.target.value;
-    
-    // Immediately update the room in context
-    dispatch({
-      type: 'UPDATE_ROOM',
-      payload: {
-        buildingId,
-        roomId: selectedRoomId,
-        roomData: { [field]: value }
-      }
-    });
-    
-    // Update local state
-    setInputValues(prev => ({
-      ...prev,
-      [field]: value
-    }));
-
-    // Update dimensions for 3D view
-    setDimensions(prev => {
-      const newDimensions = { ...prev };
-      const numValue = parseFloat(value) || 0;
-      
-      if (field === 'height') {
-        newDimensions.height = numValue;
-      } else if (field === 'floorArea') {
-        newDimensions.floorArea = numValue;
-        const sideLength = Math.sqrt(numValue);
-        newDimensions.sideLength = sideLength;
-        newDimensions.width = sideLength;
-        newDimensions.length = sideLength;
-      }
-      
-      return newDimensions;
-    });
-  };
-
   const handleRoomChange = (event) => {
     setSelectedRoomId(event.target.value);
-  };
-
-  const createNewRoom = () => {
-    const newRoomId = String(Date.now());
-    const newRoom = {
-      id: newRoomId,
-      name: `${room.name} (copy)`,
-      height: room.height || '',
-      floorArea: room.floorArea || '',
-    };
-    dispatch({
-      type: 'ADD_ROOM',
-      payload: {
-        buildingId,
-        room: newRoom,
-      },
-    });
-    setSelectedRoomId(newRoomId);
-  };
-
-  const deleteRoom = () => {
-    if (rooms.length <= 1) return;
-    const newRooms = rooms.filter(r => r.id !== selectedRoomId);
-    dispatch({
-      type: 'DELETE_ROOM',
-      payload: {
-        buildingId,
-        roomId: selectedRoomId,
-      },
-    });
-    setSelectedRoomId(newRooms[0].id);
   };
 
   const helpText = "Use this tool to edit room attributes such as size and ventilation rate (natural or HVAC). This helps provide more accurate air quality estimates.";
@@ -174,7 +196,7 @@ const Room = ({ buildingId, roomId, children }) => {
             <Box className={styles['room-actions']}>
               <Button
                 variant="contained"
-                onClick={createNewRoom}
+                onClick={roomActions.createNewRoom}
                 className={`${styles['action-button']} ${styles['add-room-button']}`}
               >
                 <span className={styles['button-content']}>+</span>
@@ -182,7 +204,7 @@ const Room = ({ buildingId, roomId, children }) => {
               {rooms.length > 1 && (
                 <Button
                   variant="contained"
-                  onClick={deleteRoom}
+                  onClick={roomActions.deleteRoom}
                   className={`${styles['action-button']} ${styles['delete-room-button']}`}
                 >
                   <span className={styles['button-content']}>-</span>
@@ -240,6 +262,6 @@ const Room = ({ buildingId, roomId, children }) => {
       </div>
     </Tile>
   );
-};
+});
 
 export default Room;
