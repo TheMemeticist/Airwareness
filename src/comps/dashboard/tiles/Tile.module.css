@@ -15,13 +15,15 @@
   color: var(--off-white);
   font-size: 1vw;
   overflow: hidden;
+  transform-origin: center center;
+  z-index: 1;
 }
 
 .tile:not(.roomTile):not(.collapsed) {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%);
   z-index: 1000;
   width: 80%;
   max-width: 1200px;
@@ -52,11 +54,11 @@
   flex-direction: column;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  z-index: 1;
 }
 
 /* Add a backdrop for the expanded tile */
 .backdrop {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -64,13 +66,24 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
+.backdrop.visible {
+  opacity: 1;
+}
+
+/* Show backdrop when tile is expanded */
 .tile:not(.roomTile):not(.collapsed) + .backdrop {
   opacity: 1;
+  pointer-events: auto;
+}
+
+/* Keep backdrop visible but fade out during collapse */
+.tile.isTransitioning + .backdrop {
+  pointer-events: auto;
 }
 
 @media (max-width: 1024px) {
@@ -428,37 +441,53 @@
   }
 }
 
-/* Update placeholder styles */
+/* Update placeholder styles to maintain layout during transitions */
 .placeholder {
   display: inline-block;
-  visibility: visible;
   width: 200px;
   height: 200px;
-  min-height: unset;
-  max-height: unset;
   margin: 10px;
   opacity: 0;
-  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
   pointer-events: none;
+  position: relative;
 }
 
 .placeholder.visible {
   opacity: 1;
 }
 
-/* Ensure the expanded tile doesn't affect layout */
+/* Ensure expanded tiles don't affect layout flow */
 .tile:not(.roomTile):not(.collapsed) {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%);
   z-index: 1000;
+  margin: 0;
 }
 
-/* Keep collapsed tiles in normal flow */
+/* Keep collapsed tiles properly positioned */
 .tile.collapsed {
   position: relative;
   transform: none;
+  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  opacity: 1;
+  z-index: 1;
+}
+
+/* Update backdrop styles */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 1;
+  pointer-events: auto;
+  display: block;
 }
 
 /* Media queries for placeholder */
@@ -500,5 +529,35 @@
     width: calc(100% - 24px); /* Full width on mobile */
     aspect-ratio: 1; /* Maintain square aspect ratio */
   }
+}
+
+/* Add this new class for transitioning tiles */
+.tile.isTransitioning {
+  z-index: 1000 !important; /* Ensure it stays on top during transition */
+  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Update backdrop to be below the transitioning tile */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999; /* Keep backdrop below the tile */
+  opacity: 1;
+  pointer-events: auto;
+  display: block;
+}
+
+.tile.isTransitioning,
+.tile:not(.roomTile):not(.collapsed) {
+  z-index: 1000 !important; /* Ensure expanded and transitioning tiles stay on top */
+}
+
+/* Ensure other tiles stay at their normal z-index */
+.tile.collapsed {
+  z-index: 1;
 }
 

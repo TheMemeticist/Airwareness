@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import styles from './Tile.module.css';
 import { IconButton, Typography } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
@@ -9,15 +9,46 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
   const [tileState, setTileState] = useState({
     isCollapsed: collapsible,
     isExpanded: false,
-    isTransitioning: false
+    isTransitioning: false,
+    originalPosition: null
   });
+  const tileRef = useRef(null);
+  const [backdropVisible, setBackdropVisible] = useState(false);
+
+  const capturePosition = useCallback(() => {
+    if (tileRef.current) {
+      const rect = tileRef.current.getBoundingClientRect();
+      return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+    return null;
+  }, []);
 
   const expandTile = useCallback((e) => {
     e?.stopPropagation();
     if (collapsible && tileState.isCollapsed) {
-      setTileState(prev => ({ ...prev, isCollapsed: false, isExpanded: true }));
+      const position = capturePosition();
+      setBackdropVisible(true);
+      setTileState(prev => ({ 
+        ...prev, 
+        isCollapsed: false, 
+        isExpanded: true,
+        isTransitioning: true,
+        originalPosition: position 
+      }));
+      
+      setTimeout(() => {
+        setTileState(prev => ({
+          ...prev,
+          isTransitioning: false
+        }));
+      }, 400);
     }
-  }, [collapsible, tileState.isCollapsed]);
+  }, [collapsible, tileState.isCollapsed, capturePosition]);
 
   const toggleTile = useCallback((e) => {
     e.stopPropagation();
@@ -27,15 +58,27 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
       if (!prev.isCollapsed) {
         requestAnimationFrame(() => {
           setTileState(p => ({ ...p, isExpanded: false }));
-          requestAnimationFrame(() => {
-            setTileState(p => ({ ...p, isTransitioning: false }));
-          });
+          setTimeout(() => {
+            setTileState(p => ({ 
+              ...p, 
+              isTransitioning: false,
+              originalPosition: null 
+            }));
+            setBackdropVisible(false);
+          }, 400);
         });
         return { ...prev, isTransitioning: true, isCollapsed: true };
       }
-      return { ...prev, isCollapsed: !prev.isCollapsed, isExpanded: false };
+      const position = capturePosition();
+      setBackdropVisible(true);
+      return { 
+        ...prev, 
+        isCollapsed: false, 
+        isExpanded: true,
+        originalPosition: position 
+      };
     });
-  }, [collapsible]);
+  }, [collapsible, capturePosition]);
 
   const tileClassName = useMemo(() => {
     const classes = [
@@ -44,10 +87,11 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
       isRoomTile && styles.roomTile,
       tileState.isCollapsed && styles.cursorPointer,
       tileState.isExpanded && styles.expanded,
-      !tileState.isCollapsed && styles.uncollapsed
+      !tileState.isCollapsed && styles.uncollapsed,
+      (tileState.isTransitioning || tileState.isExpanded) && styles.isTransitioning
     ].filter(Boolean).join(' ');
     return classes;
-  }, [tileState.isCollapsed, tileState.isExpanded, isRoomTile]);
+  }, [tileState.isCollapsed, tileState.isExpanded, tileState.isTransitioning, isRoomTile]);
 
   const showPlaceholder = useMemo(() => (
     !isRoomTile && (!tileState.isCollapsed || tileState.isExpanded || tileState.isTransitioning)
@@ -61,7 +105,18 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
           style={{ transition: 'opacity 0.4s cubic-bezier(0.2, 0, 0, 1)' }}
         />
       )}
-      <div className={tileClassName} onClick={expandTile}>
+      <div 
+        ref={tileRef}
+        className={tileClassName} 
+        onClick={expandTile}
+        style={tileState.originalPosition && tileState.isTransitioning ? {
+          position: 'fixed',
+          left: `${tileState.originalPosition.left}px`,
+          top: `${tileState.originalPosition.top}px`,
+          width: `${tileState.originalPosition.width}px`,
+          height: `${tileState.originalPosition.height}px`
+        } : undefined}
+      >
         <div className={styles['tile-header-container']}>
           <Typography variant="h5" className={styles['tile-header']}>
             {typeof title === 'function' 
@@ -93,7 +148,10 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
         )}
       </div>
       {!isRoomTile && (!tileState.isCollapsed || tileState.isTransitioning) && (
-        <div className={styles.backdrop} onClick={toggleTile} />
+        <div 
+          className={`${styles.backdrop} ${backdropVisible ? styles.visible : ''}`} 
+          onClick={toggleTile}
+        />
       )}
     </>
   );
