@@ -3,6 +3,13 @@ import gsap from 'gsap';
 
 const TRANSITION_DURATION = 6.0; // 6 seconds (3x longer than original 2 seconds)
 
+const calculateCameraDistance = (dimensions) => {
+  const floorArea = dimensions.width * dimensions.length;
+  const baseDistance = Math.sqrt(floorArea);
+  // Increase the multiplier to zoom out more (was implicitly 1)
+  return baseDistance * 1.2;
+};
+
 export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
   console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });
 
@@ -78,6 +85,20 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
       ease: "power2.inOut",
       onUpdate: () => animationObject.update()
     });
+
+    if (window.threeDSceneControls) {
+      const distance = calculateCameraDistance(dimensions);
+      const currentPos = window.threeDSceneControls.camera.position;
+      const normalizedPos = currentPos.clone().normalize();
+      
+      gsap.to(window.threeDSceneControls.camera.position, {
+        x: normalizedPos.x * distance,
+        y: normalizedPos.y * distance,
+        z: normalizedPos.z * distance,
+        duration: TRANSITION_DURATION,
+        ease: "power2.inOut"
+      });
+    }
 
   } else {
     console.warn('Clipping planes not available or incorrect number');

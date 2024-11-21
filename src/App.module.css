@@ -23,6 +23,8 @@
   color: white;
   background: linear-gradient(to right, var(--light-blue), var(--royal-blue));
   font-weight: 200;
+  min-height: 100vh;
+  position: relative;
 }
 
 .header {
@@ -33,4 +35,9 @@
   font-size: var(--font-size-large);
   color: var(--color-text-primary);
   font-family: var(--font-secondary);
+}
+
+.dashboard-wrapper {
+  position: relative;
+  z-index: 1;
 }

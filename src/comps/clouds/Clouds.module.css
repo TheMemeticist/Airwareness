@@ -1,0 +1,38 @@
+.cloudsContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.cloud {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.6);
+  animation: floatCloud linear infinite;
+  opacity: 0;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.99));
+}
+
+
+.cloud svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes floatCloud {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) scale(var(--cloud-scale));
+  }
+  0.1% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(120vw) scale(var(--cloud-scale));
+  }
+} 

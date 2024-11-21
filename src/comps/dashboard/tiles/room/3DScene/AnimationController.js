@@ -11,6 +11,24 @@ export class AnimationController {
     this.isAnimating = false;
     this.frameId = null;
 
+    if (this.controls) {
+      this.controls.calculateIdealCameraPosition = (dimensions) => {
+        const maxDimension = Math.max(dimensions.width, dimensions.length);
+        const distanceMultiplier = 1.2;
+        
+        return new THREE.Vector3(
+          maxDimension * distanceMultiplier,
+          maxDimension * distanceMultiplier * 0.8,
+          maxDimension * distanceMultiplier
+        );
+      };
+
+      if (scene.userData.roomDimensions) {
+        const idealPosition = this.controls.calculateIdealCameraPosition(scene.userData.roomDimensions);
+        this.camera.position.copy(idealPosition);
+      }
+    }
+
     if (this.controls && this.targetCube) {
       this.controls.target.copy(this.targetCube.position);
       this.controls.update();
