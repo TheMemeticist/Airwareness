@@ -23,23 +23,23 @@ const getRiskColor = (risk) => {
   const riskValue = risk * 100;  // Convert from decimal to percentage
   
   if (riskValue === 0) return '#4caf50';  // Green
-  if (riskValue <= 50) {
-    // Interpolate between green and yellow (0-50%)
+  if (riskValue <= 49.5) {  // Changed from 50 to 49.5 to account for max 99%
+    // Interpolate between green and yellow (0-49.5%)
     return alpha(
       mix(
         '#4caf50',  // Green
         '#ffeb3b',  // Yellow
-        riskValue / 50
+        riskValue / 49.5
       ),
       1
     );
   }
-  // Interpolate between yellow and red (50-99%)
+  // Interpolate between yellow and red (49.5-99%)
   return alpha(
     mix(
       '#ffeb3b',  // Yellow
       '#f44336',  // Red
-      (riskValue - 50) / 49
+      (riskValue - 49.5) / 49.5
     ),
     1
   );

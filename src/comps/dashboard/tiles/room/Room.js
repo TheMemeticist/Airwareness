@@ -7,6 +7,8 @@ import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } fro
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
+import { Settings as SettingsIcon } from '@mui/icons-material';
+import RoomSettings from './RoomSettings';
 
 // Custom arrow down icon
 const ArrowDownIcon = () => (
@@ -38,6 +40,7 @@ const toMeters = {
 const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
@@ -176,42 +179,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     <Tile
       title={
         <Box className={styles['room-title-container']}>
-          <FormControl variant="outlined" size="small" className={styles['room-select-container']}>
-            <InputLabel id="room-select-label" className={styles['room-select-label']}>Room</InputLabel>
-            <Select
-              labelId="room-select-label"
-              id="room-select"
-              value={selectedRoomId}
-              onChange={handleRoomChange}
-              label="Select a Room"
-              className={styles['room-select']}
-              IconComponent={ArrowDownIcon}
-            >
-              {rooms.map((r) => (
-                <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Box className={styles['room-actions-container']}>
-            <Box className={styles['room-actions']}>
-              <Button
-                variant="contained"
-                onClick={roomActions.createNewRoom}
-                className={`${styles['action-button']} ${styles['add-room-button']}`}
-              >
-                <span className={styles['button-content']}>+</span>
-              </Button>
-              {rooms.length > 1 && (
-                <Button
-                  variant="contained"
-                  onClick={roomActions.deleteRoom}
-                  className={`${styles['action-button']} ${styles['delete-room-button']}`}
-                >
-                  <span className={styles['button-content']}>-</span>
-                </Button>
-              )}
-            </Box>
-          </Box>
+          <span className={styles['room-name']}>{room?.name}</span>
         </Box>
       }
       helptxt={helpText}
@@ -219,6 +187,14 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
       collapsible={false}
     >
       <div className={`${tileStyles['tile-content']} ${styles['room-content']}`}>
+        <Button
+          className={styles['settings-button']}
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Room Settings"
+        >
+          <SettingsIcon />
+        </Button>
+
         {room ? (
           <>
             <div className={styles['room-image-container']}>
@@ -259,6 +235,19 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         ) : (
           <p>Please select a room or create a new one.</p>
         )}
+
+        <RoomSettings
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          selectedRoomId={selectedRoomId}
+          rooms={rooms}
+          onRoomChange={(newRoomId) => {
+            setSelectedRoomId(newRoomId);
+            setSettingsOpen(false);
+          }}
+          onCreateRoom={roomActions.createNewRoom}
+          onDeleteRoom={roomActions.deleteRoom}
+        />
       </div>
     </Tile>
   );
