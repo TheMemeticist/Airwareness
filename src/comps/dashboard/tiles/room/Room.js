@@ -8,7 +8,7 @@ import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
 import { Settings as SettingsIcon } from '@mui/icons-material';
-import RoomSettings from './RoomSettings';
+import RoomSettings from './settings/RoomSettings';
 
 // Custom arrow down icon
 const ArrowDownIcon = () => (
@@ -148,6 +148,18 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     setSelectedRoomId(roomId);
   }, [roomId]);
 
+  // Add this handler for room name changes
+  const handleRoomNameChange = useCallback((roomId, newName) => {
+    dispatch({
+      type: 'UPDATE_ROOM',
+      payload: {
+        buildingId,
+        roomId,
+        roomData: { name: newName }
+      }
+    });
+  }, [buildingId, dispatch]);
+
   if (!room) {
     return (
       <Tile title="Room Not Found" isRoomTile={true}>
@@ -247,6 +259,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
           }}
           onCreateRoom={roomActions.createNewRoom}
           onDeleteRoom={roomActions.deleteRoom}
+          onRoomNameChange={handleRoomNameChange}
         />
       </div>
     </Tile>

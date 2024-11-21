@@ -1,14 +1,16 @@
 .settingsPanel {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  aspect-ratio: 1;
   background: rgba(30, 30, 30, 0.95);
   z-index: 10;
   padding: 20px;
   color: var(--off-white);
   backdrop-filter: blur(5px);
+  overflow-y: auto;
 }
 
 .settingsHeader {
@@ -103,4 +105,25 @@
   align-items: center;
   width: 100%;
   height: 100%;
+}
+
+.settingsPanel :global(.MuiTextField-root) {
+  margin-top: 8px;
+}
+
+.settingsPanel :global(.MuiTextField-root .MuiInputLabel-root) {
+  color: var(--off-white);
+}
+
+.settingsPanel :global(.MuiTextField-root .MuiOutlinedInput-root) {
+  color: var(--off-white);
+}
+
+.settingsPanel :global(.MuiTextField-root .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white);
+}
+
+.roomNameInput input::placeholder {
+  color: var(--off-white);
+  opacity: 0.7;
 } 

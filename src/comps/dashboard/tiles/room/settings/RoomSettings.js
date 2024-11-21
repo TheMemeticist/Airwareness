@@ -6,7 +6,8 @@ import {
   MenuItem,
   Box,
   IconButton,
-  Button
+  Button,
+  TextField
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styles from './RoomSettings.module.css';
@@ -18,9 +19,12 @@ const RoomSettings = ({
   rooms, 
   onRoomChange,
   onCreateRoom,
-  onDeleteRoom 
+  onDeleteRoom,
+  onRoomNameChange
 }) => {
   if (!open) return null;
+
+  const selectedRoom = rooms.find(room => room.id === selectedRoomId);
 
   return (
     <div className={styles.settingsPanel}>
@@ -66,6 +70,17 @@ const RoomSettings = ({
             )}
           </Box>
         </Box>
+        
+        {selectedRoomId && (
+          <TextField
+            size="small"
+            label="Room Name"
+            value={selectedRoom?.name || ''}
+            onChange={(e) => onRoomNameChange(selectedRoomId, e.target.value)}
+            className={styles.roomNameInput}
+            fullWidth
+          />
+        )}
       </div>
     </div>
   );
