@@ -6,21 +6,33 @@
   height: 100%;
   pointer-events: none;
   overflow: hidden;
+  z-index: 10000;
+  opacity: 1;
+  transition: opacity 2s ease-out 7.5s;
+}
+
+.cloudsContainer.afterSplash {
+  opacity: 0.4;
   z-index: 0;
+  transition: opacity 2s ease-out, z-index 0s linear 2s;
 }
 
 .cloud {
   position: absolute;
-  left: var(--initial-position);
-  transform: scale(var(--cloud-scale));
-  animation-name: moveCloud, fadeInOut;
-  animation-duration: var(--duration), var(--duration);
-  animation-timing-function: linear, ease-in-out;
-  animation-fill-mode: forwards, forwards;
-  animation-delay: calc(var(--duration) * var(--start-progress) * -1s), calc(var(--duration) * var(--start-progress) * -1s);
-  opacity: 0;
+  transform: scale(var(--cloud-scale)) translateZ(0);
+  animation: moveCloud var(--duration) linear forwards;
+  animation-delay: calc(var(--duration) * var(--start-progress) * -1s);
   filter: drop-shadow(16px 24px 16px var(--off-black-2));
   color: var(--off-white);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  opacity: 0.8;
+  transition: filter 5s ease-out, color 5s ease-out;
+}
+
+.initialCloud {
+  opacity: 0.95;
 }
 
 .cloud svg {
@@ -30,24 +42,9 @@
 
 @keyframes moveCloud {
   from {
-    left: var(--initial-position);
+    transform: scale(var(--cloud-scale)) translateX(-20vw) translateZ(0);
   }
   to {
-    left: 110%;
-  }
-}
-
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.85;
-  }
-  90% {
-    opacity: 0.85;
-  }
-  100% {
-    opacity: 0;
+    transform: scale(var(--cloud-scale)) translateX(120vw) translateZ(0);
   }
 } 

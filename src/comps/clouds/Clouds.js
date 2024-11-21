@@ -2,18 +2,16 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Cloud } from '@mui/icons-material';
 import styles from './Clouds.module.css';
 
-const CloudElement = ({ duration, size, yPosition, initialPosition, startProgress, onComplete }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
+const CloudElement = ({ duration, size, yPosition, initialPosition, startProgress, onComplete, isInitialPhase }) => {
+  const handleAnimationEnd = (e) => {
+    if (e.animationName === styles.moveCloud) {
       onComplete();
-    }, duration * (1 - startProgress) * 1000);
-    
-    return () => clearTimeout(timer);
-  }, [duration, startProgress, onComplete]);
+    }
+  };
 
   return (
     <div
-      className={styles.cloud}
+      className={`${styles.cloud} ${isInitialPhase ? styles.initialCloud : ''}`}
       style={{
         '--duration': `${duration}s`,
         '--start-progress': startProgress,
@@ -21,6 +19,7 @@ const CloudElement = ({ duration, size, yPosition, initialPosition, startProgres
         '--cloud-scale': size,
         '--initial-position': `${initialPosition}%`
       }}
+      onAnimationEnd={handleAnimationEnd}
     >
       <Cloud />
     </div>
@@ -29,22 +28,17 @@ const CloudElement = ({ duration, size, yPosition, initialPosition, startProgres
 
 const Clouds = () => {
   const cloudsRef = useRef([]);
+  const [isInitialPhase, setIsInitialPhase] = useState(true);
   const [, forceUpdate] = useState({});
   
   const createCloud = useCallback((isInitial = false) => {
-    const initialPos = Math.random() * 100;
-    const distanceToTravel = 110 - initialPos;
-    const baseSpeed = 0.15;
-    const speedVariation = baseSpeed * (0.8 + Math.random() * 0.4);
-    const duration = distanceToTravel / speedVariation;
-    
     return {
-      duration,
-      startProgress: Math.random(),
+      duration: 60 * (0.85 + Math.random() * 0.3),
+      startProgress: 0,
       size: 0.39 + Math.random() * 1.1,
       yPosition: Math.random() * 100,
-      initialPosition: initialPos,
-      key: Date.now()
+      initialPosition: -20,
+      key: Date.now() + Math.random()
     };
   }, []);
 
@@ -56,23 +50,32 @@ const Clouds = () => {
   useEffect(() => {
     const addCloudIfNeeded = () => {
       if (cloudsRef.current.length < 3) {
-        cloudsRef.current = [...cloudsRef.current, createCloud(cloudsRef.current.length === 0)];
+        cloudsRef.current = [...cloudsRef.current, createCloud()];
         forceUpdate({});
       }
     };
 
-    const interval = setInterval(addCloudIfNeeded, 5000);
+    const interval = setInterval(addCloudIfNeeded, 15000);
     addCloudIfNeeded(); // Add initial cloud
 
     return () => clearInterval(interval);
   }, [createCloud]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialPhase(false);
+    }, 7500); // Match the splash screen fade out timing
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className={styles.cloudsContainer}>
+    <div className={`${styles.cloudsContainer} ${!isInitialPhase ? styles.afterSplash : ''}`}>
       {cloudsRef.current.map(cloud => (
         <CloudElement 
           key={cloud.key} 
           {...cloud} 
+          isInitialPhase={isInitialPhase}
           onComplete={() => removeCloud(cloud.key)}
         />
       ))}
