@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Cloud } from '@mui/icons-material';
 import styles from './Clouds.module.css';
+import { useAppContext } from '../../context/AppContext';
 
 const CloudElement = ({ duration, size, yPosition, initialPosition, startProgress, onComplete, isInitialPhase }) => {
   const handleAnimationEnd = (e) => {
@@ -27,8 +28,8 @@ const CloudElement = ({ duration, size, yPosition, initialPosition, startProgres
 };
 
 const Clouds = () => {
+  const { state } = useAppContext();
   const cloudsRef = useRef([]);
-  const [isInitialPhase, setIsInitialPhase] = useState(true);
   const [, forceUpdate] = useState({});
   
   const createCloud = useCallback((isInitial = false) => {
@@ -61,21 +62,13 @@ const Clouds = () => {
     return () => clearInterval(interval);
   }, [createCloud]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialPhase(false);
-    }, 7500); // Match the splash screen fade out timing
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div className={`${styles.cloudsContainer} ${!isInitialPhase ? styles.afterSplash : ''}`}>
+    <div className={`${styles.cloudsContainer} ${!state.splashScreenVisible ? styles.afterSplash : ''}`}>
       {cloudsRef.current.map(cloud => (
         <CloudElement 
           key={cloud.key} 
           {...cloud} 
-          isInitialPhase={isInitialPhase}
+          isInitialPhase={state.splashScreenVisible}
           onComplete={() => removeCloud(cloud.key)}
         />
       ))}

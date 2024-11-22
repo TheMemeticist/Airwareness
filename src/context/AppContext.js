@@ -29,6 +29,7 @@ const initialState = {
   },
   currentPathogen: 'sars-cov-2',
   infectiousCount: 0,
+  splashScreenVisible: true,
 };
 
 const AppContext = createContext();
@@ -143,6 +144,11 @@ function reducer(state, action) {
         currentPathogen: action.payload.nextPathogenId
       };
     }
+    case 'SET_SPLASH_SCREEN_VISIBLE':
+      return {
+        ...state,
+        splashScreenVisible: action.payload
+      };
     default:
       return state;
   }

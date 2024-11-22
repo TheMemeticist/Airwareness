@@ -14,7 +14,8 @@ export class AnimationController {
     if (this.controls) {
       this.controls.calculateIdealCameraPosition = (dimensions) => {
         const maxDimension = Math.max(dimensions.width, dimensions.length);
-        const distanceMultiplier = 1.2;
+        const heightFactor = Math.max(1, dimensions.height / maxDimension);
+        const distanceMultiplier = 1.2 * heightFactor;
         
         return new THREE.Vector3(
           maxDimension * distanceMultiplier,

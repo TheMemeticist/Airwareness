@@ -302,3 +302,18 @@
 .epi-risk-params :global(.MuiList-root) {
   background-color: unset;
 }
+
+.pathogen-name {
+  color: var(--off-white);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.pathogen-select :global(.MuiSelect-icon) {
+  color: var(--off-white) !important;
+}
+
+.pathogen-select :global(.MuiSvgIcon-root) {
+  color: var(--off-white) !important;
+}

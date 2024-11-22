@@ -3,6 +3,7 @@ import styles from './SplashScreen.module.css';
 import dots from './ASP-Logo-Dots.svg';
 import box from './ASP-Logo-Box.svg';
 import fan from './ASP-Logo-Fan.svg';
+import { useAppContext } from '../../context/AppContext';
 
 const DotsLogo = ({ index }) => (
     <img
@@ -17,15 +18,17 @@ const DotsLogo = ({ index }) => (
 const SplashScreen = () => {
     const [isVisible, setIsVisible] = useState(true);
     const [headerText, setHeaderText] = useState('Air Support Project');
+    const { dispatch } = useAppContext();
     const numberOfDots = 3;
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsVisible(false);
+            dispatch({ type: 'SET_SPLASH_SCREEN_VISIBLE', payload: false });
         }, 10000);
 
         return () => clearTimeout(timer);
-    }, []);
+    }, [dispatch]);
 
     useEffect(() => {
         if (!isVisible) return;

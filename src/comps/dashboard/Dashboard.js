@@ -10,6 +10,7 @@ import EpiRisk from './tiles/epirisk/EpiRisk';
 import Occupants from './tiles/occupants/Occupants';
 import { useAppContext } from '../../context/AppContext';
 import { FormControl, InputLabel, Select, MenuItem, Box, Button } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
 
 const ArrowDownIcon = React.memo(() => (
   <svg
@@ -82,7 +83,15 @@ const Dashboard = React.memo(() => {
   return (
     <div className={styles['dashboard-wrapper']}>
       <div className={styles['dashboard-container']}>
-        <h2 className={styles['dashboard-header']}>AIR SUPPORT PROJECT</h2>
+        <a 
+          href="https://airsupportproject.com/"
+          className={styles['home-link']}
+        >
+          <HomeIcon className={styles['home-icon']} />
+        </a>
+        <div className={styles['header-container']}>
+          <h2 className={styles['dashboard-header']}>AIR SUPPORT PROJECT</h2>
+        </div>
         <Box className={styles['building-select-container']}>
           <FormControl variant="outlined" size="small" className={styles['building-select']}>
             <InputLabel id="building-select-label" className={styles['building-select-label']}>Building</InputLabel>

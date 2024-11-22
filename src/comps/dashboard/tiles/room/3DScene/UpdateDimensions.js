@@ -6,8 +6,8 @@ const TRANSITION_DURATION = 6.0; // 6 seconds (3x longer than original 2 seconds
 const calculateCameraDistance = (dimensions) => {
   const floorArea = dimensions.width * dimensions.length;
   const baseDistance = Math.sqrt(floorArea);
-  // Increase the multiplier to zoom out more (was implicitly 1)
-  return baseDistance * 1.2;
+  const heightFactor = Math.max(1, dimensions.height / Math.max(dimensions.width, dimensions.length));
+  return baseDistance * 1.2 * heightFactor;
 };
 
 export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {

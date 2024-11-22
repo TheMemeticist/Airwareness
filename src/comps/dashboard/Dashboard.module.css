@@ -11,9 +11,6 @@
   width: 80vw;
   min-height: 80vh;
   padding: 20px;
-  border: 6px solid rgba(256, 256, 256, 0.9);
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
 }
 
@@ -38,28 +35,26 @@
 .building-select {
   width: 200px;
   flex-shrink: 0;
-  font-size: 1rem !important;
-  font-family: var(--font-secondary) !important;
 }
 
-.building-select .MuiOutlinedInput-root {
-  color: var(--off-white) !important;
+.building-select :global(.MuiInputLabel-root) {
+  color: var(--off-white);
 }
 
-.building-select-label {
-  color: var(--off-white) !important;
-  font-size: 1rem !important;
-  font-family: var(--font-secondary) !important;
+.building-select :global(.MuiOutlinedInput-root) {
+  color: var(--off-white);
 }
 
-.building-select .MuiSelect-select {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 32px;
-  color: var(--off-white) !important;
-  font-family: var(--font-secondary) !important;
-  font-size: 1rem !important;
+.building-select :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--off-white);
+}
+
+.building-select :global(.MuiSelect-icon) {
+  color: var(--off-white);
+}
+
+.menu-paper :global(.MuiMenuItem-root) {
+  color: var(--text-primary);
 }
 
 .building-select-item {
@@ -98,11 +93,11 @@
 }
 
 .add-building-button {
-  background-color: var(--bright-teal) !important;
+  background-color: transparent !important;
 }
 
 .add-building-button:hover {
-  background-color: var(--bright-teal-hover) !important;
+  background-color: var(--bright-teal) !important;
 }
 
 .delete-building-button {
@@ -259,6 +254,53 @@
   .dashboard-content > *:first-child {
     grid-column: span 1;
     grid-row: span 1;
+  }
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.home-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: var(--off-white);
+  text-decoration: none;
+  border: 2px solid var(--off-white);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  transition: all 0.2s ease;
+}
+
+.home-link:hover {
+  color: var(--bright-teal);
+  border-color: var(--bright-teal);
+}
+
+.home-icon {
+  font-size: 2.5rem !important;
+}
+
+/* Adjust header container for mobile */
+@media (max-width: 768px) {
+  .header-container {
+    margin-bottom: 15px;
+  }
+  
+  .home-link {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .home-icon {
+    font-size: 2rem !important;
   }
 }
 

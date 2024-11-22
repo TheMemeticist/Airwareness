@@ -418,246 +418,158 @@ const EpiRisk = () => {
 
   return (
     <Tile 
-      title={({ isCollapsed }) => (
-        <Box className={styles['pathogen-title-container']}>
-          {isCollapsed ? (
-            <Typography className={styles['pathogen-name']}>
-              {state.pathogens[pathogen]?.name || 'Loading...'}
-            </Typography>
-          ) : (
-            <>
-              <FormControl variant="outlined" size="small" className={styles['pathogen-select-container']}>
-                <InputLabel id="pathogen-select-label" className={styles['pathogen-select-label']}>Pathogen</InputLabel>
-                <Select
-                  labelId="pathogen-select-label"
-                  id="pathogen-select"
-                  value={pathogen}
-                  onChange={handlePathogenChange}
-                  label="Select a Pathogen"
-                  className={styles['pathogen-select']}
-                  IconComponent={ArrowDownIcon}
-                  MenuProps={{
-                    sx: { 
-                      '& .MuiPaper-root': {
-                        backgroundColor: 'var(--off-black-1)',
-                        color: 'var(--off-white)',
-                        borderRadius: '4px',
-                        marginTop: '4px',
-                      },
-                      '& .MuiList-root': {
-                        padding: 0,
-                      },
-                      '& .MuiMenuItem-root': {
-                        backgroundColor: 'var(--off-black-1)',
-                        '&:hover': {
-                          backgroundColor: 'var(--off-black-2)',
-                        },
-                      },
-                    },
-                    // Keep menu aligned with select box
-                    anchorOrigin: {
-                      vertical: 'bottom',
-                      horizontal: 'left'
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'left'
-                    },
-                    // Prevent portal rendering
-                    container: document.getElementById('root'),
-                    slotProps: {
-                      paper: {
-                        style: {
-                          maxHeight: '300px',
-                        }
-                      }
-                    }
+      title="Epi-Risk" 
+      collapsible={true} 
+      icon={<CoronavirusIcon className={styles['tile-icon']} />}
+      count={`${formattedDisplayValue}%`}
+      helpText={helpText}
+    >
+      {({ isCollapsed }) => (
+        <>
+          {!isCollapsed && (
+            <div className={`${tileStyles['tile-content']} ${styles['epi-risk-container']}`}>
+              <Box className={styles['pathogen-title-container']}>
+                <FormControl variant="outlined" size="small" className={styles['pathogen-select-container']}>
+                  <InputLabel id="pathogen-select-label" className={styles['pathogen-select-label']}>Pathogen</InputLabel>
+                  <Select
+                    labelId="pathogen-select-label"
+                    id="pathogen-select"
+                    value={pathogen}
+                    onChange={handlePathogenChange}
+                    label="Select a Pathogen"
+                    className={styles['pathogen-select']}
+                    IconComponent={ArrowDownIcon}
+                  >
+                    {Object.entries(state.pathogens).map(([key, data]) => (
+                      <MenuItem key={key} value={key}>
+                        {data.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <div 
+                className={styles['epi-risk-icon-wrapper']}
+                style={{ transform: `rotate(${rotation}deg)` }}
+              >
+                <CoronavirusIcon 
+                  className={styles['epi-risk-icon']} 
+                  sx={{ 
+                    color: riskColor,
+                    fontSize: getRiskSize(positivityRate)
                   }}
-                >
-                  {Object.entries(state.pathogens).map(([key, data]) => (
-                    <MenuItem key={key} value={key}>
-                      {data.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <Box className={styles['pathogen-actions-container']}>
-                <Box className={styles['pathogen-actions']}>
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      const newId = `pathogen-${Date.now()}`;
+                />
+              </div>
+              <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
+                {formattedDisplayValue}%
+              </div>
+              
+              <Typography variant="body2" className={styles['epi-risk-description']}>
+                {riskData.infectiousCount} infectious individuals out of {totalOccupants} total
+              </Typography>
+
+              <Box 
+                display="flex" 
+                flexDirection="column" 
+                className={styles['epi-risk-params']} 
+                gap={1}
+              >
+                <Box flex={1}>
+                  <TextField
+                    className={tileStyles['tile-text-field']}
+                    label="Positivity Rate (%)"
+                    value={tempPositivityRate}
+                    onChange={handlePositivityRateChange}
+                    onBlur={handleBlur}
+                    type="number"
+                    inputProps={{ 
+                      min: getMinPositivityRate(), 
+                      max: getMaxPositivityRate(),
+                      step: 5
+                    }}
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      '& .MuiInputLabel-root': {
+                        backgroundColor: 'transparent'
+                      }
+                    }}
+                  />
+                </Box>
+                <Box flex={1}>
+                  <TextField
+                    className={tileStyles['tile-text-field']}
+                    label="Pathogen Name"
+                    value={state.pathogens[pathogen].name}
+                    onChange={(e) => {
                       dispatch({
-                        type: 'ADD_PATHOGEN',
+                        type: 'UPDATE_PATHOGEN',
                         payload: {
-                          id: newId,
-                          pathogen: {
-                            name: `New Pathogen`,
-                            quantaRate: 25,
-                            halfLife: 1.1
-                          }
+                          pathogenId: pathogen,
+                          updates: { name: e.target.value }
                         }
                       });
-                      setPathogen(newId);
                     }}
-                    className={`${styles['action-button']} ${styles['add-pathogen-button']}`}
-                  >
-                    <span className={styles['button-content']}>+</span>
-                  </Button>
-                  {Object.keys(state.pathogens).length > 1 && (
-                    <Button
-                      variant="contained"
-                      onClick={handleDeletePathogen}
-                      className={`${styles['action-button']} ${styles['delete-pathogen-button']}`}
-                    >
-                      <span className={styles['button-content']}>-</span>
-                    </Button>
-                  )}
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      '& .MuiInputLabel-root': {
+                        backgroundColor: 'transparent'
+                      }
+                    }}
+                  />
+                </Box>
+                <Box flex={1}>
+                  <TextField
+                    className={tileStyles['tile-text-field']}
+                    label="Quanta Rate (per hour)"
+                    type="number"
+                    value={quantaRate}
+                    onChange={handleQuantaRateChange}
+                    onBlur={handleQuantaRateBlur}
+                    inputProps={{ 
+                      min: 1, 
+                      step: 25 
+                    }}
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      '& .MuiInputLabel-root': {
+                        backgroundColor: 'transparent'
+                      }
+                    }}
+                  />
+                </Box>
+                <Box flex={1}>
+                  <TextField
+                    className={tileStyles['tile-text-field']}
+                    label="Half-life (hours)"
+                    type="number"
+                    value={halfLife}
+                    onChange={handleHalfLifeChange}
+                    inputProps={{ 
+                      min: 0.01, 
+                      max: 24, 
+                      step: 0.05 
+                    }}
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    sx={{ 
+                      '& .MuiInputLabel-root': {
+                        backgroundColor: 'transparent'
+                      }
+                    }}
+                  />
                 </Box>
               </Box>
-            </>
+            </div>
           )}
-        </Box>
+        </>
       )}
-      collapsible={true} 
-      icon={
-        <CoronavirusIcon 
-          className={styles['tile-icon']} 
-          sx={{ 
-            color: riskColor,
-            [`&.${styles['minimized-icon']}`]: { color: riskColor },
-          }} 
-        />
-      }
-      helpText={helpText}
-      count={
-        <Typography sx={{ color: 'var(--off-white)' }}>
-          {formattedDisplayValue}%
-        </Typography>
-      }
-    >
-      <div className={styles['epi-risk-container']}>
-        <div className={tileStyles['tile-content']}>
-          <div 
-            className={styles['epi-risk-icon-wrapper']}
-            style={{ transform: `rotate(${rotation}deg)` }}
-          >
-            <CoronavirusIcon 
-              className={styles['epi-risk-icon']} 
-              sx={{ 
-                color: riskColor,
-                fontSize: getRiskSize(positivityRate)
-              }}
-            />
-          </div>
-          <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
-            {formattedDisplayValue}%
-          </div>
-          
-          <Typography variant="body2" className={styles['epi-risk-description']}>
-            {riskData.infectiousCount} infectious individuals out of {totalOccupants} total
-          </Typography>
-
-          <Box 
-            display="flex" 
-            flexDirection="column" 
-            className={styles['epi-risk-params']} 
-            gap={1}
-          >
-            <Box flex={1}>
-              <TextField
-                className={tileStyles['tile-text-field']}
-                label="Positivity Rate (%)"
-                value={tempPositivityRate}
-                onChange={handlePositivityRateChange}
-                onBlur={handleBlur}
-                type="number"
-                inputProps={{ 
-                  min: getMinPositivityRate(), 
-                  max: getMaxPositivityRate(),
-                  step: 5
-                }}
-                fullWidth
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  '& .MuiInputLabel-root': {
-                    backgroundColor: 'transparent'
-                  }
-                }}
-              />
-            </Box>
-            <Box flex={1}>
-              <TextField
-                className={tileStyles['tile-text-field']}
-                label="Pathogen Name"
-                value={state.pathogens[pathogen].name}
-                onChange={(e) => {
-                  dispatch({
-                    type: 'UPDATE_PATHOGEN',
-                    payload: {
-                      pathogenId: pathogen,
-                      updates: { name: e.target.value }
-                    }
-                  });
-                }}
-                fullWidth
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  '& .MuiInputLabel-root': {
-                    backgroundColor: 'transparent'
-                  }
-                }}
-              />
-            </Box>
-            <Box flex={1}>
-              <TextField
-                className={tileStyles['tile-text-field']}
-                label="Quanta Rate (per hour)"
-                type="number"
-                value={quantaRate}
-                onChange={handleQuantaRateChange}
-                onBlur={handleQuantaRateBlur}
-                inputProps={{ 
-                  min: 1, 
-                  step: 25 
-                }}
-                fullWidth
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  '& .MuiInputLabel-root': {
-                    backgroundColor: 'transparent'
-                  }
-                }}
-              />
-            </Box>
-            <Box flex={1}>
-              <TextField
-                className={tileStyles['tile-text-field']}
-                label="Half-life (hours)"
-                type="number"
-                value={halfLife}
-                onChange={handleHalfLifeChange}
-                inputProps={{ 
-                  min: 0.01, 
-                  max: 24, 
-                  step: 0.05 
-                }}
-                fullWidth
-                variant="outlined"
-                size="small"
-                sx={{ 
-                  '& .MuiInputLabel-root': {
-                    backgroundColor: 'transparent'
-                  }
-                }}
-              />
-            </Box>
-          </Box>
-        </div>
-      </div>
     </Tile>
   );
 };
