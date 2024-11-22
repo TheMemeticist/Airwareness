@@ -102,42 +102,59 @@
 @media (max-width: 768px) {
   .tile {
     font-size: 2vw;
+    
+    .tile.collapsed,
+    .placeholder {
+      width: 180px;
+      height: 180px;
+    }
+    
+    .minimized-icon svg {
+      width: 60%;
+      height: 60%;
+    }
+    
+    .collapsed-content Typography {
+      font-size: 1rem;
+    }
+
+    /* Ensure tiles take full width */
+    width: 100% !important;
+    max-width: none !important;
   }
-  
-  .tile.collapsed,
-  .placeholder {
-    width: 180px;
-    height: 180px;
-  }
-  
-  .minimized-icon svg {
-    width: 60%;
-    height: 60%;
-  }
-  
-  .collapsed-content Typography {
-    font-size: 1rem;
+
+  .secondary-components {
+    flex-direction: column; /* Ensure vertical stacking */
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   .tile {
     font-size: 2.5vw;
+    
+    .tile.collapsed,
+    .placeholder {
+      width: 150px;
+      height: 150px;
+    }
+    
+    .minimized-icon svg {
+      width: 50%;
+      height: 50%;
+    }
+    
+    .collapsed-content Typography {
+      font-size: 0.9rem;
+    }
+    
+    /* Ensure tiles take full width */
+    width: 100% !important;
+    max-width: none !important;
   }
-  
-  .tile.collapsed,
-  .placeholder {
-    width: 150px;
-    height: 150px;
-  }
-  
-  .minimized-icon svg {
-    width: 50%;
-    height: 50%;
-  }
-  
-  .collapsed-content Typography {
-    font-size: 0.9rem;
+
+  .secondary-components {
+    gap: 10px; /* Increase gap for smaller screens */
   }
 }
 

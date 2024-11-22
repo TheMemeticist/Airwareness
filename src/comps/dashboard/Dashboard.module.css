@@ -173,7 +173,8 @@
 
 @media (max-width: 768px) {
   .dashboard-content {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: auto;
   }
 
   .dashboard-content > *:first-child {
@@ -192,6 +193,28 @@
   
   .home-icon {
     font-size: 2rem !important;
+  }
+
+  /* Ensure secondary components are visible */
+  .secondary-components {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .main-component {
+    grid-column: span 1;
+  }
+
+  .secondary-components {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .secondary-components {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
   }
 }
 
@@ -236,6 +259,11 @@
   }
 }
 
+/* Ensure all components have proper spacing and visibility */
+.dashboard-content > * {
+  min-width: 0;
+}
+
 .no-rooms-message {
   color: var(--off-white);
 }
@@ -250,10 +278,10 @@
 }
 
 .secondary-components {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1px;
+  display: grid;
+  gap: 10px;
   padding: 1px;
+  box-sizing: border-box;
 }
 
 .header-container {
@@ -285,5 +313,37 @@
 
 .home-icon {
   font-size: 2.5rem !important;
+}
+
+/* Large Desktops (≥1400px) */
+@media (min-width: 1400px) {
+  .secondary-components {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+}
+
+/* Medium Desktops (1200px - 1399px) */
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .secondary-components {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Small Desktops and Tablets (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .secondary-components {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Mobile (≤767px) */
+@media (max-width: 767px) {
+  .secondary-components {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
 }
 
