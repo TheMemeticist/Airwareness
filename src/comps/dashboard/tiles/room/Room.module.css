@@ -26,21 +26,22 @@
 
 .room-params {
   position: absolute;
-  bottom: 50px;
+  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   z-index: 2;
-  display: flex;
-  justify-content: space-between;
-  gap: 30%;
-  padding: 0 16px;
+  display: block;
+  padding: 16px;
   background: rgba(0, 0, 0, 0.0);
+  pointer-events: none;
 }
 
 .room-input {
   flex: 1;
   min-width: 0;
   background: transparent;
+  width: 100%;
 }
 
 .room-input .MuiOutlinedInput-root {
@@ -83,6 +84,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 /* Container for custom arrows stacked vertically */
@@ -445,4 +447,29 @@
   fill: var(--black);
   width: 16px;
   height: 16px;
+}
+
+/* New container for height input */
+.height-input-container {
+  position: absolute;
+  top: 50px;
+  right: 16px;
+  width: 160px;
+}
+
+/* New container for floor area input */
+.floor-area-input-container {
+  position: absolute;
+  bottom: 50px;
+  right: 16px;
+  width: 160px;
+}
+
+/* Make sure the input containers and their children can still receive pointer events */
+.height-input-container,
+.floor-area-input-container,
+.room-input-container,
+.custom-arrows,
+.custom-arrow {
+  pointer-events: auto; /* Re-enable pointer events for inputs */
 }
