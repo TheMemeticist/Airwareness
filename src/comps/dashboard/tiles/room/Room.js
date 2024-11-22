@@ -3,11 +3,11 @@ import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
 import ThreeDScene from './3DScene/3Dscene'; // Import the new component
-import { TextField, Box, Select, MenuItem, Button, FormControl, InputLabel } from '@mui/material';
+import { TextField, Box, Button, IconButton } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
-import { Settings as SettingsIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import RoomSettings from './settings/RoomSettings';
 
 // Custom arrow down icon
@@ -114,7 +114,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   // Cleanup debounced function
   useEffect(() => {
     return () => debouncedDimensionUpdate.cancel();
-  }, []);
+  }, [debouncedDimensionUpdate]);
 
   // Memoize room actions with rooms dependency
   const roomActions = useMemo(() => ({
@@ -148,7 +148,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     setSelectedRoomId(roomId);
   }, [roomId]);
 
-  // Add this handler for room name changes
+  // Handler for room name changes
   const handleRoomNameChange = useCallback((roomId, newName) => {
     dispatch({
       type: 'UPDATE_ROOM',
@@ -159,6 +159,22 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
       }
     });
   }, [buildingId, dispatch]);
+
+  // Handler for incrementing a field
+  const handleIncrement = (field) => () => {
+    const step = field === 'height' ? 5 : 500;
+    const currentValue = parseFloat(inputValues[field]) || 0;
+    const newValue = currentValue + step;
+    handleInputChange(field)({ target: { value: newValue } });
+  };
+
+  // Handler for decrementing a field
+  const handleDecrement = (field) => () => {
+    const step = field === 'height' ? 5 : 500;
+    const currentValue = parseFloat(inputValues[field]) || 0;
+    const newValue = currentValue - step >= 0 ? currentValue - step : 0;
+    handleInputChange(field)({ target: { value: newValue } });
+  };
 
   if (!room) {
     return (
@@ -219,26 +235,77 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
               />
             </div>
             <div className={styles['room-params']}>
-              <TextField
-                className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
-                label="Height (ft)"
-                type="number"
-                value={inputValues.height}
-                onChange={handleInputChange('height')}
-                variant="outlined"
-                size="small"
-                inputProps={{ step: 5 }}
-              />
-              <TextField
-                className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
-                label="Floor Area (ft²)"
-                type="number"
-                value={inputValues.floorArea}
-                onChange={handleInputChange('floorArea')}
-                variant="outlined"
-                size="small"
-                inputProps={{ step: 500 }}
-              />
+              {/* Height Input */}
+              <div className={styles['room-input-container']}>
+                <TextField
+                  className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
+                  label="Height (ft)"
+                  type="number"
+                  value={inputValues.height}
+                  onChange={handleInputChange('height')}
+                  variant="outlined"
+                  size="small"
+                  inputProps={{ step: 5 }}
+                  // Apply the hide-spin-buttons class to TextField's input
+                  InputProps={{
+                    className: styles['hide-spin-buttons']
+                  }}
+                />
+                <div className={styles['custom-arrows']}>
+                  <IconButton
+                    className={`${styles['custom-arrow']} ${styles['custom-arrow-up']}`}
+                    onClick={handleIncrement('height')}
+                    aria-label="Increase Height"
+                    size="small"
+                  >
+                    <ArrowUpward fontSize="small" sx={{ color: 'var(--off-white)' }} />
+                  </IconButton>
+                  <IconButton
+                    className={`${styles['custom-arrow']} ${styles['custom-arrow-down']}`}
+                    onClick={handleDecrement('height')}
+                    aria-label="Decrease Height"
+                    size="small"
+                  >
+                    <ArrowDownward fontSize="small" sx={{ color: 'var(--off-white)' }} />
+                  </IconButton>
+                </div>
+              </div>
+
+              {/* Floor Area Input */}
+              <div className={styles['room-input-container']}>
+                <TextField
+                  className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
+                  label="Floor Area (ft²)"
+                  type="number"
+                  value={inputValues.floorArea}
+                  onChange={handleInputChange('floorArea')}
+                  variant="outlined"
+                  size="small"
+                  inputProps={{ step: 500 }}
+                  // Apply the hide-spin-buttons class to TextField's input
+                  InputProps={{
+                    className: styles['hide-spin-buttons']
+                  }}
+                />
+                <div className={styles['custom-arrows']}>
+                  <IconButton
+                    className={`${styles['custom-arrow']} ${styles['custom-arrow-up']}`}
+                    onClick={handleIncrement('floorArea')}
+                    aria-label="Increase Floor Area"
+                    size="small"
+                  >
+                    <ArrowUpward fontSize="small" sx={{ color: 'var(--off-white)' }} />
+                  </IconButton>
+                  <IconButton
+                    className={`${styles['custom-arrow']} ${styles['custom-arrow-down']}`}
+                    onClick={handleDecrement('floorArea')}
+                    aria-label="Decrease Floor Area"
+                    size="small"
+                  >
+                    <ArrowDownward fontSize="small" sx={{ color: 'var(--off-white)' }} />
+                  </IconButton>
+                </div>
+              </div>
             </div>
             <div className={styles['room-icons-container']}>
               {children}
