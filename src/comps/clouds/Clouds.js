@@ -3,24 +3,16 @@ import { Cloud } from '@mui/icons-material';
 import styles from './Clouds.module.css';
 import { useAppContext } from '../../context/AppContext';
 
-const CloudElement = ({ duration, size, yPosition, initialPosition, startProgress, onComplete, isInitialPhase }) => {
-  const handleAnimationEnd = (e) => {
-    if (e.animationName === styles.moveCloud) {
-      onComplete();
-    }
-  };
-
+const CloudElement = ({ duration, size, yPosition, onComplete }) => {
   return (
     <div
-      className={`${styles.cloud} ${isInitialPhase ? styles.initialCloud : ''}`}
+      className={styles.cloud}
       style={{
         '--duration': `${duration}s`,
-        '--start-progress': startProgress,
         top: `${yPosition}%`,
         '--cloud-scale': size,
-        '--initial-position': `${initialPosition}%`
       }}
-      onAnimationEnd={handleAnimationEnd}
+      onAnimationEnd={onComplete}
     >
       <Cloud />
     </div>
@@ -32,13 +24,11 @@ const Clouds = () => {
   const cloudsRef = useRef([]);
   const [, forceUpdate] = useState({});
   
-  const createCloud = useCallback((isInitial = false) => {
+  const createCloud = useCallback(() => {
     return {
       duration: 60 * (0.85 + Math.random() * 0.3),
-      startProgress: 0,
       size: 0.39 + Math.random() * 1.1,
       yPosition: Math.random() * 100,
-      initialPosition: -20,
       key: Date.now() + Math.random()
     };
   }, []);
@@ -49,26 +39,29 @@ const Clouds = () => {
   }, []);
 
   useEffect(() => {
-    const addCloudIfNeeded = () => {
-      if (cloudsRef.current.length < 3) {
-        cloudsRef.current = [...cloudsRef.current, createCloud()];
-        forceUpdate({});
-      }
-    };
+    if (!state.splashScreenVisible) {
+      const addCloudIfNeeded = () => {
+        if (cloudsRef.current.length < 3) {
+          cloudsRef.current = [...cloudsRef.current, createCloud()];
+          forceUpdate({});
+        }
+      };
 
-    const interval = setInterval(addCloudIfNeeded, 15000);
-    addCloudIfNeeded(); // Add initial cloud
+      const interval = setInterval(addCloudIfNeeded, 15000);
+      addCloudIfNeeded(); // Add initial cloud
 
-    return () => clearInterval(interval);
-  }, [createCloud]);
+      return () => clearInterval(interval);
+    }
+  }, [createCloud, state.splashScreenVisible]);
+
+  if (state.splashScreenVisible) return null;
 
   return (
-    <div className={`${styles.cloudsContainer} ${!state.splashScreenVisible ? styles.afterSplash : ''}`}>
+    <div className={styles.cloudsContainer}>
       {cloudsRef.current.map(cloud => (
         <CloudElement 
           key={cloud.key} 
           {...cloud} 
-          isInitialPhase={state.splashScreenVisible}
           onComplete={() => removeCloud(cloud.key)}
         />
       ))}

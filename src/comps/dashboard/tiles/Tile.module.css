@@ -1,5 +1,5 @@
 .tile {
-  background: var(--off-black-1);
+  background: color-mix(in srgb, var(--off-black-1) 95%, transparent);
   width: calc(50% - 24px);
   aspect-ratio: 1;
   border-radius: 8px;
@@ -35,11 +35,12 @@
               width 0.4s cubic-bezier(0.2, 0, 0, 1),
               height 0.4s cubic-bezier(0.2, 0, 0, 1),
               top 0.4s cubic-bezier(0.2, 0, 0, 1),
-              left 0.4s cubic-bezier(0.2, 0, 0, 1);
+              left 0.4s cubic-bezier(0.2, 0, 0, 1),
+              background 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .tile:not(.roomTile):not(.collapsed):hover {
-  background: var(--off-black-1); /* Solid color when hovering over expanded tiles */
+  background: var(--off-black-1);
 }
 
 .roomTile {
@@ -150,6 +151,7 @@
 
 .tile-header {
   font-size: 1rem;
+  padding-left: 0.5rem;
   margin: 0;
 }
 

@@ -6,33 +6,18 @@
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  z-index: 10000;
-  opacity: 1;
-  transition: opacity 2s ease-out 7.5s;
-}
-
-.cloudsContainer.afterSplash {
-  opacity: 0.9;
   z-index: 0;
-  transition: opacity 2s ease-out, z-index 0s linear 2s;
+  opacity: 0.9;
 }
 
 .cloud {
   position: absolute;
   transform: scale(var(--cloud-scale)) translateZ(0);
   animation: moveCloud var(--duration) linear forwards;
-  animation-delay: calc(var(--duration) * var(--start-progress) * -1s);
-  filter: drop-shadow(16px 24px 16px var(--off-black-2));
-  color: var(--off-white);
+  filter: drop-shadow(16px 24px 16px rgba(0, 0, 0, 0.2));
+  color: #fff;
   will-change: transform;
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
   opacity: 0.8;
-  transition: filter 5s ease-out, color 5s ease-out;
-}
-
-.initialCloud {
-  opacity: 0.95;
 }
 
 .cloud svg {
