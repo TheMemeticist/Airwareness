@@ -1,18 +1,15 @@
 import * as THREE from 'three';
 
 export class ParticleManager {
-  constructor(particleCount, dimensions) {
+  constructor(particleCount, dimensions, baseHalfLife) {
     this.particleCount = particleCount;
     this.dimensions = dimensions;
+    this.baseHalfLife = baseHalfLife;
     
     // Initialize buffers
     this.positions = new Float32Array(particleCount * 3);
     this.velocities = new Float32Array(particleCount * 3);
     this.lifespans = new Float32Array(particleCount);
-    
-    // Adjust these values for longer lifespans
-    this.minLifespan = 15000;  // 15 seconds
-    this.maxLifespan = 30000;  // 30 seconds
     
     this.clippingPlanes = [];
     this.collisionMeshes = [];
@@ -36,8 +33,13 @@ export class ParticleManager {
 
   initializeLifespans() {
     for (let i = 0; i < this.particleCount; i++) {
-      this.lifespans[i] = this.minLifespan + Math.random() * (this.maxLifespan - this.minLifespan);
+      this.lifespans[i] = this.calculateLifespan();
     }
+  }
+
+  calculateLifespan() {
+    // Exponential decay: lifespan = (T_half / ln(2)) * (-ln(1 - random))
+    return (this.baseHalfLife / Math.log(2)) * (-Math.log(1 - Math.random()));
   }
 
   initializePositions() {
@@ -57,19 +59,19 @@ export class ParticleManager {
     this.positions[idx + 1] = (Math.random() * this.dimensions.height * scaleFactor) - (this.dimensions.height * scaleFactor / 2);
     this.positions[idx + 2] = (Math.random() * this.dimensions.length * scaleFactor) - (this.dimensions.length * scaleFactor / 2);
 
-    // Reduce velocity scale for slower movement
-    const velocityScale = 0.16; // Reduced from 0.8
+    // Velocity initialization remains the same
+    const velocityScale = 0.16;
     this.velocities[idx] = (Math.random() - 0.5) * velocityScale;
     this.velocities[idx + 1] = (Math.random() - 0.5) * velocityScale;
     this.velocities[idx + 2] = (Math.random() - 0.5) * velocityScale;
 
-    // Ensure minimum velocity (also reduced)
-    const minVelocity = 0.02; // Reduced from 0.1
+    const minVelocity = 0.02;
     if (Math.abs(this.velocities[idx]) < minVelocity) this.velocities[idx] += minVelocity;
     if (Math.abs(this.velocities[idx + 1]) < minVelocity) this.velocities[idx + 1] += minVelocity;
     if (Math.abs(this.velocities[idx + 2]) < minVelocity) this.velocities[idx + 2] += minVelocity;
 
-    this.lifespans[index] = this.minLifespan + Math.random() * (this.maxLifespan - this.minLifespan);
+    // Generate lifespan in milliseconds using exponential distribution
+    this.lifespans[index] = this.calculateLifespan();
   }
 
   setClippingPlanes(planes) {

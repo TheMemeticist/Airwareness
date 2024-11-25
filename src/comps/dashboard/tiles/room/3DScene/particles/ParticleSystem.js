@@ -12,11 +12,15 @@ export class ParticleSystem {
     // Core properties
     this.baseSpeed = 2;
     this.baseParticleSize = 0.5;
-    this.maxLifespan = 10000;
-    this.minLifespan = 5000;
+    
+    // Decay rate; 1.0 corresponds to 1-hour half-life
+    this.decayRate = 1.0; // per hour
+    
+    // Define baseHalfLife in milliseconds (1 hour)
+    this.baseHalfLife = 3600000; // 3,600,000 ms = 1 hour
     
     // Initialize managers
-    this.manager = new ParticleManager(this.particleCount, dimensions);
+    this.manager = new ParticleManager(this.particleCount, dimensions, this.baseHalfLife);
     this.animator = new ParticleAnimator(this.particleCount);
     
     // Cache frequently used objects
@@ -123,6 +127,24 @@ export class ParticleSystem {
     // Force geometry update
     if (this.particleGeometry) {
       this.particleGeometry.attributes.position.needsUpdate = true;
+    }
+  }
+
+  calculateLifespan() {
+    // Using the decay formula: -ln(2)/λ * ln(1-random)
+    // This generates exponentially distributed lifespans
+    return -this.baseHalfLife * Math.log(1 - Math.random());
+  }
+
+  updateHalfLife(halfLifeHours) {
+    if (!halfLifeHours || isNaN(halfLifeHours)) return;
+    
+    // Convert hours to milliseconds
+    this.baseHalfLife = halfLifeHours * 3600000; // 3,600,000 ms = 1 hour
+    
+    // Update manager's half-life
+    if (this.manager) {
+      this.manager.baseHalfLife = this.baseHalfLife;
     }
   }
 } 

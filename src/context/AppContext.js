@@ -149,6 +149,11 @@ function reducer(state, action) {
         ...state,
         splashScreenVisible: action.payload
       };
+    case 'UPDATE_PARTICLE_HALF_LIFE':
+      return {
+        ...state,
+        particleHalfLife: action.payload
+      };
     default:
       return state;
   }

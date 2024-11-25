@@ -286,9 +286,33 @@ const EpiRisk = () => {
   };
 
   const handleHalfLifeChange = (event) => {
-    const value = event.target.value;
-    if (value === '' || (parseFloat(value) >= 0.01 && parseFloat(value) <= 24)) {
-      setHalfLife(value);
+    // Convert to number and handle precision
+    const value = parseFloat(event.target.value);
+    
+    // Allow empty input for typing
+    if (event.target.value === '') {
+      setHalfLife('');
+      return;
+    }
+
+    // Validate the input
+    if (isNaN(value)) return;
+    
+    // Ensure we keep 4 decimal places without rounding
+    const formattedValue = Number(value.toFixed(4));
+    
+    // Update if within bounds
+    if (formattedValue >= 0.0001 && formattedValue <= 24) {
+      setHalfLife(formattedValue);
+      
+      // Update pathogen in context
+      dispatch({
+        type: 'UPDATE_PATHOGEN',
+        payload: {
+          pathogenId: pathogen,
+          updates: { halfLife: formattedValue }
+        }
+      });
     }
   };
 
@@ -415,6 +439,14 @@ const EpiRisk = () => {
       });
     }, 0);
   };
+
+  useEffect(() => {
+    // Update particle system when half-life changes
+    dispatch({
+      type: 'UPDATE_PARTICLE_HALF_LIFE',
+      payload: parseFloat(halfLife)
+    });
+  }, [halfLife, dispatch]);
 
   return (
     <Tile 
@@ -551,9 +583,9 @@ const EpiRisk = () => {
                     value={halfLife}
                     onChange={handleHalfLifeChange}
                     inputProps={{ 
-                      min: 0.01, 
-                      max: 24, 
-                      step: 0.05 
+                      min: 0.0001,
+                      max: 24,
+                      step: 0.0001  // Updated step size to match minimum value precision
                     }}
                     fullWidth
                     variant="outlined"

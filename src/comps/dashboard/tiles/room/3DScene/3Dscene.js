@@ -312,6 +312,12 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
     }
   }, [state.infectiousCount]); // Watch infectious count changes
 
+  useEffect(() => {
+    if (particleSystemRef.current && state.particleHalfLife) {
+      particleSystemRef.current.updateHalfLife(state.particleHalfLife);
+    }
+  }, [state.particleHalfLife, particleSystemRef.current]);
+
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
   };

@@ -33,6 +33,7 @@ export class ParticleAnimator {
   }
 
   updateParticles(system, deltaTime) {
+    const deltaTimeMs = deltaTime; // Keep deltaTime in milliseconds
     const speedFactor = (deltaTime / 16.67) * 0.2;
 
     // Only update active particles
@@ -44,15 +45,14 @@ export class ParticleAnimator {
       system.manager.positions[idx + 1] += system.manager.velocities[idx + 1] * speedFactor;
       system.manager.positions[idx + 2] += system.manager.velocities[idx + 2] * speedFactor;
 
-      // Check position using vec3
       this.vec3.set(
         system.manager.positions[idx],
         system.manager.positions[idx + 1],
         system.manager.positions[idx + 2]
       );
 
-      // Update lifespan
-      system.manager.lifespans[i] -= deltaTime;
+      // Decrement lifespan
+      system.manager.lifespans[i] -= deltaTimeMs;
 
       // Reset particle if it's out of bounds, colliding, or expired
       if (!system.manager.checkBounds(this.vec3) || 
@@ -112,7 +112,7 @@ export class ParticleAnimator {
     }
   }
 
-  // Add easing function
+  // Easing function for transitions
   easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
