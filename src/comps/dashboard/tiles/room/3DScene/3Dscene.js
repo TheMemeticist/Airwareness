@@ -19,10 +19,10 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
   const planeHelpersRef = useRef([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [pivotCorner, setPivotCorner] = useState('topRightFront');
-  const [position, setPosition] = useState({ x: 0, y: 4, z: 0 });
+  const [position, setPosition] = useState({ x: 0, y: 2.3, z: 0 });
   const controlsRef = useRef(null);
   const targetCubeRef = useRef(null);
-  const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 4.4, z: 5 });
+  const [objectPosition, setObjectPosition] = useState({ x: 4.5, y: 3.4, z: 5 });
   const particleSystemRef = useRef(null);
   const performanceMonitorRef = useRef(null);
   const animationControllerRef = useRef(null);
