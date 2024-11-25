@@ -38,7 +38,9 @@ export class ParticleManager {
   }
 
   calculateLifespan() {
-    // Exponential decay: lifespan = (T_half / ln(2)) * (-ln(1 - random))
+    // Base lifespan on one minute to match quanta-per-minute rate
+    const baseLifespan = 60000; // 60 seconds in milliseconds
+    // Apply exponential decay using the half-life
     return (this.baseHalfLife / Math.log(2)) * (-Math.log(1 - Math.random()));
   }
 

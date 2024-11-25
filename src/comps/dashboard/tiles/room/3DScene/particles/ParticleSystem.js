@@ -103,14 +103,20 @@ export class ParticleSystem {
   }
 
   updateParticleCount() {
-    // Calculate total particles based ONLY on quanta rate and infectious count
+    // Convert quanta per hour to particles per minute
+    const particlesPerMinute = this.quantaRate / 60;
+    
+    // Calculate total particles based on particles per minute and infectious count
     const totalParticles = Math.floor(
-      this.quantaRate * 
-      this.infectiousCount
+      particlesPerMinute * 
+      this.infectiousCount * 
+      // Scale factor to maintain visual density
+      20 // This multiplier can be adjusted based on visual needs
     );
     
     console.log('Calculating new particle count:', {
       quantaRate: this.quantaRate,
+      particlesPerMinute: particlesPerMinute,
       infectiousCount: this.infectiousCount,
       totalParticles: totalParticles
     });
