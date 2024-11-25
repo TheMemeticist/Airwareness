@@ -138,11 +138,11 @@ const Dashboard = React.memo(() => {
               <div className={styles['secondary-components']}>
                 <EpiRisk />
                 <Occupants buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
-                <Co2 />
-                <Pm />
                 <CentralVentilation />
+                {/* <Co2 />
+                <Pm />
                 <AirPurifier />
-                <Aqi />
+                <Aqi /> */}
               </div>
             </div>
           ) : (

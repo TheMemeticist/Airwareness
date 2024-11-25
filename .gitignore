@@ -28,3 +28,4 @@ yarn-error.log*
 node_modules/
 yarn.lock
 countlines.sh
+debug.log
