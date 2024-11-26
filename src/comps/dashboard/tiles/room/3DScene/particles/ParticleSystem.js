@@ -6,8 +6,8 @@ export class ParticleSystem {
   constructor(scene, dimensions) {
     this.scene = scene;
     this.dimensions = dimensions;
-    this.particleCount = 2000;
-    this.activeParticles = this.particleCount;
+    this.particleCount = 20000;
+    this.activeParticles = 0;
     
     // Core properties
     this.baseSpeed = 2;
@@ -32,6 +32,9 @@ export class ParticleSystem {
     this.infectiousCount = 1;
     
     this.initialize();
+    
+    // Update particle count based on initial quanta rate
+    this.updateParticleCount();
   }
 
   initialize() {
@@ -68,6 +71,9 @@ export class ParticleSystem {
       this.particleGeometry.dispose();
       this.particleMaterial.dispose();
     }
+    
+    // Optionally reset active particles
+    this.activeParticles = 0;
   }
 
   // Delegate to animator/manager
@@ -127,11 +133,11 @@ export class ParticleSystem {
     const maxParticles = Math.floor(
       particlesPerMinute * 
       this.infectiousCount * 
-      20 // Scale factor to maintain visual density
+      100 // Scale factor to maintain visual density
     );
     
     // Cap at maximum particle count
-    this.maxActiveParticles = Math.min(maxParticles, this.particleCount);
+    this.maxActiveParticles = 30000;
     
     console.log('Updated particle system limits:', {
       quantaRate: this.quantaRate,
@@ -161,7 +167,7 @@ export class ParticleSystem {
   }
 
   calculateParticlesPerFrame(deltaTime) {
-    // Convert quanta per hour to particles per millisecond
+    // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
     const particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
     
     // Calculate particles to generate this frame
