@@ -108,20 +108,28 @@ export class ParticleSystem {
     this.manager.updateIntensity(intensity, this);
   }
 
-  updateRoomBounds(dimensions, clippingPlanes, position) {
-    this.animator.startTransition(dimensions, clippingPlanes, position);
+  async updateRoomBounds(dimensions, clippingPlanes, position) {
+    // Wait for transition to complete
+    await this.animator.startTransition(dimensions, clippingPlanes, position);
+    
+    // Update system properties after transition
+    this.dimensions = dimensions;
+    this.manager.dimensions = dimensions;
+    this.manager.clippingPlanes = clippingPlanes;
   }
 
   updateQuantaRate(rate) {
     if (!rate || isNaN(rate)) return;
     
     this.quantaRate = rate;
+    this.resetParticles();
     this.updateParticleCount();
   }
 
   updateInfectiousCount(count) {
     console.log('ParticleSystem updating infectious count:', count);
     this.infectiousCount = Math.max(1, count);
+    this.resetParticles();
     this.updateParticleCount();
   }
 
@@ -157,12 +165,10 @@ export class ParticleSystem {
   updateHalfLife(halfLifeHours) {
     if (!halfLifeHours || isNaN(halfLifeHours)) return;
     
-    // Convert hours to milliseconds
-    this.baseHalfLife = halfLifeHours * 3600000; // 3,600,000 ms = 1 hour
-    
-    // Update manager's half-life
+    this.baseHalfLife = halfLifeHours * 3600000;
     if (this.manager) {
       this.manager.baseHalfLife = this.baseHalfLife;
+      this.resetParticles();
     }
   }
 
@@ -174,5 +180,26 @@ export class ParticleSystem {
     
     // Calculate particles to generate this frame
     return particlesPerMs * deltaTime;
+  }
+
+  resetParticles() {
+    // Reset all particles
+    this.activeParticles = 0;
+    this.particlesToGenerate = 0;
+    
+    // Clear all particle positions and velocities
+    for (let i = 0; i < this.particleCount; i++) {
+      const idx = i * 3;
+      this.manager.positions[idx] = 0;
+      this.manager.positions[idx + 1] = -1000;
+      this.manager.positions[idx + 2] = 0;
+      this.manager.velocities[idx] = 0;
+      this.manager.velocities[idx + 1] = 0;
+      this.manager.velocities[idx + 2] = 0;
+      this.manager.lifespans[i] = 0;
+    }
+    
+    // Update the geometry
+    this.particleGeometry.attributes.position.needsUpdate = true;
   }
 } 

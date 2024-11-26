@@ -7,11 +7,11 @@ export class ParticleAnimator {
     // Transition states
     this.isTransitioning = false;
     this.transitionStartTime = 0;
-    this.transitionDuration = 2000;
-    this.fadeInDuration = 2000;
-    this.repositionDuration = 50;
+    this.fadeOutDuration = 2000;    // 2 seconds fade out
+    this.fadeInDuration = 2000;     // 2 seconds fade in
+    this.roomUpdateDelay = 2000;    // 2 seconds wait (total 6 seconds to match room transition)
     this.pendingDimensions = null;
-    this.transitionPhase = 'none'; // 'fadeOut', 'reposition', 'fadeIn', 'none'
+    this.transitionPhase = 'none';  // 'fadeOut', 'waiting', 'fadeIn', 'none'
     
     // Cache vector for calculations
     this.vec3 = new THREE.Vector3();
@@ -139,66 +139,68 @@ export class ParticleAnimator {
   }
 
   handleTransition(system, currentTime) {
+    if (!this.isTransitioning) return;
+
     const elapsed = currentTime - this.transitionStartTime;
-    
-    if (this.transitionPhase === 'fadeOut') {
-        const progress = Math.min(elapsed / this.transitionDuration, 1);
-        const eased = this.easeInOutQuad(1 - progress);
+
+    switch (this.transitionPhase) {
+      case 'fadeOut':
+        const fadeOutProgress = Math.min(1, elapsed / this.fadeOutDuration);
+        // Use power2.inOut easing to match room transition
+        const easedFadeOut = fadeOutProgress < 0.5 
+          ? 2 * fadeOutProgress * fadeOutProgress 
+          : 1 - Math.pow(-2 * fadeOutProgress + 2, 2) / 2;
+        system.particleMaterial.opacity = 1 - easedFadeOut;
         
-        system.particleMaterial.size = system.baseParticleSize * eased;
-        system.particleMaterial.opacity = eased;
-        
-        if (progress >= 1) {
-            // Update room dimensions
+        if (fadeOutProgress >= 1) {
+          this.transitionPhase = 'waiting';
+          this.transitionStartTime = currentTime;
+        }
+        break;
+
+      case 'waiting':
+        // Wait for room update to complete
+        if (elapsed >= this.roomUpdateDelay) {
+          if (this.pendingDimensions) {
+            system.dimensions = { ...this.pendingDimensions };
             system.manager.dimensions = { ...this.pendingDimensions };
-            system.manager.clippingPlanes = this.clippingPlanes;
-            
-            // Clean up all particles and reinitialize with current active count
-            const currentActive = system.activeParticles;
-            system.manager.initializeParticles();
-            
-            // Apply current intensity to new particles
-            for (let i = currentActive; i < system.manager.particleCount; i++) {
-                const idx = i * 3;
-                system.manager.positions[idx] = 0;
-                system.manager.positions[idx + 1] = -1000;
-                system.manager.positions[idx + 2] = 0;
-                system.manager.velocities[idx] = 0;
-                system.manager.velocities[idx + 1] = 0;
-                system.manager.velocities[idx + 2] = 0;
-                system.manager.lifespans[i] = 0;
-            }
-            
-            // Move to fade in phase
-            this.transitionPhase = 'fadeIn';
-            this.transitionStartTime = currentTime;
+            this.pendingDimensions = null;
+          }
+          
+          this.transitionPhase = 'fadeIn';
+          this.transitionStartTime = currentTime;
         }
-    } else if (this.transitionPhase === 'fadeIn') {
-        const progress = Math.min(elapsed / this.fadeInDuration, 1);
-        const eased = this.easeInOutQuad(progress);
+        break;
+
+      case 'fadeIn':
+        const fadeInProgress = Math.min(1, elapsed / this.fadeInDuration);
+        // Use power2.inOut easing to match room transition
+        const easedFadeIn = fadeInProgress < 0.5 
+          ? 2 * fadeInProgress * fadeInProgress 
+          : 1 - Math.pow(-2 * fadeInProgress + 2, 2) / 2;
+        system.particleMaterial.opacity = easedFadeIn;
         
-        system.particleMaterial.size = system.baseParticleSize * eased;
-        system.particleMaterial.opacity = eased;
-
-        if (progress >= 1) {
-            this.isTransitioning = false;
-            this.transitionPhase = 'none';
+        if (fadeInProgress >= 1) {
+          this.isTransitioning = false;
+          this.transitionPhase = 'none';
         }
+        break;
     }
-  }
-
-  // Easing function for transitions
-  easeInOutQuad(t) {
-    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 
   startTransition(dimensions, clippingPlanes, position) {
     this.isTransitioning = true;
     this.transitionStartTime = Date.now();
-    this.pendingDimensions = { ...dimensions };
-    this.clippingPlanes = clippingPlanes;
-    this.roomPosition = { ...position };
     this.transitionPhase = 'fadeOut';
+    this.pendingDimensions = dimensions;
+    this.clippingPlanes = clippingPlanes;
+    this.roomPosition = position;
+    
+    // Return promise that resolves after total transition time
+    return new Promise((resolve) => {
+      const totalDuration = this.fadeOutDuration + this.roomUpdateDelay + this.fadeInDuration;
+      setTimeout(resolve, totalDuration);
+    });
   }
 
   calculateParticlesPerFrame(deltaTime) {
