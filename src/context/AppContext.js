@@ -30,6 +30,7 @@ const initialState = {
   currentPathogen: 'sars-cov-2',
   infectiousCount: 0,
   splashScreenVisible: true,
+  ventilationRate: 1,
 };
 
 const AppContext = createContext();
@@ -153,6 +154,11 @@ function reducer(state, action) {
       return {
         ...state,
         particleHalfLife: action.payload
+      };
+    case 'UPDATE_VENTILATION_RATE':
+      return {
+        ...state,
+        ventilationRate: action.payload
       };
     default:
       return state;

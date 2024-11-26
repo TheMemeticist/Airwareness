@@ -2,15 +2,30 @@ import React, { useState } from 'react';
 import Tile from '../Tile';
 import styles from './AirSystem.module.css';
 import tileStyles from '../Tile.module.css'; // Import Tile styles
-import centralVentImage from './Vent-Image.png';
 import { TextField, Box, IconButton } from '@mui/material';
-import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { Add as AddIcon, Remove as RemoveIcon, Air } from '@mui/icons-material';
+import { useAppContext } from '../../../../context/AppContext';
 
 const CentralVentilation = () => {
-  const [ach, setAch] = useState('1'); // Default ACH value
+  const { state, dispatch } = useAppContext();
+  const [ach, setAch] = useState(state.ventilationRate?.toString() || '1'); // Get initial value from global state
 
-  const increaseAch = () => setAch(prev => (parseFloat(prev) + 0.1).toFixed(1));
-  const decreaseAch = () => setAch(prev => Math.max(0, parseFloat(prev) - 0.1).toFixed(1));
+  const increaseAch = () => {
+    const newValue = (parseFloat(ach) + 0.1).toFixed(1);
+    setAch(newValue);
+    dispatch({ type: 'UPDATE_VENTILATION_RATE', payload: parseFloat(newValue) });
+  };
+
+  const decreaseAch = () => {
+    const newValue = Math.max(0, parseFloat(ach) - 0.1).toFixed(1);
+    setAch(newValue);
+    dispatch({ type: 'UPDATE_VENTILATION_RATE', payload: parseFloat(newValue) });
+  };
+
+  const handleAchChange = (e) => {
+    setAch(e.target.value);
+    dispatch({ type: 'UPDATE_VENTILATION_RATE', payload: parseFloat(e.target.value) });
+  };
 
   return (
     <Tile 
@@ -18,10 +33,13 @@ const CentralVentilation = () => {
       helptxt="This represents a central HVAC system."
       collapsible={true}
       count={`${ach} ACH`}
-      icon={<img src={centralVentImage} alt="Central Ventilation" className={styles['tile-icon']} />}
+      icon={<Air className={styles['tile-icon']} />}
     >
       <div className={`${tileStyles['tile-content']} ${styles['central-vent-container']}`}>
-        <img src={centralVentImage} alt="Central Ventilation" className={styles['purifier-image']} />
+        <Air 
+          className={styles['purifier-image']}
+          sx={{ fontSize: '8rem' }}
+        />
         <Box display="flex" flexDirection="row" className={styles['vent-params']} gap={2} alignItems="center">
           <IconButton onClick={decreaseAch} className={styles['ach-button']}>
             <RemoveIcon />
@@ -31,7 +49,7 @@ const CentralVentilation = () => {
             label="ACH"
             type="number"
             value={ach}
-            onChange={(e) => setAch(e.target.value)}
+            onChange={handleAchChange}
             variant="outlined"
             size="small"
             InputProps={{ inputProps: { min: 0, step: 0.1 } }}

@@ -150,7 +150,6 @@ const EpiRisk = () => {
   // State declarations
   const [positivityRate, setPositivityRate] = useState(initialPositivityRate);
   const [tempPositivityRate, setTempPositivityRate] = useState(initialPositivityRate);
-  const [ventilationRate, setVentilationRate] = useState(4);
   const [breathingRate, setBreathingRate] = useState(360);
   const [exposureTime, setExposureTime] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -325,7 +324,7 @@ const EpiRisk = () => {
       breathingRate,
       exposureTime,
       roomVolume: getRoomVolume(),
-      ventilationRate,
+      ventilationRate: state.ventilationRate,
       halfLife
     });
   }, [
@@ -333,7 +332,7 @@ const EpiRisk = () => {
     quantaRate, 
     breathingRate,
     exposureTime, 
-    ventilationRate, 
+    state.ventilationRate,
     halfLife,
     memoizedCalculateRisk,
     getTotalOccupants,

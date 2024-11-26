@@ -168,7 +168,9 @@ export class ParticleSystem {
 
   calculateParticlesPerFrame(deltaTime) {
     // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
-    const particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
+    // Multiply to increase particle generation rate so it's easier to see
+    const partMultiFactor = 10;
+    const particlesPerMs = (this.quantaRate * this.infectiousCount * partMultiFactor) / 3600000;
     
     // Calculate particles to generate this frame
     return particlesPerMs * deltaTime;

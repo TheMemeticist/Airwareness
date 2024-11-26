@@ -11,7 +11,11 @@
   display: inline-block;
   vertical-align: top;
   flex-direction: column;
-  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1),
+              width 0.4s cubic-bezier(0.2, 0, 0, 1),
+              height 0.4s cubic-bezier(0.2, 0, 0, 1),
+              background 0.4s cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform, width, height, position;
   color: var(--off-white);
   font-size: 1vw;
   overflow: hidden;
@@ -34,9 +38,8 @@
   transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1),
               width 0.4s cubic-bezier(0.2, 0, 0, 1),
               height 0.4s cubic-bezier(0.2, 0, 0, 1),
-              top 0.4s cubic-bezier(0.2, 0, 0, 1),
-              left 0.4s cubic-bezier(0.2, 0, 0, 1),
               background 0.4s cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform, width, height, position;
 }
 
 .tile:not(.roomTile):not(.collapsed):hover {
@@ -59,9 +62,14 @@
   display: inline-flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+  transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1),
+              width 0.4s cubic-bezier(0.2, 0, 0, 1),
+              height 0.4s cubic-bezier(0.2, 0, 0, 1),
+              background 0.4s cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform, width, height;
   z-index: 1;
   opacity: 1;
+  cursor: pointer;
 }
 
 .backdrop {
@@ -467,5 +475,9 @@
     font-size: 1.3rem !important;
     padding: 16px !important;
   }
+}
+
+.cursorPointer {
+  cursor: pointer;
 }
 
