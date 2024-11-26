@@ -102,12 +102,20 @@ export class ParticleManager {
   }
 
   checkBounds(position) {
-    if (!this.clippingPlanes.length) return true;
+    if (!this.clippingPlanes.length) return { inBounds: true };
     
-    return this.clippingPlanes.every(plane => {
+    for (const plane of this.clippingPlanes) {
       const distance = plane.distanceToPoint(position);
-      return distance >= 0;
-    });
+      if (distance < 0) {
+        return {
+          inBounds: false,
+          normal: plane.normal,
+          distance: distance
+        };
+      }
+    }
+    
+    return { inBounds: true };
   }
 
   checkCollisions(position) {

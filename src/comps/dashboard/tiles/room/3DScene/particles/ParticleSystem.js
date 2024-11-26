@@ -73,8 +73,25 @@ export class ParticleSystem {
   // Delegate to animator/manager
   animate() {
     if (!this.particles) return;
+    
+    const currentTime = Date.now();
+    const deltaTime = currentTime - this.lastUpdateTime;
+    
+    // Calculate and generate new particles
+    this.particlesToGenerate = (this.particlesToGenerate || 0) + this.calculateParticlesPerFrame(deltaTime);
+    
+    // Generate whole particles when we accumulate enough
+    while (this.particlesToGenerate >= 1 && this.activeParticles < this.maxActiveParticles) {
+      const newParticleIndex = this.activeParticles;
+      this.manager.generateNewParticle(newParticleIndex);
+      this.activeParticles++;
+      this.particlesToGenerate--;
+    }
+    
     this.animator.animate(this);
     this.particleGeometry.attributes.position.needsUpdate = true;
+    
+    this.lastUpdateTime = currentTime;
   }
 
   updateIntensity(intensity) {
@@ -106,34 +123,23 @@ export class ParticleSystem {
     // Convert quanta per hour to particles per minute
     const particlesPerMinute = this.quantaRate / 60;
     
-    // Calculate total particles based on particles per minute and infectious count
-    const totalParticles = Math.floor(
+    // Calculate maximum particles based on particles per minute and infectious count
+    const maxParticles = Math.floor(
       particlesPerMinute * 
       this.infectiousCount * 
-      // Scale factor to maintain visual density
-      20 // This multiplier can be adjusted based on visual needs
+      20 // Scale factor to maintain visual density
     );
     
-    console.log('Calculating new particle count:', {
+    // Cap at maximum particle count
+    this.maxActiveParticles = Math.min(maxParticles, this.particleCount);
+    
+    console.log('Updated particle system limits:', {
       quantaRate: this.quantaRate,
       particlesPerMinute: particlesPerMinute,
       infectiousCount: this.infectiousCount,
-      totalParticles: totalParticles
+      maxParticles: maxParticles,
+      maxActiveParticles: this.maxActiveParticles
     });
-    
-    // Cap at maximum particle count
-    this.activeParticles = Math.min(totalParticles, this.particleCount);
-    
-    // Convert to intensity percentage for manager
-    const intensity = (this.activeParticles / this.particleCount) * 100;
-    
-    // Update manager with new intensity
-    this.manager.updateIntensity(intensity, this);
-    
-    // Force geometry update
-    if (this.particleGeometry) {
-      this.particleGeometry.attributes.position.needsUpdate = true;
-    }
   }
 
   calculateLifespan() {
@@ -152,5 +158,13 @@ export class ParticleSystem {
     if (this.manager) {
       this.manager.baseHalfLife = this.baseHalfLife;
     }
+  }
+
+  calculateParticlesPerFrame(deltaTime) {
+    // Convert quanta per hour to particles per millisecond
+    const particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
+    
+    // Calculate particles to generate this frame
+    return particlesPerMs * deltaTime;
   }
 } 

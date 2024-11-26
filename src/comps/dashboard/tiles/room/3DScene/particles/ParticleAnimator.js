@@ -33,11 +33,12 @@ export class ParticleAnimator {
   }
 
   updateParticles(system, deltaTime) {
-    const deltaTimeMs = deltaTime; // Keep deltaTime in milliseconds
+    const deltaTimeMs = deltaTime;
     const speedFactor = (deltaTime / 16.67) * 0.2;
 
-    // Only update active particles
-    for (let i = 0; i < system.activeParticles; i++) {
+    let activeCount = system.activeParticles;
+
+    for (let i = 0; i < activeCount; i++) {
       const idx = i * 3;
       
       // Update position based on velocity
@@ -54,13 +55,87 @@ export class ParticleAnimator {
       // Decrement lifespan
       system.manager.lifespans[i] -= deltaTimeMs;
 
-      // Reset particle if it's out of bounds, colliding, or expired
-      if (!system.manager.checkBounds(this.vec3) || 
-          system.manager.checkCollisions(this.vec3) || 
-          system.manager.lifespans[i] <= 0) {
-        system.manager.generateNewParticle(i);
+      // Handle expired particles
+      if (system.manager.lifespans[i] <= 0) {
+        // Move expired particle out of view
+        system.manager.positions[idx] = 0;
+        system.manager.positions[idx + 1] = -1000;
+        system.manager.positions[idx + 2] = 0;
+        system.manager.velocities[idx] = 0;
+        system.manager.velocities[idx + 1] = 0;
+        system.manager.velocities[idx + 2] = 0;
+        
+        // Swap with last active particle and decrease active count
+        if (i < activeCount - 1) {
+          this.swapParticles(system.manager, i, activeCount - 1);
+        }
+        activeCount--;
+        i--; // Reprocess this index since we swapped a new particle into it
+        continue;
+      }
+
+      // Handle bouncing and collisions
+      const boundsCheck = system.manager.checkBounds(this.vec3);
+      if (!boundsCheck.inBounds) {
+        // Reflect velocity off the boundary
+        if (boundsCheck.normal) {
+          const velocity = new THREE.Vector3(
+            system.manager.velocities[idx],
+            system.manager.velocities[idx + 1],
+            system.manager.velocities[idx + 2]
+          );
+
+          // Store original speed
+          const originalSpeed = velocity.length();
+
+          // Calculate reflection
+          velocity.reflect(boundsCheck.normal);
+          
+          // Normalize and restore original speed
+          velocity.normalize().multiplyScalar(originalSpeed);
+          
+          // Update velocities
+          system.manager.velocities[idx] = velocity.x;
+          system.manager.velocities[idx + 1] = velocity.y;
+          system.manager.velocities[idx + 2] = velocity.z;
+
+          // Move particle slightly away from boundary to prevent sticking
+          this.vec3.addScaledVector(boundsCheck.normal, -boundsCheck.distance * 1.1);
+          system.manager.positions[idx] = this.vec3.x;
+          system.manager.positions[idx + 1] = this.vec3.y;
+          system.manager.positions[idx + 2] = this.vec3.z;
+        }
+      }
+      
+      if (system.manager.checkCollisions(this.vec3)) {
+        if (i < activeCount - 1) {
+          this.swapParticles(system.manager, i, activeCount - 1);
+        }
+        activeCount--;
+        i--;
       }
     }
+    
+    // Update system's active particle count
+    system.activeParticles = activeCount;
+  }
+
+  swapParticles(manager, indexA, indexB) {
+    const idxA = indexA * 3;
+    const idxB = indexB * 3;
+    
+    // Swap positions
+    for (let i = 0; i < 3; i++) {
+      [manager.positions[idxA + i], manager.positions[idxB + i]] = 
+      [manager.positions[idxB + i], manager.positions[idxA + i]];
+      
+      [manager.velocities[idxA + i], manager.velocities[idxB + i]] = 
+      [manager.velocities[idxB + i], manager.velocities[idxA + i]];
+    }
+    
+    // Swap lifespans
+    [manager.lifespans[indexA], manager.lifespans[indexB]] = 
+    [manager.lifespans[indexB], manager.lifespans[indexA]];
   }
 
   handleTransition(system, currentTime) {
@@ -124,5 +199,13 @@ export class ParticleAnimator {
     this.clippingPlanes = clippingPlanes;
     this.roomPosition = { ...position };
     this.transitionPhase = 'fadeOut';
+  }
+
+  calculateParticlesPerFrame(deltaTime) {
+    // Convert quanta per hour to particles per millisecond
+    const particlesPerMs = (this.quantaRate / 3600000);
+    
+    // Calculate particles to generate this frame
+    return particlesPerMs * deltaTime;
   }
 } 
