@@ -209,6 +209,15 @@
   .secondary-components {
     grid-column: span 1;
   }
+
+  .reset-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .reset-icon {
+    font-size: 2rem !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -345,5 +354,36 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
+}
+
+.nav-buttons-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.reset-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--off-white);
+  background: none;
+  border: 2px solid var(--off-white);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-button:hover {
+  color: var(--bright-teal);
+  border-color: var(--bright-teal);
+}
+
+.reset-icon {
+  font-size: 2.5rem !important;
 }
 

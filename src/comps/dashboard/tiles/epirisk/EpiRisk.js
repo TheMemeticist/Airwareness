@@ -451,7 +451,20 @@ const EpiRisk = () => {
     <Tile 
       title="Epi-Risk" 
       collapsible={true} 
-      icon={<CoronavirusIcon className={styles['tile-icon']} />}
+      icon={<CoronavirusIcon 
+        className={styles['tile-icon']} 
+        sx={{ 
+          color: `${riskColor} !important`,
+          fill: `${riskColor} !important`,
+          '&.MuiSvgIcon-root': {
+            color: `${riskColor} !important`,
+            fill: `${riskColor} !important`
+          },
+          '& path': {
+            fill: `${riskColor} !important`
+          }
+        }}
+      />}
       count={`${formattedDisplayValue}%`}
       helpText={helpText}
     >

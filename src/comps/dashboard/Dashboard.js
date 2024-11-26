@@ -11,6 +11,7 @@ import Occupants from './tiles/occupants/Occupants';
 import { useAppContext } from '../../context/AppContext';
 import { FormControl, InputLabel, Select, MenuItem, Box, Button } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 const ArrowDownIcon = React.memo(() => (
   <svg
@@ -80,15 +81,28 @@ const Dashboard = React.memo(() => {
     ));
   }, [state.buildings]);
 
+  const handleReset = useCallback(() => {
+    localStorage.clear();
+    window.location.reload();
+  }, []);
+
   return (
     <div className={styles['dashboard-wrapper']}>
       <div className={styles['dashboard-container']}>
-        <a 
-          href="https://airsupportproject.com/"
-          className={styles['home-link']}
-        >
-          <HomeIcon className={styles['home-icon']} />
-        </a>
+        <div className={styles['nav-buttons-container']}>
+          <a 
+            href="https://airsupportproject.com/"
+            className={styles['home-link']}
+          >
+            <HomeIcon className={styles['home-icon']} />
+          </a>
+          <button 
+            onClick={handleReset}
+            className={styles['reset-button']}
+          >
+            <RestartAltIcon className={styles['reset-icon']} />
+          </button>
+        </div>
         <div className={styles['header-container']}>
           <h2 className={styles['dashboard-header']}>AIR SUPPORT PROJECT</h2>
         </div>
