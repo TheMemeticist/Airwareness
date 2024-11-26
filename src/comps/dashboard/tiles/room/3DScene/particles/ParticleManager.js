@@ -14,6 +14,9 @@ export class ParticleManager {
     this.clippingPlanes = [];
     this.collisionMeshes = [];
     
+    this.boundaryMargin = 2.2;
+    this.bottomBoundaryMargin = 3.5;
+    
     this.initializeParticles();
   }
 
@@ -105,7 +108,10 @@ export class ParticleManager {
     if (!this.clippingPlanes.length) return { inBounds: true };
     
     for (const plane of this.clippingPlanes) {
-      const distance = plane.distanceToPoint(position);
+      const isFloor = plane.normal.y > 0.9;
+      const margin = isFloor ? this.bottomBoundaryMargin : this.boundaryMargin;
+      
+      const distance = plane.distanceToPoint(position) - margin;
       if (distance < 0) {
         return {
           inBounds: false,
