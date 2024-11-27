@@ -38,23 +38,35 @@ const toMeters = {
 };
 
 const Timer = ({ speed = 1 }) => {
+  const { state, dispatch } = useAppContext();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
+
+  // Add effect to listen for timer reset
+  useEffect(() => {
+    if (state.timerReset) {
+      resetTimer();
+    }
+  }, [state.timerReset]);
 
   useEffect(() => {
     let intervalId;
     if (isRunning) {
-      // Adjust interval based on speed (e.g., speed of 2 means timer runs 2x faster)
-      const interval = 1000 / speed; // Convert speed to milliseconds
+      const interval = 1000 / speed;
       intervalId = setInterval(() => {
         setTime(prevTime => prevTime + 1);
       }, interval);
     }
     return () => clearInterval(intervalId);
-  }, [isRunning, speed]); // Add speed to dependency array
+  }, [isRunning, speed]);
 
   const resetTimer = () => {
     setTime(0);
+    // Reset particles by triggering a quick update cycle
+    dispatch({ type: 'UPDATE_INFECTIOUS_COUNT', payload: 0 });
+    requestAnimationFrame(() => {
+      dispatch({ type: 'UPDATE_INFECTIOUS_COUNT', payload: 1 });
+    });
   };
 
   const formatTime = (seconds) => {

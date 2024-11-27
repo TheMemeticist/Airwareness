@@ -253,6 +253,7 @@ const EpiRisk = () => {
         }
       });
     }
+    dispatch({ type: 'RESET_TIMER' });
   };
 
   // Add a blur handler to ensure valid value when focus leaves
@@ -282,6 +283,7 @@ const EpiRisk = () => {
       type: 'SET_CURRENT_PATHOGEN',
       payload: selectedPathogen
     });
+    dispatch({ type: 'RESET_TIMER' });
   };
 
   const handleHalfLifeChange = (event) => {
@@ -313,6 +315,7 @@ const EpiRisk = () => {
         }
       });
     }
+    dispatch({ type: 'RESET_TIMER' });
   };
 
   // Memoize risk calculation

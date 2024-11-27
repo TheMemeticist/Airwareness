@@ -160,6 +160,11 @@ function reducer(state, action) {
         ...state,
         ventilationRate: action.payload
       };
+    case 'RESET_TIMER':
+      return {
+        ...state,
+        timerReset: Date.now()
+      };
     default:
       return state;
   }
