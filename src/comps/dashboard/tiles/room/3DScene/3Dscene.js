@@ -11,7 +11,7 @@ import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 import { useAppContext } from '../../../../../context/AppContext';
 
-const ThreeDScene = ({ dimensions, debug = false }) => {
+const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
   const { state } = useAppContext();
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -317,6 +317,12 @@ const ThreeDScene = ({ dimensions, debug = false }) => {
       particleSystemRef.current.updateHalfLife(state.particleHalfLife);
     }
   }, [state.particleHalfLife, particleSystemRef.current]);
+
+  useEffect(() => {
+    if (particleSystemRef.current) {
+      particleSystemRef.current.updateSimulationSpeed(simulationSpeed);
+    }
+  }, [simulationSpeed]);
 
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);

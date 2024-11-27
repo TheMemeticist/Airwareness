@@ -8,6 +8,7 @@ export class ParticleSystem {
     this.dimensions = dimensions;
     this.particleCount = 20000;
     this.activeParticles = 0;
+    this.simulationSpeed = 1;
     
     // Core properties
     this.baseSpeed = 2;
@@ -159,7 +160,8 @@ export class ParticleSystem {
   calculateLifespan() {
     // Using the decay formula: -ln(2)/λ * ln(1-random)
     // This generates exponentially distributed lifespans
-    return -this.baseHalfLife * Math.log(1 - Math.random());
+    // Divide by simulationSpeed to make particles decay faster at higher speeds
+    return (-this.baseHalfLife * Math.log(1 - Math.random())) / this.simulationSpeed;
   }
 
   updateHalfLife(halfLifeHours) {
@@ -174,8 +176,8 @@ export class ParticleSystem {
 
   calculateParticlesPerFrame(deltaTime) {
     // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
-    // Multiply to increase particle generation rate so it's easier to see
-    const partMultiFactor = 10;
+    // Multiply to increase particle generation rate based on simulation speed
+    const partMultiFactor = this.simulationSpeed * 10;
     const particlesPerMs = (this.quantaRate * this.infectiousCount * partMultiFactor) / 3600000;
     
     // Calculate particles to generate this frame
@@ -201,5 +203,9 @@ export class ParticleSystem {
     
     // Update the geometry
     this.particleGeometry.attributes.position.needsUpdate = true;
+  }
+
+  updateSimulationSpeed(speed) {
+    this.simulationSpeed = speed;
   }
 } 

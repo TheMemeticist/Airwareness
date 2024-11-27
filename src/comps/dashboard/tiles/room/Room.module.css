@@ -473,3 +473,95 @@
 .custom-arrow {
   pointer-events: auto; /* Re-enable pointer events for inputs */
 }
+
+/* Update the speed slider container styles */
+.speed-slider-container {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.speed-slider {
+  height: 160px;
+  padding: 8px 0;
+}
+
+/* Override MUI Slider styles */
+.speed-slider :global(.MuiSlider-root) {
+  color: var(--off-white);
+  height: 100%;
+  padding: 0 12px !important;
+}
+
+.speed-slider :global(.MuiSlider-thumb) {
+  width: 20px;
+  height: 20px;
+  background-color: var(--off-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.speed-slider :global(.MuiSlider-thumb:hover),
+.speed-slider :global(.MuiSlider-thumb.Mui-focusVisible) {
+  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.16);
+  background-color: var(--bright-yellow);
+}
+
+.speed-slider :global(.MuiSlider-track) {
+  width: 4px;
+  background-color: var(--off-white);
+  border-radius: 2px;
+}
+
+.speed-slider :global(.MuiSlider-rail) {
+  width: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* Add styles for the marks and labels */
+.speed-slider :global(.MuiSlider-markLabel) {
+  color: var(--off-white) !important;
+  font-family: var(--font-secondary);
+  font-size: 0.875rem;
+}
+
+.speed-slider :global(.MuiSlider-valueLabel) {
+  background-color: var(--off-black-1);
+  color: var(--off-white);
+  font-family: var(--font-secondary);
+}
+
+.speed-slider :global(.MuiSlider-mark) {
+  background-color: var(--off-white);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.speed-label {
+  color: var(--off-white);
+  margin-top: 8px;
+  font-size: 0.875rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-secondary);
+}
+
+.speed-label svg {
+  font-size: 16px;
+  color: var(--off-white);
+}

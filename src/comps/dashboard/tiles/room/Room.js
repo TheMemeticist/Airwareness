@@ -3,11 +3,11 @@ import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
 import ThreeDScene from './3DScene/3Dscene'; // Import the new component
-import { TextField, Box, Button, IconButton } from '@mui/material';
+import { TextField, Box, Button, IconButton, Slider } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
-import { Settings as SettingsIcon, ArrowUpward, ArrowDownward } from '@mui/icons-material';
+import { Settings as SettingsIcon, ArrowUpward, ArrowDownward, Speed as SpeedIcon } from '@mui/icons-material';
 import RoomSettings from './settings/RoomSettings';
 
 // Custom arrow down icon
@@ -41,6 +41,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [speed, setSpeed] = useState(10);
   
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
@@ -232,7 +233,30 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
                   length: dimensions.length,
                   height: dimensions.height
                 }}
+                simulationSpeed={speed}
               />
+            </div>
+            <div className={styles['speed-slider-container']}>
+              <Slider
+                className={styles['speed-slider']}
+                orientation="vertical"
+                value={speed}
+                onChange={(_, newValue) => setSpeed(newValue)}
+                min={1}
+                max={50}
+                defaultValue={10}
+                aria-label="Speed"
+                valueLabelDisplay="auto"
+                marks={[
+                  { value: 1, label: '1x' },
+                  { value: 25, label: '25x' },
+                  { value: 50, label: '50x' }
+                ]}
+              />
+              <div className={styles['speed-label']}>
+                <SpeedIcon />
+                {speed}x
+              </div>
             </div>
             <div className={styles['room-params']}>
               {/* Height Input - Now in its own container */}
