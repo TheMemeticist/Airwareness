@@ -474,96 +474,130 @@
   pointer-events: auto; /* Re-enable pointer events for inputs */
 }
 
-/* Update the speed slider container styles */
+/* Speed Slider Container */
 .speed-slider-container {
   position: absolute;
-  left: 16px;
   top: 50%;
+  right: 16px;
   transform: translateY(-50%);
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width:6%;
+  min-width: 50px;
+  height: 39%;
   pointer-events: auto;
   z-index: 2;
-  background: rgba(0, 0, 0, 0.1);
-  padding: 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.5); /* black with 50% opacity */
+  padding: 16px;
+  border: 1px solid var(--off-white);
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
 }
 
+.speed-slider-container:hover {
+  border-color: var(--bright-yellow);
+}
+
+/* Label styling to match other inputs */
+.speed-label-top {
+  color: var(--light-tan);
+  font-family: var(--font-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  padding: 0 4px;
+  background: var(--off-black-1);
+  transition: color 0.3s ease;
+}
+
+/* Mark label styling */
+.speed-slider :global(.MuiSlider-markLabel) {
+  color: var(--light-tan);
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  font-size: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+/* Value label styling */
+.speed-slider :global(.MuiSlider-valueLabel) {
+  background-color: var(--off-black-1);
+  color: var(--light-tan);
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+
+/* Hover states */
+.speed-slider-container:hover .speed-label-top,
+.speed-slider-container:hover :global(.MuiSlider-markLabel),
+.speed-slider-container:hover :global(.MuiSlider-valueLabel) {
+  color: var(--bright-yellow);
+}
+
+/* Slider styling */
 .speed-slider {
   height: 160px;
   padding: 8px 0;
 }
 
-/* Override MUI Slider styles */
+/* MUI Slider overrides */
 .speed-slider :global(.MuiSlider-root) {
   color: var(--off-white);
-  height: 100%;
-  padding: 0 12px !important;
+  transition: color 0.3s ease;
 }
 
-.speed-slider :global(.MuiSlider-thumb) {
-  width: 20px;
-  height: 20px;
-  background-color: var(--off-white);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-}
-
-.speed-slider :global(.MuiSlider-thumb:hover),
-.speed-slider :global(.MuiSlider-thumb.Mui-focusVisible) {
-  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.16);
-  background-color: var(--bright-yellow);
+.speed-slider-container:hover :global(.MuiSlider-root) {
+  color: var(--bright-yellow);
 }
 
 .speed-slider :global(.MuiSlider-track) {
   width: 4px;
-  background-color: var(--off-white);
   border-radius: 2px;
 }
 
 .speed-slider :global(.MuiSlider-rail) {
   width: 4px;
-  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
+  background-color: rgba(220, 220, 220, 0.2);
 }
 
-/* Add styles for the marks and labels */
-.speed-slider :global(.MuiSlider-markLabel) {
-  color: var(--off-white) !important;
-  font-family: var(--font-secondary);
-  font-size: 0.875rem;
-}
-
-.speed-slider :global(.MuiSlider-valueLabel) {
+.speed-slider :global(.MuiSlider-thumb) {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
   background-color: var(--off-black-1);
-  color: var(--off-white);
-  font-family: var(--font-secondary);
+  transition: all 0.3s ease;
 }
 
-.speed-slider :global(.MuiSlider-mark) {
-  background-color: var(--off-white);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
+.speed-slider :global(.MuiSlider-thumb:hover),
+.speed-slider :global(.MuiSlider-thumb.Mui-focusVisible) {
+  box-shadow: 0 0 0 8px rgba(var(--bright-yellow-rgb), 0.1);
 }
 
-.speed-label {
-  color: var(--off-white);
-  margin-top: 8px;
-  font-size: 0.875rem;
-  text-align: center;
+/* Current speed display */
+.speed-value {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 4px;
+  color: var(--off-white);
   font-family: var(--font-secondary);
+  font-size: 0.875rem;
+  transition: color 0.3s ease;
 }
 
-.speed-label svg {
-  font-size: 16px;
-  color: var(--off-white);
+.speed-slider-container:hover .speed-value {
+  color: var(--bright-yellow);
+}
+
+.speed-icon {
+  font-size: 1rem;
 }
 
 .timer-container {
@@ -575,35 +609,48 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.1);
-  padding: 4px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--off-white);
   pointer-events: auto;
+  transition: border-color 0.3s ease;
+  width: 180px; /* Fixed width */
+  justify-content: space-between; /* Changed to space-between */
 }
 
-.timer-display {
-  color: var(--off-white);
-  font-family: var(--font-secondary);
-  font-size: 1.125rem;
-  min-width: 100px;
-  text-align: center;
+.timer-container:hover {
+  border-color: var(--bright-yellow);
+}
+
+.timer-container:hover .timer-display {
+  color: var(--bright-yellow);
 }
 
 .timer-reset-button {
-  width: 32px !important;
-  height: 32px !important;
-  padding: 4px !important;
+  width: 56px !important;
+  height: 56px !important;
+  padding: 8px !important;
   color: var(--off-white) !important;
   transition: all 0.3s ease !important;
-}
-
-.timer-reset-button:hover {
-  color: var(--bright-yellow) !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  min-width: unset !important;
+  background: transparent !important;
+  flex-shrink: 0;
 }
 
 .timer-reset-button svg {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
+  fill: currentColor;
+}
+
+.timer-display {
+  color: var(--light-tan);  /* Using the brighter white color from App.module.css */
+  font-family: var(--font-secondary);
+  font-size: 1rem;
+  font-weight: 500;  /* Using the medium weight from Inter font */
+}
+
+.timer-container:hover .timer-display {
+  color: var(--bright-yellow);  /* Maintain the hover effect */
 }

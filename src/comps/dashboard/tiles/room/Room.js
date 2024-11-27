@@ -3,7 +3,7 @@ import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
 import ThreeDScene from './3DScene/3Dscene'; // Import the new component
-import { TextField, Box, Button, IconButton, Slider } from '@mui/material';
+import { TextField, Box, Button, IconButton, Slider, Tooltip } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
@@ -70,22 +70,53 @@ const Timer = ({ speed = 1 }) => {
   };
 
   const formatTime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    if (seconds < 60) {
+      return `${seconds.toFixed(2)} seconds`;
+    } else if (seconds < 3600) {
+      const minutes = (seconds / 60).toFixed(2);
+      return `${minutes} minutes`;
+    } else if (seconds < 86400) {
+      const hours = (seconds / 3600).toFixed(2);
+      return `${hours} hours`;
+    } else {
+      const days = (seconds / 86400).toFixed(2);
+      return `${days} days`;
+    }
   };
 
   return (
     <div className={styles['timer-container']}>
-      <span className={styles['timer-display']}>{formatTime(time)}</span>
-      <IconButton
-        className={styles['timer-reset-button']}
-        onClick={resetTimer}
-        aria-label="Reset Timer"
+      <span className={styles['timer-display']}>
+        {formatTime(time)}
+      </span>
+      <Tooltip 
+        title="Reset Simulation" 
+        placement="bottom"
+        sx={{
+          fontSize: '14px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          '& .MuiTooltip-arrow': {
+            color: 'rgba(0, 0, 0, 0.8)'
+          }
+        }}
       >
-        <RestoreIcon />
-      </IconButton>
+        <IconButton
+          className={styles['timer-reset-button']}
+          onClick={resetTimer}
+          aria-label="Reset Timer"
+          sx={{ 
+            '&:hover': {
+              color: 'var(--bright-yellow)',
+              backgroundColor: 'rgba(221, 193, 19, 0.1)'
+            }
+          }}
+        >
+          <RestoreIcon sx={{ 
+            width: '32px', 
+            height: '32px' 
+          }} />
+        </IconButton>
+      </Tooltip>
     </div>
   );
 };
@@ -94,7 +125,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [speed, setSpeed] = useState(10);
+  const [speed, setSpeed] = useState(30);
   
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
@@ -291,6 +322,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
               />
             </div>
             <div className={styles['speed-slider-container']}>
+              <div className={styles['speed-label-top']}>Sim Speed</div>
               <Slider
                 className={styles['speed-slider']}
                 orientation="vertical"
@@ -298,19 +330,13 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
                 onChange={(_, newValue) => setSpeed(newValue)}
                 min={1}
                 max={50}
-                defaultValue={10}
                 aria-label="Speed"
                 valueLabelDisplay="auto"
                 marks={[
                   { value: 1, label: '1x' },
-                  { value: 25, label: '25x' },
                   { value: 50, label: '50x' }
                 ]}
               />
-              <div className={styles['speed-label']}>
-                <SpeedIcon />
-                {speed}x
-              </div>
             </div>
             <div className={styles['room-params']}>
               {/* Height Input - Now in its own container */}

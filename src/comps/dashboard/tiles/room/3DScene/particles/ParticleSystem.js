@@ -38,12 +38,12 @@ export class ParticleSystem {
     this.updateParticleCount();
     
     // Unified velocity configuration - ADJUSTED VALUES
-    this.BASE_SPEED = 0.025;  // Keeping the faster base movement
+    this.BASE_SPEED = 0.01;  // Keeping the faster base movement
     this.simulationSpeed = 1; // Default multiplier
     
     // Speed calculation to scale from 1x to 1.5x base speed
     this.getCurrentSpeed = () => {
-      const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 2; // Maps 1->1 and 50->1.5
+      const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 3; // Maps 1->1 and 50->1.5
       return this.BASE_SPEED * speedMultiplier;
     };
   }
