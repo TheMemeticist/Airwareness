@@ -35,14 +35,14 @@ export class ParticleAnimator {
 
   updateParticles(system, deltaTime) {
     const deltaTimeMs = deltaTime;
-    const speedFactor = (deltaTime / 16.67) * 0.2;
+    const speedFactor = (deltaTime / 16.67) * 0.2 * system.simulationSpeed;
 
     let activeCount = system.activeParticles;
 
     for (let i = 0; i < activeCount; i++) {
       const idx = i * 3;
       
-      // Update position based on velocity
+      // Update position based on velocity with adjusted speedFactor
       system.manager.positions[idx] += system.manager.velocities[idx] * speedFactor;
       system.manager.positions[idx + 1] += system.manager.velocities[idx + 1] * speedFactor;
       system.manager.positions[idx + 2] += system.manager.velocities[idx + 2] * speedFactor;

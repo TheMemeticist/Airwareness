@@ -565,3 +565,45 @@
   font-size: 16px;
   color: var(--off-white);
 }
+
+.timer-container {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: auto;
+}
+
+.timer-display {
+  color: var(--off-white);
+  font-family: var(--font-secondary);
+  font-size: 1.125rem;
+  min-width: 100px;
+  text-align: center;
+}
+
+.timer-reset-button {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 4px !important;
+  color: var(--off-white) !important;
+  transition: all 0.3s ease !important;
+}
+
+.timer-reset-button:hover {
+  color: var(--bright-yellow) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.timer-reset-button svg {
+  width: 20px;
+  height: 20px;
+}

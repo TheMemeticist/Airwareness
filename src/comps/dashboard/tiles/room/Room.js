@@ -7,7 +7,7 @@ import { TextField, Box, Button, IconButton, Slider } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
-import { Settings as SettingsIcon, ArrowUpward, ArrowDownward, Speed as SpeedIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, ArrowUpward, ArrowDownward, Speed as SpeedIcon, Restore as RestoreIcon } from '@mui/icons-material';
 import RoomSettings from './settings/RoomSettings';
 
 // Custom arrow down icon
@@ -35,6 +35,47 @@ const calculateDimensions = (floorArea, height) => ({
 const toMeters = {
   length: (ft) => ft * 0.3048,
   area: (sqft) => sqft * 0.092903
+};
+
+const Timer = ({ speed = 1 }) => {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(true);
+
+  useEffect(() => {
+    let intervalId;
+    if (isRunning) {
+      // Adjust interval based on speed (e.g., speed of 2 means timer runs 2x faster)
+      const interval = 1000 / speed; // Convert speed to milliseconds
+      intervalId = setInterval(() => {
+        setTime(prevTime => prevTime + 1);
+      }, interval);
+    }
+    return () => clearInterval(intervalId);
+  }, [isRunning, speed]); // Add speed to dependency array
+
+  const resetTimer = () => {
+    setTime(0);
+  };
+
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className={styles['timer-container']}>
+      <span className={styles['timer-display']}>{formatTime(time)}</span>
+      <IconButton
+        className={styles['timer-reset-button']}
+        onClick={resetTimer}
+        aria-label="Reset Timer"
+      >
+        <RestoreIcon />
+      </IconButton>
+    </div>
+  );
 };
 
 const Room = React.memo(({ buildingId, roomId, children }) => {
@@ -223,6 +264,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         >
           <SettingsIcon />
         </Button>
+        <Timer speed={speed} />
 
         {room ? (
           <>

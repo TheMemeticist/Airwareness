@@ -179,7 +179,7 @@ export class ParticleSystem {
   calculateParticlesPerFrame(deltaTime) {
     // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
     // Multiply to increase particle generation rate based on simulation speed
-    const partMultiFactor = this.simulationSpeed * 10;
+    const partMultiFactor = this.simulationSpeed;
     const particlesPerMs = (this.quantaRate * this.infectiousCount * partMultiFactor) / 3600000;
     
     // Calculate particles to generate this frame
@@ -209,16 +209,33 @@ export class ParticleSystem {
 
   updateSimulationSpeed(speed) {
     const previousSpeed = this.simulationSpeed;
+    this.simulationSpeed = speed;
     
     if (speed > previousSpeed) {
-        // When speeding up, update existing particle lifespans
-        this.simulationSpeed = speed;
-        for (let i = 0; i < this.activeParticles; i++) {
-            this.manager.lifespans[i] = this.calculateLifespan();
-        }
-    } else {
-        // When slowing down, only update the speed for future particles
-        this.simulationSpeed = speed;
+      // When speeding up, update existing particle lifespans
+      for (let i = 0; i < this.activeParticles; i++) {
+        this.manager.lifespans[i] = this.calculateLifespan();
+      }
+    }
+    
+    // Update particle velocities based on new speed
+    // Adjust scaling to be more gradual (speed/2000 instead of /1200)
+    const speedMultiplier = speed / 2000;
+    for (let i = 0; i < this.activeParticles; i++) {
+      const idx = i * 3;
+      // Normalize and rescale velocities
+      const vx = this.manager.velocities[idx];
+      const vy = this.manager.velocities[idx + 1];
+      const vz = this.manager.velocities[idx + 2];
+      
+      const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
+      if (length > 0) {
+        const baseSpeed = 0.03; // Reduced base velocity further
+        const targetSpeed = baseSpeed + (baseSpeed * speedMultiplier);
+        this.manager.velocities[idx] = (vx / length) * targetSpeed;
+        this.manager.velocities[idx + 1] = (vy / length) * targetSpeed;
+        this.manager.velocities[idx + 2] = (vz / length) * targetSpeed;
+      }
     }
   }
 } 
