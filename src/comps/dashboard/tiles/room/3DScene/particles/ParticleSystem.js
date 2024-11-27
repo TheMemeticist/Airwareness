@@ -21,7 +21,7 @@ export class ParticleSystem {
     this.baseHalfLife = 3600000; // 3,600,000 ms = 1 hour
     
     // Initialize managers
-    this.manager = new ParticleManager(this.particleCount, dimensions, this.baseHalfLife);
+    this.manager = new ParticleManager(this.particleCount, dimensions, this.baseHalfLife, this);
     this.animator = new ParticleAnimator(this.particleCount);
     
     // Cache frequently used objects
@@ -36,6 +36,16 @@ export class ParticleSystem {
     
     // Update particle count based on initial quanta rate
     this.updateParticleCount();
+    
+    // Unified velocity configuration - ADJUSTED VALUES
+    this.BASE_SPEED = 0.025;  // Keeping the faster base movement
+    this.simulationSpeed = 1; // Default multiplier
+    
+    // Speed calculation to scale from 1x to 1.5x base speed
+    this.getCurrentSpeed = () => {
+      const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 2; // Maps 1->1 and 50->1.5
+      return this.BASE_SPEED * speedMultiplier;
+    };
   }
 
   initialize() {
@@ -211,16 +221,7 @@ export class ParticleSystem {
     const previousSpeed = this.simulationSpeed;
     this.simulationSpeed = speed;
     
-    if (speed > previousSpeed) {
-      // When speeding up, update existing particle lifespans
-      for (let i = 0; i < this.activeParticles; i++) {
-        this.manager.lifespans[i] = this.calculateLifespan();
-      }
-    }
-    
     // Update particle velocities based on new speed
-    // Adjust scaling to be more gradual (speed/2000 instead of /1200)
-    const speedMultiplier = speed / 2000;
     for (let i = 0; i < this.activeParticles; i++) {
       const idx = i * 3;
       // Normalize and rescale velocities
@@ -230,8 +231,7 @@ export class ParticleSystem {
       
       const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
       if (length > 0) {
-        const baseSpeed = 0.03; // Reduced base velocity further
-        const targetSpeed = baseSpeed + (baseSpeed * speedMultiplier);
+        const targetSpeed = this.getCurrentSpeed();
         this.manager.velocities[idx] = (vx / length) * targetSpeed;
         this.manager.velocities[idx + 1] = (vy / length) * targetSpeed;
         this.manager.velocities[idx + 2] = (vz / length) * targetSpeed;

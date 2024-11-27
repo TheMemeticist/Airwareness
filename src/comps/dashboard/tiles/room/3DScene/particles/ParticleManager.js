@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 
 export class ParticleManager {
-  constructor(particleCount, dimensions, baseHalfLife) {
+  constructor(particleCount, dimensions, baseHalfLife, system) {
     this.particleCount = particleCount;
+    
     this.dimensions = dimensions;
     this.baseHalfLife = baseHalfLife;
+    this.system = system;
     
     // Initialize buffers
     this.positions = new Float32Array(particleCount * 3);
@@ -28,9 +30,9 @@ export class ParticleManager {
 
   initializeVelocities() {
     for (let i = 0; i < this.particleCount * 3; i += 3) {
-      this.velocities[i] = (Math.random() - 0.5) * 0.1;
-      this.velocities[i + 1] = (Math.random() - 0.5) * 0.1;
-      this.velocities[i + 2] = (Math.random() - 0.5) * 0.1;
+      this.velocities[i] = (Math.random() - 0.5) * 0.05;
+      this.velocities[i + 1] = (Math.random() - 0.5) * 0.05;
+      this.velocities[i + 2] = (Math.random() - 0.5) * 0.05;
     }
   }
 
@@ -64,18 +66,17 @@ export class ParticleManager {
     this.positions[idx + 1] = (Math.random() * this.dimensions.height * scaleFactor) - (this.dimensions.height * scaleFactor / 2);
     this.positions[idx + 2] = (Math.random() * this.dimensions.length * scaleFactor) - (this.dimensions.length * scaleFactor / 2);
 
-    // Velocity initialization remains the same
-    const velocityScale = 0.16;
-    this.velocities[idx] = (Math.random() - 0.5) * velocityScale;
-    this.velocities[idx + 1] = (Math.random() - 0.5) * velocityScale;
-    this.velocities[idx + 2] = (Math.random() - 0.5) * velocityScale;
+    const direction = new THREE.Vector3(
+      Math.random() - 0.5,
+      Math.random() - 0.5,
+      Math.random() - 0.5
+    ).normalize();
 
-    const minVelocity = 0.02;
-    if (Math.abs(this.velocities[idx]) < minVelocity) this.velocities[idx] += minVelocity;
-    if (Math.abs(this.velocities[idx + 1]) < minVelocity) this.velocities[idx + 1] += minVelocity;
-    if (Math.abs(this.velocities[idx + 2]) < minVelocity) this.velocities[idx + 2] += minVelocity;
+    const speed = this.system.getCurrentSpeed();
+    this.velocities[idx] = direction.x * speed;
+    this.velocities[idx + 1] = direction.y * speed;
+    this.velocities[idx + 2] = direction.z * speed;
 
-    // Generate lifespan in milliseconds using exponential distribution
     this.lifespans[index] = this.calculateLifespan();
   }
 

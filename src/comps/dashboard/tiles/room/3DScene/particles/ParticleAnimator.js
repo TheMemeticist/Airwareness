@@ -35,14 +35,14 @@ export class ParticleAnimator {
 
   updateParticles(system, deltaTime) {
     const deltaTimeMs = deltaTime;
-    const speedFactor = (deltaTime / 16.67) * 0.2 * system.simulationSpeed;
+    const speedFactor = deltaTime / 16.67;  // Just normalize for framerate
 
     let activeCount = system.activeParticles;
 
     for (let i = 0; i < activeCount; i++) {
       const idx = i * 3;
       
-      // Update position based on velocity with adjusted speedFactor
+      // Update position based on velocity with base speedFactor only
       system.manager.positions[idx] += system.manager.velocities[idx] * speedFactor;
       system.manager.positions[idx + 1] += system.manager.velocities[idx + 1] * speedFactor;
       system.manager.positions[idx + 2] += system.manager.velocities[idx + 2] * speedFactor;
@@ -78,7 +78,6 @@ export class ParticleAnimator {
       // Handle bouncing and collisions
       const boundsCheck = system.manager.checkBounds(this.vec3);
       if (!boundsCheck.inBounds) {
-        // Reflect velocity off the boundary
         if (boundsCheck.normal) {
           const velocity = new THREE.Vector3(
             system.manager.velocities[idx],
@@ -86,21 +85,19 @@ export class ParticleAnimator {
             system.manager.velocities[idx + 2]
           );
 
-          // Store original speed
-          const originalSpeed = velocity.length();
-
           // Calculate reflection
           velocity.reflect(boundsCheck.normal);
           
-          // Normalize and restore original speed
-          velocity.normalize().multiplyScalar(originalSpeed);
+          // Always normalize and apply current system speed
+          velocity.normalize();
+          velocity.multiplyScalar(system.getCurrentSpeed());
           
           // Update velocities
           system.manager.velocities[idx] = velocity.x;
           system.manager.velocities[idx + 1] = velocity.y;
           system.manager.velocities[idx + 2] = velocity.z;
 
-          // Move particle slightly away from boundary to prevent sticking
+          // Move particle slightly away from boundary
           this.vec3.addScaledVector(boundsCheck.normal, -boundsCheck.distance * 1.1);
           system.manager.positions[idx] = this.vec3.x;
           system.manager.positions[idx + 1] = this.vec3.y;
