@@ -25,8 +25,9 @@ export class ParticleAnimator {
     // Always update particle positions, even during transition
     this.updateParticles(system, deltaTime);
     
+    // Only handle transitions if they are active
     if (this.isTransitioning) {
-      this.handleTransition(system, currentTime);
+        this.handleTransition(system, currentTime);
     }
     
     system.lastUpdateTime = currentTime;
@@ -52,7 +53,7 @@ export class ParticleAnimator {
         system.manager.positions[idx + 2]
       );
 
-      // Decrement lifespan
+      // Decrement lifespan based on the elapsed time only
       system.manager.lifespans[i] -= deltaTimeMs;
 
       // Handle expired particles
@@ -189,18 +190,21 @@ export class ParticleAnimator {
   }
 
   startTransition(dimensions, clippingPlanes, position) {
-    this.isTransitioning = true;
-    this.transitionStartTime = Date.now();
-    this.transitionPhase = 'fadeOut';
-    this.pendingDimensions = dimensions;
-    this.clippingPlanes = clippingPlanes;
-    this.roomPosition = position;
-    
-    // Return promise that resolves after total transition time
-    return new Promise((resolve) => {
-      const totalDuration = this.fadeOutDuration + this.roomUpdateDelay + this.fadeInDuration;
-      setTimeout(resolve, totalDuration);
-    });
+    // Only start a transition if dimensions are changing
+    if (this.pendingDimensions) {
+        this.isTransitioning = true;
+        this.transitionStartTime = Date.now();
+        this.transitionPhase = 'fadeOut';
+        this.pendingDimensions = dimensions;
+        this.clippingPlanes = clippingPlanes;
+        this.roomPosition = position;
+
+        // Return promise that resolves after total transition time
+        return new Promise((resolve) => {
+            const totalDuration = this.fadeOutDuration + this.roomUpdateDelay + this.fadeInDuration;
+            setTimeout(resolve, totalDuration);
+        });
+    }
   }
 
   calculateParticlesPerFrame(deltaTime) {

@@ -321,6 +321,7 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
   useEffect(() => {
     if (particleSystemRef.current) {
       particleSystemRef.current.updateSimulationSpeed(simulationSpeed);
+      particleSystemRef.current.isTransitioning = false;
     }
   }, [simulationSpeed]);
 

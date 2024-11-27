@@ -110,9 +110,11 @@ export class ParticleSystem {
   }
 
   async updateRoomBounds(dimensions, clippingPlanes, position) {
-    // Wait for transition to complete
-    await this.animator.startTransition(dimensions, clippingPlanes, position);
-    
+    // Only call startTransition if dimensions are different
+    if (JSON.stringify(this.dimensions) !== JSON.stringify(dimensions)) {
+        await this.animator.startTransition(dimensions, clippingPlanes, position);
+    }
+
     // Update system properties after transition
     this.dimensions = dimensions;
     this.manager.dimensions = dimensions;
@@ -206,6 +208,17 @@ export class ParticleSystem {
   }
 
   updateSimulationSpeed(speed) {
-    this.simulationSpeed = speed;
+    const previousSpeed = this.simulationSpeed;
+    
+    if (speed > previousSpeed) {
+        // When speeding up, update existing particle lifespans
+        this.simulationSpeed = speed;
+        for (let i = 0; i < this.activeParticles; i++) {
+            this.manager.lifespans[i] = this.calculateLifespan();
+        }
+    } else {
+        // When slowing down, only update the speed for future particles
+        this.simulationSpeed = speed;
+    }
   }
 } 
