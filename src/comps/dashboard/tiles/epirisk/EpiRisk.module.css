@@ -317,3 +317,11 @@
 .pathogen-select :global(.MuiSvgIcon-root) {
   color: var(--off-white) !important;
 }
+
+.pathogen-subtitle {
+  color: var(--off-white);
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 0.5rem;
+}

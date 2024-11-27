@@ -478,7 +478,7 @@
 .speed-slider-container {
   position: absolute;
   top: 50%;
-  right: 16px;
+  right: 40px;
   transform: translateY(-50%);
   width:6%;
   min-width: 50px;
@@ -602,28 +602,52 @@
 
 .timer-container {
   position: absolute;
-  top: 8px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0px;
   background: rgba(0, 0, 0, 0.5);
   padding: 8px 16px;
-  border-radius: 4px;
+
+  border-radius: 8px;
   border: 1px solid var(--off-white);
   pointer-events: auto;
   transition: border-color 0.3s ease;
-  width: 180px; /* Fixed width */
-  justify-content: space-between; /* Changed to space-between */
+  width: 140px; /* Increased width to accommodate fixed-width elements */
+  justify-content: space-between;
+  height: 30px;
 }
 
-.timer-container:hover {
-  border-color: var(--bright-yellow);
+.timer-display {
+  color: var(--light-tan);
+  font-family: var(--font-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 160px; /* Fixed width for the timer display */
 }
 
-.timer-container:hover .timer-display {
+/* New classes for the timer components */
+.timer-value {
+  display: inline-block;
+  min-width: 50px; /* Fixed width for numbers */
+  text-align: right;
+}
+
+.timer-unit {
+  display: inline-block;
+  min-width: 70px; /* Fixed width for units (seconds/minutes/hours/days) */
+  text-align: left;
+}
+
+.timer-container:hover .timer-display,
+.timer-container:hover .timer-value,
+.timer-container:hover .timer-unit {
   color: var(--bright-yellow);
 }
 
@@ -642,15 +666,4 @@
   width: 32px;
   height: 32px;
   fill: currentColor;
-}
-
-.timer-display {
-  color: var(--light-tan);  /* Using the brighter white color from App.module.css */
-  font-family: var(--font-secondary);
-  font-size: 1rem;
-  font-weight: 500;  /* Using the medium weight from Inter font */
-}
-
-.timer-container:hover .timer-display {
-  color: var(--bright-yellow);  /* Maintain the hover effect */
 }

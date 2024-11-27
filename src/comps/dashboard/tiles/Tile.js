@@ -142,12 +142,11 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
         </div>
         {tileState.isCollapsed ? (
           <div className={styles['collapsed-content']}>
-            <div className={styles['minimized-icon']}>{icon}</div>
-            <Typography>{count}</Typography>
+            {typeof children === 'function' ? children({ isCollapsed: true }) : children}
           </div>
         ) : (
           typeof children === 'function' 
-            ? children({ isCollapsed: tileState.isCollapsed }) 
+            ? children({ isCollapsed: false }) 
             : children
         )}
       </div>

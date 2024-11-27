@@ -71,26 +71,36 @@ const Timer = ({ speed = 1 }) => {
 
   const formatTime = (seconds) => {
     if (seconds < 60) {
-      return `${seconds.toFixed(2)} seconds`;
+      return {
+        value: seconds.toFixed(2),
+        unit: 'seconds'
+      };
     } else if (seconds < 3600) {
-      const minutes = (seconds / 60).toFixed(2);
-      return `${minutes} minutes`;
+      return {
+        value: (seconds / 60).toFixed(2),
+        unit: 'minutes'
+      };
     } else if (seconds < 86400) {
-      const hours = (seconds / 3600).toFixed(2);
-      return `${hours} hours`;
+      return {
+        value: (seconds / 3600).toFixed(2),
+        unit: 'hours'
+      };
     } else {
-      const days = (seconds / 86400).toFixed(2);
-      return `${days} days`;
+      return {
+        value: (seconds / 86400).toFixed(2),
+        unit: 'days'
+      };
     }
   };
 
   return (
     <div className={styles['timer-container']}>
       <span className={styles['timer-display']}>
-        {formatTime(time)}
+        <span className={styles['timer-value']}>{formatTime(time).value}</span>
+        <span className={styles['timer-unit']}>{formatTime(time).unit}</span>
       </span>
       <Tooltip 
-        title="Reset Simulation" 
+        title="Restart Simulation" 
         placement="bottom"
         sx={{
           fontSize: '14px',

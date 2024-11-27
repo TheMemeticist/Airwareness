@@ -473,6 +473,20 @@ const EpiRisk = () => {
     >
       {({ isCollapsed }) => (
         <>
+          {isCollapsed && (
+            <div className={styles['collapsed-content']}>
+              <div className={styles['minimized-icon']}>
+                <CoronavirusIcon 
+                  className={styles['tile-icon']} 
+                  sx={{ color: riskColor, fontSize: '80px' }}
+                />
+              </div>
+              <Typography variant="subtitle1" className={styles['pathogen-subtitle']}>
+                {state.pathogens[pathogen].name}
+              </Typography>
+              <Typography>{formattedDisplayValue}%</Typography>
+            </div>
+          )}
           {!isCollapsed && (
             <div className={`${tileStyles['tile-content']} ${styles['epi-risk-container']}`}>
               <Box className={styles['pathogen-title-container']}>

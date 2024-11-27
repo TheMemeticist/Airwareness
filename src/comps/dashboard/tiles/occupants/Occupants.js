@@ -117,6 +117,16 @@ const Occupants = ({ buildingId, roomId }) => {
     >
       {({ isCollapsed }) => (
         <>
+          {isCollapsed && (
+            <div className={styles['collapsed-content']}>
+              <div className={styles['minimized-icon']}>
+                <PeopleIcon sx={{ fontSize: '80px' }} />
+              </div>
+              <Typography className={styles['collapsed-number']}>
+                {totalOccupants}
+              </Typography>
+            </div>
+          )}
           {!isCollapsed && (
             <div className={`${tileStyles['tile-content']} ${styles['occupants-container']}`}>
               <Box className={styles['activity-slider-container']}>
