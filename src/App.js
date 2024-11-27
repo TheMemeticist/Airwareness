@@ -9,7 +9,7 @@ const App = () => {
   return (
     <AppProvider>
       <div className={styles.app}>
-        <Clouds />
+        {/* <Clouds /> */}
         <SplashScreen />
         <Dashboard />
       </div>

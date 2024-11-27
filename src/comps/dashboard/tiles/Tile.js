@@ -118,7 +118,8 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
           left: `${tileState.originalPosition.left}px`,
           top: `${tileState.originalPosition.top}px`,
           width: `${tileState.originalPosition.width}px`,
-          height: `${tileState.originalPosition.height}px`
+          height: `${tileState.originalPosition.height}px`,
+          transition: 'all 0.4s cubic-bezier(0.2, 0, 0, 1)'
         } : undefined}
       >
         <div className={styles['tile-header-container']}>

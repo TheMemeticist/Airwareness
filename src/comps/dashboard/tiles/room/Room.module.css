@@ -608,50 +608,40 @@
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 0px;
+  gap: 8px;
   background: rgba(0, 0, 0, 0.5);
-  padding: 8px 16px;
-
+  padding: 8px;
   border-radius: 8px;
   border: 1px solid var(--off-white);
   pointer-events: auto;
-  transition: border-color 0.3s ease;
-  width: 140px; /* Increased width to accommodate fixed-width elements */
-  justify-content: space-between;
-  height: 30px;
+  transition: all 0.3s ease;
 }
 
 .timer-display {
-  color: var(--light-tan);
+  color: var(--off-white);
   font-family: var(--font-secondary);
   font-size: 1rem;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
-  min-width: 160px; /* Fixed width for the timer display */
+  min-width: 160px;
 }
 
-/* New classes for the timer components */
 .timer-value {
   display: inline-block;
-  min-width: 50px; /* Fixed width for numbers */
+  min-width: 50px;
   text-align: right;
 }
 
 .timer-unit {
   display: inline-block;
-  min-width: 70px; /* Fixed width for units (seconds/minutes/hours/days) */
+  min-width: 70px;
   text-align: left;
 }
 
-.timer-container:hover .timer-display,
-.timer-container:hover .timer-value,
-.timer-container:hover .timer-unit {
-  color: var(--bright-yellow);
-}
-
-.timer-reset-button {
+/* Button styles */
+.timer-button {
   width: 56px !important;
   height: 56px !important;
   padding: 8px !important;
@@ -662,8 +652,116 @@
   flex-shrink: 0;
 }
 
-.timer-reset-button svg {
-  width: 32px;
-  height: 32px;
-  fill: currentColor;
+/* Individual button hover */
+.timer-button:hover {
+  color: var(--bright-yellow) !important;
+  background-color: rgba(221, 193, 19, 0.1) !important;
+}
+
+.timer-icon {
+  width: 32px !important;
+  height: 32px !important;
+  fill: currentColor !important;
+  color: currentColor !important;
+}
+
+/* New styles for speed dropdown */
+.speed-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0px; /* Align with speed button */
+  transform: translateY(0);
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--off-white);
+  border-radius: 8px;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  width: 64px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.speed-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.speed-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--off-white);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.speed-dropdown-slider {
+  height: 140px;
+  color: var(--off-white) !important;
+}
+
+/* Slider customization */
+.speed-dropdown-slider :global(.MuiSlider-rail) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.speed-dropdown-slider :global(.MuiSlider-track) {
+  background-color: var(--off-white);
+}
+
+.speed-dropdown-slider :global(.MuiSlider-thumb) {
+  background-color: var(--off-white);
+  width: 12px;
+  height: 12px;
+}
+
+.speed-dropdown-slider :global(.MuiSlider-markLabel) {
+  color: var(--off-white);
+  font-size: 0.75rem;
+}
+
+/* Hover states */
+.timer-container:hover {
+  border-color: var(--bright-yellow);
+}
+
+.speed-dropdown:hover {
+  border-color: var(--bright-yellow);
+}
+
+.speed-dropdown-slider:hover {
+  color: var(--bright-yellow) !important;
+}
+
+/* Update timer button and icon styles */
+.timer-button {
+  width: 56px !important;
+  height: 56px !important;
+  padding: 8px !important;
+  color: var(--off-white) !important;
+  transition: all 0.3s ease !important;
+  min-width: unset !important;
+  background: transparent !important;
+  flex-shrink: 0;
+}
+
+.timer-button:hover {
+  color: var(--bright-yellow) !important;
+  background-color: rgba(221, 193, 19, 0.1) !important;
+}
+
+.timer-icon {
+  width: 32px !important;
+  height: 32px !important;
+  fill: currentColor !important;
+  color: currentColor !important;
+}
+
+/* Update existing timer container hover state */
+.timer-container:hover .timer-button {
+  color: var(--off-white) !important; /* Reset to default color */
 }

@@ -26,13 +26,15 @@ const ArrowDownIcon = React.memo(() => (
 
 const Dashboard = React.memo(() => {
   const { state, dispatch } = useAppContext();
+  
   const [selectedBuildingId, setSelectedBuildingId] = useState(() => 
     state.buildings.length > 0 ? state.buildings[0].id : ''
   );
 
-  const selectedBuilding = useMemo(() => {
-    return state.buildings.find(b => b.id === selectedBuildingId);
-  }, [state.buildings, selectedBuildingId]);
+  const selectedBuilding = useMemo(() => 
+    state.buildings.find(b => b.id === selectedBuildingId),
+    [state.buildings, selectedBuildingId]
+  );
 
   const handleBuildingChange = useCallback((event) => {
     setSelectedBuildingId(event.target.value);
@@ -69,8 +71,8 @@ const Dashboard = React.memo(() => {
     setSelectedBuildingId(state.buildings[0].id);
   }, [state.buildings, selectedBuildingId, dispatch]);
 
-  const buildingMenuItems = useMemo(() => {
-    return state.buildings.map((building) => (
+  const buildingMenuItems = useMemo(() => 
+    state.buildings.map((building) => (
       <MenuItem 
         key={building.id} 
         value={building.id} 
@@ -78,28 +80,69 @@ const Dashboard = React.memo(() => {
       >
         {building.name}
       </MenuItem>
-    ));
-  }, [state.buildings]);
+    )),
+    [state.buildings]
+  );
 
   const handleReset = useCallback(() => {
     localStorage.clear();
     window.location.reload();
   }, []);
 
+  const dashboardContent = useMemo(() => {
+    if (!selectedBuilding || !selectedBuilding.rooms.length) {
+      return <p className={styles['no-rooms-message']}>No rooms available</p>;
+    }
+
+    return (
+      <div className={styles['responsive-layout']}>
+        <div className={styles['main-component']}>
+          <Room 
+            buildingId={selectedBuilding.id} 
+            roomId={selectedBuilding.rooms[0].id} 
+          />
+        </div>
+        <div className={styles['secondary-components']}>
+          <EpiRisk />
+          <Occupants 
+            buildingId={selectedBuilding.id} 
+            roomId={selectedBuilding.rooms[0].id} 
+          />
+          <CentralVentilation />
+        </div>
+      </div>
+    );
+  }, [selectedBuilding]);
+
+  const buildingActions = useMemo(() => (
+    <Box className={styles['building-actions-container']}>
+      <Button
+        variant="contained"
+        onClick={createNewBuilding}
+        className={`${styles['action-button']} ${styles['add-building-button']}`}
+      >
+        <span className={styles['button-content']}>+</span>
+      </Button>
+      {state.buildings.length > 1 && (
+        <Button
+          variant="contained"
+          onClick={deleteBuilding}
+          className={`${styles['action-button']} ${styles['delete-building-button']}`}
+        >
+          <span className={styles['button-content']}>-</span>
+        </Button>
+      )}
+    </Box>
+  ), [state.buildings.length, createNewBuilding, deleteBuilding]);
+
   return (
     <div className={styles['dashboard-wrapper']}>
       <div className={styles['dashboard-container']}>
         <div className={styles['nav-buttons-container']}>
-          <a 
-            href="https://airsupportproject.com/"
-            className={styles['home-link']}
-          >
+          <a href="https://airsupportproject.com/" className={styles['home-link']}>
             <HomeIcon className={styles['home-icon']} />
           </a>
-          <button 
-            onClick={handleReset}
-            className={styles['reset-button']}
-          >
+          <button onClick={handleReset} className={styles['reset-button']}>
             <RestartAltIcon className={styles['reset-icon']} />
           </button>
         </div>
@@ -108,7 +151,9 @@ const Dashboard = React.memo(() => {
         </div>
         <Box className={styles['building-select-container']}>
           <FormControl variant="outlined" size="small" className={styles['building-select']}>
-            <InputLabel id="building-select-label" className={styles['building-select-label']}>Building</InputLabel>
+            <InputLabel id="building-select-label" className={styles['building-select-label']}>
+              Building
+            </InputLabel>
             <Select
               labelId="building-select-label"
               id="building-select"
@@ -124,45 +169,9 @@ const Dashboard = React.memo(() => {
               {buildingMenuItems}
             </Select>
           </FormControl>
-          <Box className={styles['building-actions-container']}>
-            <Button
-              variant="contained"
-              onClick={createNewBuilding}
-              className={`${styles['action-button']} ${styles['add-building-button']}`}
-            >
-              <span className={styles['button-content']}>+</span>
-            </Button>
-            {state.buildings.length > 1 && (
-              <Button
-                variant="contained"
-                onClick={deleteBuilding}
-                className={`${styles['action-button']} ${styles['delete-building-button']}`}
-              >
-                <span className={styles['button-content']}>-</span>
-              </Button>
-            )}
-          </Box>
+          {buildingActions}
         </Box>
-        <div className={styles['dashboard-content']}>
-          {selectedBuilding && selectedBuilding.rooms.length > 0 ? (
-            <div className={styles['responsive-layout']}>
-              <div className={styles['main-component']}>
-                <Room buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
-              </div>
-              <div className={styles['secondary-components']}>
-                <EpiRisk />
-                <Occupants buildingId={selectedBuilding.id} roomId={selectedBuilding.rooms[0].id} />
-                <CentralVentilation />
-                {/* <Co2 />
-                <Pm />
-                <AirPurifier />
-                <Aqi /> */}
-              </div>
-            </div>
-          ) : (
-            <p className={styles['no-rooms-message']}>No rooms available</p>
-          )}
-        </div>
+        {dashboardContent}
       </div>
     </div>
   );

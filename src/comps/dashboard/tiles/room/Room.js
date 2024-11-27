@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
@@ -37,10 +37,13 @@ const toMeters = {
   area: (sqft) => sqft * 0.092903
 };
 
-const Timer = ({ speed = 1 }) => {
+const Timer = ({ initialSpeed = 50 }) => {
   const { state, dispatch } = useAppContext();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
+  const [showSpeedControl, setShowSpeedControl] = useState(false);
+  const [speed, setSpeed] = useState(initialSpeed);
+  const timerRef = useRef(null);
 
   // Add effect to listen for timer reset
   useEffect(() => {
@@ -59,6 +62,20 @@ const Timer = ({ speed = 1 }) => {
     }
     return () => clearInterval(intervalId);
   }, [isRunning, speed]);
+
+  // Add event listener to hide speed control on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (timerRef.current && !timerRef.current.contains(event.target)) {
+        setShowSpeedControl(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [timerRef]);
 
   const resetTimer = () => {
     setTime(0);
@@ -94,39 +111,51 @@ const Timer = ({ speed = 1 }) => {
   };
 
   return (
-    <div className={styles['timer-container']}>
+    <div className={styles['timer-container']} ref={timerRef}>
+      <IconButton
+        className={styles['timer-button']}
+        onClick={() => setShowSpeedControl(!showSpeedControl)}
+        aria-label="Speed Control"
+      >
+        <SpeedIcon className={styles['timer-icon']} />
+      </IconButton>
+
       <span className={styles['timer-display']}>
         <span className={styles['timer-value']}>{formatTime(time).value}</span>
         <span className={styles['timer-unit']}>{formatTime(time).unit}</span>
       </span>
-      <Tooltip 
-        title="Restart Simulation" 
-        placement="bottom"
-        sx={{
-          fontSize: '14px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          '& .MuiTooltip-arrow': {
-            color: 'rgba(0, 0, 0, 0.8)'
-          }
-        }}
+
+      <IconButton
+        className={styles['timer-button']}
+        onClick={resetTimer}
+        aria-label="Reset Timer"
       >
-        <IconButton
-          className={styles['timer-reset-button']}
-          onClick={resetTimer}
-          aria-label="Reset Timer"
-          sx={{ 
-            '&:hover': {
-              color: 'var(--bright-yellow)',
-              backgroundColor: 'rgba(221, 193, 19, 0.1)'
-            }
-          }}
-        >
-          <RestoreIcon sx={{ 
-            width: '32px', 
-            height: '32px' 
-          }} />
-        </IconButton>
-      </Tooltip>
+        <RestoreIcon className={styles['timer-icon']} />
+      </IconButton>
+
+      {/* Speed Control Dropdown */}
+      <div className={`${styles['speed-dropdown']} ${showSpeedControl ? styles['show'] : ''}`}>
+        <div className={styles['speed-label']}>
+          <span> Speed </span>
+        </div>
+        <Slider
+          orientation="vertical"
+          value={speed}
+          onChange={(_, newValue) => setSpeed(newValue)}
+          min={1}
+          max={100}
+          aria-label="Speed"
+          valueLabelDisplay="auto"
+          marks={[
+            { value: 1, label: '1x' },
+            { value: 25, label: '25x' },
+            { value: 50, label: '50x' },
+            { value: 75, label: '75x' },
+            { value: 100, label: '100x' }
+          ]}
+          className={styles['speed-dropdown-slider']}
+        />
+      </div>
     </div>
   );
 };
@@ -329,23 +358,6 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
                   height: dimensions.height
                 }}
                 simulationSpeed={speed}
-              />
-            </div>
-            <div className={styles['speed-slider-container']}>
-              <div className={styles['speed-label-top']}>Sim Speed</div>
-              <Slider
-                className={styles['speed-slider']}
-                orientation="vertical"
-                value={speed}
-                onChange={(_, newValue) => setSpeed(newValue)}
-                min={1}
-                max={50}
-                aria-label="Speed"
-                valueLabelDisplay="auto"
-                marks={[
-                  { value: 1, label: '1x' },
-                  { value: 50, label: '50x' }
-                ]}
               />
             </div>
             <div className={styles['room-params']}>
