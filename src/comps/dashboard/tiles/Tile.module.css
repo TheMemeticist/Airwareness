@@ -43,6 +43,15 @@
               height 0.4s cubic-bezier(0.2, 0, 0, 1),
               background 0.4s cubic-bezier(0.2, 0, 0, 1);
   will-change: transform, width, height, position;
+  pointer-events: none;
+}
+
+.tile:not(.roomTile):not(.collapsed) .tile-header-container {
+  pointer-events: auto;
+}
+
+.tile:not(.roomTile):not(.collapsed) .tile-content {
+  pointer-events: auto;
 }
 
 .tile:not(.roomTile):not(.collapsed):hover {

@@ -29,6 +29,10 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
   }, []);
 
   const expandTile = useCallback((e) => {
+    if (!tileState.isCollapsed && !e?.target?.closest(`.${styles['tile-header-container']}`)) {
+      return;
+    }
+    
     e?.stopPropagation();
     if (collapsible && tileState.isCollapsed) {
       const position = capturePosition();
@@ -54,7 +58,7 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
 
   const toggleTile = useCallback((e) => {
     e.stopPropagation();
-    if (!collapsible) return;
+    if (!collapsible || tileState.isTransitioning) return;
 
     setTileState(prev => {
       if (!prev.isCollapsed) {
@@ -82,7 +86,7 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
         originalPosition: position 
       };
     });
-  }, [collapsible, capturePosition]);
+  }, [collapsible, capturePosition, tileState.isTransitioning]);
 
   const tileClassName = useMemo(() => {
     const classes = [
