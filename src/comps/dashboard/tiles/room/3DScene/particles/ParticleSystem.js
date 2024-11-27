@@ -218,21 +218,25 @@ export class ParticleSystem {
   }
 
   updateSimulationSpeed(speed) {
-    const previousSpeed = this.simulationSpeed;
     this.simulationSpeed = speed;
+    const targetSpeed = this.getCurrentSpeed();
     
-    // Update existing particle lifespans based on their original values
+    // Update velocities for all active particles
     for (let i = 0; i < this.activeParticles; i++) {
-        // Restore original time remaining
-        const timeElapsed = this.originalLifespans[i] - (this.manager.lifespans[i] * previousSpeed);
-        const originalTimeRemaining = this.originalLifespans[i] - timeElapsed;
-        
-        // Apply new simulation speed only to remaining time
-        this.manager.lifespans[i] = originalTimeRemaining / speed;
+      const idx = i * 3;
+      const vx = this.manager.velocities[idx];
+      const vy = this.manager.velocities[idx + 1];
+      const vz = this.manager.velocities[idx + 2];
+      
+      // Normalize and scale to new speed in one operation
+      const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
+      if (length > 0) {
+        const scale = targetSpeed / length;
+        this.manager.velocities[idx] *= scale;
+        this.manager.velocities[idx + 1] *= scale;
+        this.manager.velocities[idx + 2] *= scale;
+      }
     }
-    
-    // Update particle velocities
-    // ... existing velocity update code ...
   }
 
   generateNewParticle(index) {
