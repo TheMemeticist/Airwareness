@@ -37,7 +37,7 @@ const toMeters = {
   area: (sqft) => sqft * 0.092903
 };
 
-const Timer = ({ initialSpeed = 50 }) => {
+const Timer = ({ initialSpeed = 50, onSpeedChange }) => {
   const { state, dispatch } = useAppContext();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
@@ -59,9 +59,10 @@ const Timer = ({ initialSpeed = 50 }) => {
       intervalId = setInterval(() => {
         setTime(prevTime => prevTime + 1);
       }, interval);
+      onSpeedChange(speed);
     }
     return () => clearInterval(intervalId);
-  }, [isRunning, speed]);
+  }, [isRunning, speed, onSpeedChange]);
 
   // Add event listener to hide speed control on outside click
   useEffect(() => {
@@ -300,6 +301,10 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     handleInputChange(field)({ target: { value: newValue } });
   };
 
+  const handleSpeedChange = useCallback((newSpeed) => {
+    setSpeed(newSpeed);
+  }, []);
+
   if (!room) {
     return (
       <Tile title="Room Not Found" isRoomTile={true}>
@@ -346,7 +351,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         >
           <SettingsIcon />
         </Button>
-        <Timer speed={speed} />
+        <Timer speed={speed} onSpeedChange={handleSpeedChange} />
 
         {room ? (
           <>
