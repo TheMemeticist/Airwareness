@@ -46,6 +46,9 @@ export class ParticleSystem {
       const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 3; // Maps 1->1 and 50->1.5
       return this.BASE_SPEED * speedMultiplier;
     };
+    
+    // Add storage for original decay rates
+    this.originalLifespans = new Float32Array(this.particleCount);
   }
 
   initialize() {
@@ -170,10 +173,9 @@ export class ParticleSystem {
   }
 
   calculateLifespan() {
-    // Using the decay formula: -ln(2)/λ * ln(1-random)
-    // This generates exponentially distributed lifespans
-    // Divide by simulationSpeed to make particles decay faster at higher speeds
-    return (-this.baseHalfLife * Math.log(1 - Math.random())) / this.simulationSpeed;
+    // Calculate base lifespan without simulation speed adjustment
+    const baseLifespan = (-this.baseHalfLife * Math.log(1 - Math.random()));
+    return baseLifespan;
   }
 
   updateHalfLife(halfLifeHours) {
@@ -219,21 +221,30 @@ export class ParticleSystem {
     const previousSpeed = this.simulationSpeed;
     this.simulationSpeed = speed;
     
-    // Update particle velocities based on new speed
+    // Update existing particle lifespans based on their original values
     for (let i = 0; i < this.activeParticles; i++) {
-      const idx = i * 3;
-      // Normalize and rescale velocities
-      const vx = this.manager.velocities[idx];
-      const vy = this.manager.velocities[idx + 1];
-      const vz = this.manager.velocities[idx + 2];
-      
-      const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
-      if (length > 0) {
-        const targetSpeed = this.getCurrentSpeed();
-        this.manager.velocities[idx] = (vx / length) * targetSpeed;
-        this.manager.velocities[idx + 1] = (vy / length) * targetSpeed;
-        this.manager.velocities[idx + 2] = (vz / length) * targetSpeed;
-      }
+        // Restore original time remaining
+        const timeElapsed = this.originalLifespans[i] - (this.manager.lifespans[i] * previousSpeed);
+        const originalTimeRemaining = this.originalLifespans[i] - timeElapsed;
+        
+        // Apply new simulation speed only to remaining time
+        this.manager.lifespans[i] = originalTimeRemaining / speed;
     }
+    
+    // Update particle velocities
+    // ... existing velocity update code ...
+  }
+
+  generateNewParticle(index) {
+    const newParticleIndex = this.activeParticles;
+    this.manager.generateNewParticle(newParticleIndex);
+    
+    // Store the original lifespan for this particle
+    this.originalLifespans[newParticleIndex] = this.manager.lifespans[newParticleIndex];
+    
+    // Apply current simulation speed to the actual lifespan
+    this.manager.lifespans[newParticleIndex] /= this.simulationSpeed;
+    
+    this.activeParticles++;
   }
 } 
