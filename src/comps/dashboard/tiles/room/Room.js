@@ -43,7 +43,8 @@ const Timer = ({ initialSpeed = 50, onSpeedChange }) => {
   const [isRunning, setIsRunning] = useState(true);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
   const [speed, setSpeed] = useState(initialSpeed);
-  const timerRef = useRef(null);
+  const speedDropdownRef = useRef(null);
+  const speedButtonRef = useRef(null);
 
   // Add effect to listen for timer reset
   useEffect(() => {
@@ -64,19 +65,27 @@ const Timer = ({ initialSpeed = 50, onSpeedChange }) => {
     return () => clearInterval(intervalId);
   }, [isRunning, speed, onSpeedChange]);
 
-  // Add event listener to hide speed control on outside click
+  // Update the click outside handler to use refs
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (timerRef.current && !timerRef.current.contains(event.target)) {
+      if (
+        speedDropdownRef.current && 
+        !speedDropdownRef.current.contains(event.target) &&
+        speedButtonRef.current && 
+        !speedButtonRef.current.contains(event.target)
+      ) {
         setShowSpeedControl(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (showSpeedControl) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [timerRef]);
+  }, [showSpeedControl]);
 
   const resetTimer = () => {
     setTime(0);
@@ -90,72 +99,77 @@ const Timer = ({ initialSpeed = 50, onSpeedChange }) => {
   const formatTime = (seconds) => {
     if (seconds < 60) {
       return {
-        value: seconds.toFixed(2),
-        unit: 'seconds'
+        value: seconds.toFixed(1),
+        unit: 'sec'
       };
     } else if (seconds < 3600) {
       return {
-        value: (seconds / 60).toFixed(2),
-        unit: 'minutes'
+        value: (seconds / 60).toFixed(1),
+        unit: 'min'
       };
     } else if (seconds < 86400) {
       return {
-        value: (seconds / 3600).toFixed(2),
-        unit: 'hours'
+        value: (seconds / 3600).toFixed(1),
+        unit: 'hr'
       };
     } else {
       return {
-        value: (seconds / 86400).toFixed(2),
+        value: (seconds / 86400).toFixed(1),
         unit: 'days'
       };
     }
   };
 
   return (
-    <div className={styles['timer-container']} ref={timerRef}>
-      <IconButton
-        className={styles['timer-button']}
-        onClick={() => setShowSpeedControl(!showSpeedControl)}
-        aria-label="Speed Control"
-      >
-        <SpeedIcon className={styles['timer-icon']} />
-      </IconButton>
+    <div className={styles['timer-wrapper']}>
+      <div className={styles['timer-container']}>
+        <Tooltip title="Simulation Speed">
+          <IconButton
+            ref={speedButtonRef}
+            className={styles['timer-button']}
+            onClick={() => setShowSpeedControl(!showSpeedControl)}
+            aria-label="Speed Control"
+          >
+            <SpeedIcon className={styles['timer-icon']} />
+          </IconButton>
+        </Tooltip>
 
-      <span className={styles['timer-display']}>
-        <span className={styles['timer-value']}>{formatTime(time).value}</span>
-        <span className={styles['timer-unit']}>{formatTime(time).unit}</span>
-      </span>
-
-      <IconButton
-        className={styles['timer-button']}
-        onClick={resetTimer}
-        aria-label="Reset Timer"
-      >
-        <RestoreIcon className={styles['timer-icon']} />
-      </IconButton>
-
-      {/* Speed Control Dropdown */}
-      <div className={`${styles['speed-dropdown']} ${showSpeedControl ? styles['show'] : ''}`}>
-        <div className={styles['speed-label']}>
-          <span> Speed </span>
+        <div className={styles['timer-display']}>
+          <span className={styles['timer-value']}>{formatTime(time).value}</span>
+          <span className={styles['timer-unit']}>{formatTime(time).unit}</span>
         </div>
-        <Slider
-          orientation="vertical"
-          value={speed}
-          onChange={(_, newValue) => setSpeed(newValue)}
-          min={1}
-          max={100}
-          aria-label="Speed"
-          valueLabelDisplay="auto"
-          marks={[
-            { value: 1, label: '1x' },
-            { value: 25, label: '25x' },
-            { value: 50, label: '50x' },
-            { value: 75, label: '75x' },
-            { value: 100, label: '100x' }
-          ]}
-          className={styles['speed-dropdown-slider']}
-        />
+
+        <Tooltip title="Reset Timer">
+          <IconButton
+            className={styles['timer-button']}
+            onClick={resetTimer}
+            aria-label="Reset Timer"
+          >
+            <RestoreIcon className={styles['timer-icon']} />
+          </IconButton>
+        </Tooltip>
+
+        <div 
+          ref={speedDropdownRef}
+          className={`${styles['speed-dropdown']} ${showSpeedControl ? styles['show'] : ''}`}
+        >
+          <div className={styles['speed-label']}>Speed</div>
+          <Slider
+            orientation="vertical"
+            value={speed}
+            onChange={(_, newValue) => setSpeed(newValue)}
+            min={1}
+            max={100}
+            aria-label="Speed"
+            valueLabelDisplay="auto"
+            marks={[
+              { value: 1, label: '1x' },
+              { value: 50, label: '50x' },
+              { value: 100, label: '100x' }
+            ]}
+            className={styles['speed-dropdown-slider']}
+          />
+        </div>
       </div>
     </div>
   );
@@ -166,6 +180,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [speed, setSpeed] = useState(30);
+  const [showSpeedControl, setShowSpeedControl] = useState(false);
   
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
@@ -305,6 +320,28 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     setSpeed(newSpeed);
   }, []);
 
+  const speedSliderRef = useRef(null);
+  const simulationTimerRef = useRef(null);
+
+  // Add event listener to hide speed slider on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        speedSliderRef.current &&
+        !speedSliderRef.current.contains(event.target) &&
+        simulationTimerRef.current &&
+        !simulationTimerRef.current.contains(event.target)
+      ) {
+        setShowSpeedControl(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [speedSliderRef, simulationTimerRef]);
+
   if (!room) {
     return (
       <Tile title="Room Not Found" isRoomTile={true}>
@@ -351,7 +388,9 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         >
           <SettingsIcon />
         </Button>
-        <Timer speed={speed} onSpeedChange={handleSpeedChange} />
+        <div ref={simulationTimerRef}>
+          <Timer speed={speed} onSpeedChange={handleSpeedChange} />
+        </div>
 
         {room ? (
           <>
