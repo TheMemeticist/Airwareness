@@ -106,6 +106,10 @@
               visibility 0s linear 0s;
 }
 
+.backdrop.visible:hover {
+  cursor: pointer;
+}
+
 @media (max-width: 1024px) {
   .tile {
     width: calc(100% - 20px);

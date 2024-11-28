@@ -38,9 +38,13 @@ const SimulationTimer = ({ speed }) => {
   const formatTime = (timeInSeconds) => {
     const hours = Math.floor(timeInSeconds / 3600);
     const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
+    const seconds = (timeInSeconds % 60).toFixed(2);
     
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return {
+      hours: hours.toString().padStart(2, '0'),
+      minutes: minutes.toString().padStart(2, '0'),
+      seconds: seconds.padStart(5, '0')
+    };
   };
 
   const toggleSlider = () => {
@@ -48,14 +52,31 @@ const SimulationTimer = ({ speed }) => {
   };
 
   return (
-    <div className={styles['simulation-timer']} ref={timerRef}>
-      <span className={styles['timer-text']}>{formatTime(time)}</span>
+    <div className={styles['timer-container']} ref={timerRef}>
+      <div className={styles['timer-display']}>
+        <span className={styles['time-group']}>
+          <span className={styles['time-value']}>{formatTime(time).hours}</span>
+          <span className={styles['time-unit']}>h</span>
+        </span>
+        <span className={styles['time-separator']}>:</span>
+        <span className={styles['time-group']}>
+          <span className={styles['time-value']}>{formatTime(time).minutes}</span>
+          <span className={styles['time-unit']}>m</span>
+        </span>
+        <span className={styles['time-separator']}>:</span>
+        <span className={styles['time-group']}>
+          <span className={styles['time-value']}>{formatTime(time).seconds}</span>
+          <span className={styles['time-unit']}>s</span>
+        </span>
+      </div>
+      <div className={styles['timer-label']}>Elapsed Time</div>
       <IconButton 
         onClick={toggleSlider}
-        className={styles['timer-reset-button']}
+        className={styles['timer-button']}
         size="small"
+        title="Adjust simulation speed"
       >
-        <TimerIcon />
+        <TimerIcon className={styles['timer-icon']} />
       </IconButton>
       {isSliderVisible && (
         <div className={styles['slider-speed']} ref={sliderRef}>
