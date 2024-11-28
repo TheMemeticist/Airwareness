@@ -2,28 +2,14 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
-import ThreeDScene from './3DScene/3Dscene'; // Import the new component
-import { TextField, Box, Button, IconButton, Slider, Tooltip } from '@mui/material';
+import ThreeDScene from './threescene/3Dscene';
+import { Box, Button } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
-import { debounce } from 'lodash'; // Import debounce from lodash
-import ReactDOM from 'react-dom';
-import { Settings as SettingsIcon, ArrowUpward, ArrowDownward, Speed as SpeedIcon, Restore as RestoreIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon } from '@mui/icons-material';
 import RoomSettings from './settings/RoomSettings';
-import { Timer } from './components/Timer';
-import { RoomControls } from './components/RoomControls';
+import { Timer } from './buttons/Timer';
+import { RoomControls } from './buttons/RoomControls';
 import { useRoomDimensions } from './hooks/useRoomDimensions';
-
-// Custom arrow down icon
-const ArrowDownIcon = () => (
-  <svg
-    className={styles['select-icon']}
-    focusable="false"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <path d="M7 10l5 5 5-5z"></path>
-  </svg>
-);
 
 const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
@@ -31,7 +17,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [speed, setSpeed] = useState(30);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
-  
+
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
     const building = state.buildings.find(b => b.id === buildingId);
@@ -125,7 +111,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [speedSliderRef, simulationTimerRef]);
+  }, []);
 
   if (!room) {
     return (
