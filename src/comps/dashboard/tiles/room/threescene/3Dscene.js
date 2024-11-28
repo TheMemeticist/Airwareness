@@ -10,6 +10,7 @@ import { ParticleSystem } from './particles/ParticleSystem';
 import { PerformanceMonitor } from '../../../../../utils/performanceMonitor';
 import { AnimationController } from './AnimationController';
 import { useAppContext } from '../../../../../context/AppContext';
+import InfectiousDoseGraph from './graph/InfectiousDoseGraph';
 
 const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
   const { state } = useAppContext();
@@ -373,6 +374,7 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
             </div>
           )}
           <div ref={mountRef} className={styles['3d-scene']}></div>
+          <InfectiousDoseGraph particleSystem={particleSystemRef.current} />
         </>
       )}
     </div>

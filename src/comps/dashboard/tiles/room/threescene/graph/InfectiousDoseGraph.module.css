@@ -1,0 +1,40 @@
+.graph-container {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    width: 400px;
+    height: 240px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 100;
+  }
+  
+  .graph-title {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.95;
+  }
+  
+  .graph-canvas {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .y-axis {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    writing-mode: vertical-rl;
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 500;
+  }
