@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import sceneModel from './Classroom.glb';
+import sceneModel from './models/Classroom.glb';
 
 export const loadModel = (scene, camera, controls, renderer, setErrorMessage, objectPosition) => {
   // Enable shadow mapping on the renderer

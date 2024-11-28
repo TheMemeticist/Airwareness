@@ -6,7 +6,7 @@ import ThreeDScene from './threescene/3Dscene';
 import { Box, Button } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { Settings as SettingsIcon } from '@mui/icons-material';
-import RoomSettings from './settings/RoomSettings';
+import RoomSettings from './buttons/settings/RoomSettings';
 import { Timer } from './buttons/Timer';
 import { RoomControls } from './buttons/RoomControls';
 import { useRoomDimensions } from './hooks/useRoomDimensions';
@@ -42,6 +42,15 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     handleIncrement,
     handleDecrement
   } = useRoomDimensions(room, dispatch, buildingId);
+
+  // Add this function inside the Room component
+  const handleFloorAreaIncrement = (step) => {
+    handleIncrement('floorArea')(step);
+  };
+
+  const handleFloorAreaDecrement = (step) => {
+    handleDecrement('floorArea')(step);
+  };
 
   // Memoize room actions with rooms dependency
   const roomActions = useMemo(() => ({

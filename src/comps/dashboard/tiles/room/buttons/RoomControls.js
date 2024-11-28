@@ -10,6 +10,18 @@ export const RoomControls = ({
   handleIncrement, 
   handleDecrement 
 }) => {
+  const getFloorAreaStep = () => {
+    return Math.max(2, Math.round(inputValues.floorArea * 0.39));
+  };
+
+  const handleFloorAreaIncrement = (step) => {
+    handleIncrement('floorArea')(step);
+  };
+
+  const handleFloorAreaDecrement = (step) => {
+    handleDecrement('floorArea')(step);
+  };
+
   return (
     <div className={styles['room-params']}>
       {/* Height Input */}
@@ -60,7 +72,10 @@ export const RoomControls = ({
             onChange={handleInputChange('floorArea')}
             variant="outlined"
             size="small"
-            inputProps={{ step: 500 }}
+            inputProps={{ 
+              min: 2,
+              step: getFloorAreaStep()
+            }}
             InputProps={{
               className: styles['hide-spin-buttons']
             }}
@@ -68,7 +83,7 @@ export const RoomControls = ({
           <div className={styles['custom-arrows']}>
             <IconButton
               className={`${styles['custom-arrow']} ${styles['custom-arrow-up']}`}
-              onClick={handleIncrement('floorArea')}
+              onClick={() => handleFloorAreaIncrement(getFloorAreaStep())}
               aria-label="Increase Floor Area"
               size="small"
             >
@@ -76,7 +91,7 @@ export const RoomControls = ({
             </IconButton>
             <IconButton
               className={`${styles['custom-arrow']} ${styles['custom-arrow-down']}`}
-              onClick={handleDecrement('floorArea')}
+              onClick={() => handleFloorAreaDecrement(getFloorAreaStep())}
               aria-label="Decrease Floor Area"
               size="small"
             >
