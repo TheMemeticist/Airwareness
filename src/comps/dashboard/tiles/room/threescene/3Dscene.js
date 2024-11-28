@@ -374,7 +374,11 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
             </div>
           )}
           <div ref={mountRef} className={styles['3d-scene']}></div>
-          <InfectiousDoseGraph particleSystem={particleSystemRef.current} />
+          <InfectiousDoseGraph 
+            particleSystem={particleSystemRef.current} 
+            speed={simulationSpeed}
+            resetGraph={state.timerReset}
+          />
         </>
       )}
     </div>

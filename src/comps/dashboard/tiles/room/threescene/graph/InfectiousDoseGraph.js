@@ -2,9 +2,21 @@ import React, { useRef, useEffect } from 'react';
 import { useGraphData } from './useGraphData';
 import styles from './InfectiousDoseGraph.module.css';
 
-const InfectiousDoseGraph = ({ particleSystem }) => {
+const formatTime = (seconds) => {
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`;
+  } else if (seconds < 3600) {
+    return `${(seconds / 60).toFixed(1)}m`;
+  } else if (seconds < 86400) {
+    return `${(seconds / 3600).toFixed(1)}h`;
+  } else {
+    return `${(seconds / 86400).toFixed(1)}d`;
+  }
+};
+
+const InfectiousDoseGraph = ({ particleSystem, speed }) => {
   const canvasRef = useRef(null);
-  const data = useGraphData(particleSystem);
+  const data = useGraphData(particleSystem, speed);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -56,11 +68,11 @@ const InfectiousDoseGraph = ({ particleSystem }) => {
     ctx.font = '13px Arial';
     ctx.textAlign = 'center';
     const timeSteps = 4;
+    
     for (let i = 0; i <= timeSteps; i++) {
       const x = padding.left + (graphWidth * (i / timeSteps));
-      const timestamp = data[Math.floor((data.length - 1) * (i / timeSteps))].timestamp;
-      const seconds = Math.round((Date.now() - timestamp) / 1000);
-      ctx.fillText(`${seconds}s ago`, x, height - padding.bottom / 2);
+      const currentTime = data[Math.floor((data.length - 1) * (i / timeSteps))]?.simulationTime || 0;
+      ctx.fillText(formatTime(currentTime), x, height - padding.bottom / 2);
     }
 
     // Draw lines
