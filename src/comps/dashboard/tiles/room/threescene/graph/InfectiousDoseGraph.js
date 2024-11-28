@@ -60,7 +60,7 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     ctx.font = `${fontSize}px Arial`;
 
     // Draw doses labels (right side)
-    const dosesSteps = 5;
+    const dosesSteps = isHovered ? 5 : 2;
     for (let i = 0; i <= dosesSteps; i++) {
       const y = padding.top + (graphHeight * (1 - i / dosesSteps));
       const value = (maxDoses * i / dosesSteps).toFixed(1);
@@ -77,7 +77,7 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     // Draw time labels with larger font
     ctx.font = `${fontSize}px Arial`;
     ctx.textAlign = 'center';
-    const timeSteps = 4;
+    const timeSteps = isHovered ? 4 : 2;
     
     for (let i = 0; i <= timeSteps; i++) {
       const x = padding.left + (graphWidth * (i / timeSteps));
@@ -111,7 +111,10 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <h3 className={styles['graph-title']}>Total Infectious Doses In Space</h3>
+      <>
+        <h3 className={styles['graph-title']}>Infectious Doses per 1000 ft³</h3>
+        <h3 className={styles['minimized-title']}>Infectious Doses</h3>
+      </>
       <canvas
         ref={canvasRef}
         className={styles['graph-canvas']}

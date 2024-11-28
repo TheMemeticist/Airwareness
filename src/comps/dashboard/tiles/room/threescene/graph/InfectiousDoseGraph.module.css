@@ -29,6 +29,7 @@
     font-weight: 600;
     opacity: 0.95;
     transition: all 0.3s ease;
+    white-space: nowrap;
   }
   
   .graph-container:not(:hover) .graph-title,
@@ -65,4 +66,24 @@
   
   .legend {
     transition: opacity 0.3s ease;
+  }
+  
+  .minimized-title {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.95;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  
+  .graph-container:hover .minimized-title {
+    opacity: 0;
+  }
+  
+  .graph-container:not(:hover) .minimized-title {
+    opacity: 0.95;
   }
