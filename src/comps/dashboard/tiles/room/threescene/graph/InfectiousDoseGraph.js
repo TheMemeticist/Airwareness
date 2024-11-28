@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useGraphData } from './useGraphData';
 import styles from './InfectiousDoseGraph.module.css';
 
@@ -14,9 +14,16 @@ const formatTime = (seconds) => {
   }
 };
 
+const calculateFontSize = (canvas, baseFontSize = 24, isMinimized = true) => {
+  const scale = Math.min(canvas.width / 200, canvas.height / 500);
+  const baseSize = Math.max(Math.floor(baseFontSize * scale), 12);
+  return isMinimized ? baseSize * 2 : baseSize;
+};
+
 const InfectiousDoseGraph = ({ particleSystem, speed }) => {
   const canvasRef = useRef(null);
   const data = useGraphData(particleSystem, speed);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -32,10 +39,10 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     if (data.length < 2) return;
 
     const padding = {
-      left: 60,
-      right: 70,
-      top: 50,
-      bottom: 50
+      left: 90,
+      right: 100,
+      top: 60,
+      bottom: 70
     };
 
     const graphWidth = width - (padding.left + padding.right);
@@ -44,10 +51,13 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     // Find max values for both metrics
     const maxDoses = Math.max(...data.map(d => d.doses));
 
+    // Calculate responsive font size
+    const fontSize = calculateFontSize(canvas, 24, !isHovered);
+    
     // Draw Y-axis labels and grid lines
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';  // White text
-    ctx.font = '14px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = `${fontSize}px Arial`;
 
     // Draw doses labels (right side)
     const dosesSteps = 5;
@@ -57,15 +67,15 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
       ctx.fillText(`${value}`, width - padding.right + 10, y + 3);
       
       // Grid lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';  // Subtle white grid lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.beginPath();
       ctx.moveTo(padding.left, y);
       ctx.lineTo(width - padding.right, y);
       ctx.stroke();
     }
 
-    // Draw time labels
-    ctx.font = '13px Arial';
+    // Draw time labels with larger font
+    ctx.font = `${fontSize}px Arial`;
     ctx.textAlign = 'center';
     const timeSteps = 4;
     
@@ -96,7 +106,11 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
   }, [data]);
 
   return (
-    <div className={styles['graph-container']}>
+    <div 
+      className={styles['graph-container']}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <h3 className={styles['graph-title']}>Total Infectious Doses In Space</h3>
       <canvas
         ref={canvasRef}
@@ -107,7 +121,6 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
       <div className={styles.legend}>
         <div className={styles['legend-item']}>
           <div className={styles['legend-color']} style={{ background: 'rgba(0, 255, 0, 0.8)' }}></div>
-
         </div>
       </div>
     </div>
