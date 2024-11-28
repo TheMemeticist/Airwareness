@@ -9,6 +9,9 @@ import { debounce } from 'lodash'; // Import debounce from lodash
 import ReactDOM from 'react-dom';
 import { Settings as SettingsIcon, ArrowUpward, ArrowDownward, Speed as SpeedIcon, Restore as RestoreIcon } from '@mui/icons-material';
 import RoomSettings from './settings/RoomSettings';
+import { Timer } from './components/Timer';
+import { RoomControls } from './components/RoomControls';
+import { useRoomDimensions } from './hooks/useRoomDimensions';
 
 // Custom arrow down icon
 const ArrowDownIcon = () => (
@@ -21,159 +24,6 @@ const ArrowDownIcon = () => (
     <path d="M7 10l5 5 5-5z"></path>
   </svg>
 );
-
-// Memoize expensive calculations
-const calculateDimensions = (floorArea, height) => ({
-  height: parseFloat(height) || 0,
-  floorArea: parseFloat(floorArea) || 0,
-  sideLength: Math.sqrt(parseFloat(floorArea)) || 0,
-  width: Math.sqrt(parseFloat(floorArea)) || 0,
-  length: Math.sqrt(parseFloat(floorArea)) || 0
-});
-
-// Memoize conversion function
-const toMeters = {
-  length: (ft) => ft * 0.3048,
-  area: (sqft) => sqft * 0.092903
-};
-
-const Timer = ({ initialSpeed = 50, onSpeedChange }) => {
-  const { state, dispatch } = useAppContext();
-  const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
-  const [showSpeedControl, setShowSpeedControl] = useState(false);
-  const [speed, setSpeed] = useState(initialSpeed);
-  const speedDropdownRef = useRef(null);
-  const speedButtonRef = useRef(null);
-
-  // Add effect to listen for timer reset
-  useEffect(() => {
-    if (state.timerReset) {
-      resetTimer();
-    }
-  }, [state.timerReset]);
-
-  useEffect(() => {
-    let intervalId;
-    if (isRunning) {
-      const interval = 1000 / speed;
-      intervalId = setInterval(() => {
-        setTime(prevTime => prevTime + 1);
-      }, interval);
-      onSpeedChange(speed);
-    }
-    return () => clearInterval(intervalId);
-  }, [isRunning, speed, onSpeedChange]);
-
-  // Update the click outside handler to use refs
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        speedDropdownRef.current && 
-        !speedDropdownRef.current.contains(event.target) &&
-        speedButtonRef.current && 
-        !speedButtonRef.current.contains(event.target)
-      ) {
-        setShowSpeedControl(false);
-      }
-    };
-
-    if (showSpeedControl) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showSpeedControl]);
-
-  const resetTimer = () => {
-    setTime(0);
-    // Reset particles by triggering a quick update cycle
-    dispatch({ type: 'UPDATE_INFECTIOUS_COUNT', payload: 0 });
-    requestAnimationFrame(() => {
-      dispatch({ type: 'UPDATE_INFECTIOUS_COUNT', payload: 1 });
-    });
-  };
-
-  const formatTime = (seconds) => {
-    if (seconds < 60) {
-      return {
-        value: seconds.toFixed(1),
-        unit: 'sec'
-      };
-    } else if (seconds < 3600) {
-      return {
-        value: (seconds / 60).toFixed(1),
-        unit: 'min'
-      };
-    } else if (seconds < 86400) {
-      return {
-        value: (seconds / 3600).toFixed(1),
-        unit: 'hr'
-      };
-    } else {
-      return {
-        value: (seconds / 86400).toFixed(1),
-        unit: 'days'
-      };
-    }
-  };
-
-  return (
-    <div className={styles['timer-wrapper']}>
-      <div className={styles['timer-container']}>
-        <Tooltip title="Simulation Speed">
-          <IconButton
-            ref={speedButtonRef}
-            className={styles['timer-button']}
-            onClick={() => setShowSpeedControl(!showSpeedControl)}
-            aria-label="Speed Control"
-          >
-            <SpeedIcon className={styles['timer-icon']} />
-          </IconButton>
-        </Tooltip>
-
-        <div className={styles['timer-display']}>
-          <span className={styles['timer-value']}>{formatTime(time).value}</span>
-          <span className={styles['timer-unit']}>{formatTime(time).unit}</span>
-        </div>
-
-        <Tooltip title="Reset Timer">
-          <IconButton
-            className={styles['timer-button']}
-            onClick={resetTimer}
-            aria-label="Reset Timer"
-          >
-            <RestoreIcon className={styles['timer-icon']} />
-          </IconButton>
-        </Tooltip>
-
-        <div 
-          ref={speedDropdownRef}
-          className={`${styles['speed-dropdown']} ${showSpeedControl ? styles['show'] : ''}`}
-        >
-          <div className={styles['speed-label']}>Speed</div>
-          <Slider
-            orientation="vertical"
-            value={speed}
-            onChange={(_, newValue) => setSpeed(newValue)}
-            min={1}
-            max={100}
-            aria-label="Speed"
-            valueLabelDisplay="auto"
-            marks={[
-              { value: 1, label: '1x' },
-              { value: 50, label: '50x' },
-              { value: 100, label: '100x' }
-            ]}
-            className={styles['speed-dropdown-slider']}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
@@ -197,64 +47,15 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     [rooms, selectedRoomId]
   );
 
-  // Initialize input values with room data
-  const [inputValues, setInputValues] = useState({
-    height: room?.height || '',
-    floorArea: room?.floorArea || ''
-  });
-
-  // Update input values when room changes
-  useEffect(() => {
-    if (room) {
-      setInputValues({
-        height: room.height || '',
-        floorArea: room.floorArea || ''
-      });
-    }
-  }, [room]);
-
-  // Memoize dimensions calculations
-  const dimensions = useMemo(() => 
-    calculateDimensions(room?.floorArea, room?.height),
-    [room?.floorArea, room?.height]
-  );
-
-  // Debounce dimension updates
-  const debouncedDimensionUpdate = useMemo(() => 
-    debounce((newDimensions) => {
-      dispatch({
-        type: 'UPDATE_ROOM',
-        payload: {
-          buildingId,
-          roomId: selectedRoomId,
-          roomData: newDimensions
-        }
-      });
-    }, 100),
-    [buildingId, selectedRoomId, dispatch]
-  );
-
-  // Optimize input handler with batched updates
-  const handleInputChange = useCallback((field) => (event) => {
-    const value = event.target.value;
-    
-    // Batch state updates
-    ReactDOM.unstable_batchedUpdates(() => {
-      setInputValues(prev => ({...prev, [field]: value}));
-      
-      const newDimensions = calculateDimensions(
-        field === 'floorArea' ? value : inputValues.floorArea,
-        field === 'height' ? value : inputValues.height
-      );
-      
-      debouncedDimensionUpdate(newDimensions);
-    });
-  }, [buildingId, selectedRoomId, inputValues, dispatch]);
-
-  // Cleanup debounced function
-  useEffect(() => {
-    return () => debouncedDimensionUpdate.cancel();
-  }, [debouncedDimensionUpdate]);
+  // Use the new hook
+  const {
+    dimensions,
+    dimensionsInMeters,
+    inputValues,
+    handleInputChange,
+    handleIncrement,
+    handleDecrement
+  } = useRoomDimensions(room, dispatch, buildingId);
 
   // Memoize room actions with rooms dependency
   const roomActions = useMemo(() => ({
@@ -299,22 +100,6 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
       }
     });
   }, [buildingId, dispatch]);
-
-  // Handler for incrementing a field
-  const handleIncrement = (field) => () => {
-    const step = field === 'height' ? 5 : 500;
-    const currentValue = parseFloat(inputValues[field]) || 0;
-    const newValue = currentValue + step;
-    handleInputChange(field)({ target: { value: newValue } });
-  };
-
-  // Handler for decrementing a field
-  const handleDecrement = (field) => () => {
-    const step = field === 'height' ? 5 : 500;
-    const currentValue = parseFloat(inputValues[field]) || 0;
-    const newValue = currentValue - step >= 0 ? currentValue - step : 0;
-    handleInputChange(field)({ target: { value: newValue } });
-  };
 
   const handleSpeedChange = useCallback((newSpeed) => {
     setSpeed(newSpeed);
@@ -362,13 +147,6 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
 
   const helpText = "Use this tool to edit room attributes such as size and ventilation rate (natural or HVAC). This helps provide more accurate air quality estimates.";
 
-  // Convert dimensions from feet to meters
-  const dimensionsInMeters = {
-    height: dimensions.height * 0.3048,
-    floorArea: dimensions.floorArea * 0.092903,
-    sideLength: dimensions.sideLength * 0.3048
-  };
-
   return (
     <Tile
       title={
@@ -388,9 +166,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         >
           <SettingsIcon />
         </Button>
-        <div ref={simulationTimerRef}>
-          <Timer speed={speed} onSpeedChange={handleSpeedChange} />
-        </div>
+        <Timer initialSpeed={speed} onSpeedChange={handleSpeedChange} />
 
         {room ? (
           <>
@@ -404,81 +180,12 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
                 simulationSpeed={speed}
               />
             </div>
-            <div className={styles['room-params']}>
-              {/* Height Input - Now in its own container */}
-              <div className={styles['height-input-container']}>
-                <div className={styles['room-input-container']}>
-                  <TextField
-                    className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
-                    label="Height (ft)"
-                    type="number"
-                    value={inputValues.height}
-                    onChange={handleInputChange('height')}
-                    variant="outlined"
-                    size="small"
-                    inputProps={{ step: 5 }}
-                    InputProps={{
-                      className: styles['hide-spin-buttons']
-                    }}
-                  />
-                  <div className={styles['custom-arrows']}>
-                    <IconButton
-                      className={`${styles['custom-arrow']} ${styles['custom-arrow-up']}`}
-                      onClick={handleIncrement('height')}
-                      aria-label="Increase Height"
-                      size="small"
-                    >
-                      <ArrowUpward fontSize="small" sx={{ color: 'var(--off-white)' }} />
-                    </IconButton>
-                    <IconButton
-                      className={`${styles['custom-arrow']} ${styles['custom-arrow-down']}`}
-                      onClick={handleDecrement('height')}
-                      aria-label="Decrease Height"
-                      size="small"
-                    >
-                      <ArrowDownward fontSize="small" sx={{ color: 'var(--off-white)' }} />
-                    </IconButton>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floor Area Input - Now in its own container */}
-              <div className={styles['floor-area-input-container']}>
-                <div className={styles['room-input-container']}>
-                  <TextField
-                    className={`${tileStyles['tile-text-field']} ${styles['room-input']}`}
-                    label="Floor Area (ft²)"
-                    type="number"
-                    value={inputValues.floorArea}
-                    onChange={handleInputChange('floorArea')}
-                    variant="outlined"
-                    size="small"
-                    inputProps={{ step: 500 }}
-                    InputProps={{
-                      className: styles['hide-spin-buttons']
-                    }}
-                  />
-                  <div className={styles['custom-arrows']}>
-                    <IconButton
-                      className={`${styles['custom-arrow']} ${styles['custom-arrow-up']}`}
-                      onClick={handleIncrement('floorArea')}
-                      aria-label="Increase Floor Area"
-                      size="small"
-                    >
-                      <ArrowUpward fontSize="small" sx={{ color: 'var(--off-white)' }} />
-                    </IconButton>
-                    <IconButton
-                      className={`${styles['custom-arrow']} ${styles['custom-arrow-down']}`}
-                      onClick={handleDecrement('floorArea')}
-                      aria-label="Decrease Floor Area"
-                      size="small"
-                    >
-                      <ArrowDownward fontSize="small" sx={{ color: 'var(--off-white)' }} />
-                    </IconButton>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <RoomControls
+              inputValues={inputValues}
+              handleInputChange={handleInputChange}
+              handleIncrement={handleIncrement}
+              handleDecrement={handleDecrement}
+            />
             <div className={styles['room-icons-container']}>
               {children}
             </div>
