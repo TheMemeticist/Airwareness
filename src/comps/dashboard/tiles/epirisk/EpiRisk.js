@@ -107,6 +107,14 @@ const EpiRisk = () => {
   const memoizedCalculateRisk = React.useCallback((params) => {
     const { totalOccupants, positivityRate, quantaRate, breathingRate, exposureTime, roomVolume, ventilationRate, halfLife } = params;
     
+    // Add validation to prevent invalid calculations
+    if (!totalOccupants || totalOccupants <= 0) {
+      return {
+        probability: 0,
+        infectiousCount: 0
+      };
+    }
+    
     const risk = calculateWellsRiley(
       totalOccupants,
       parseFloat(positivityRate),
@@ -118,9 +126,10 @@ const EpiRisk = () => {
       parseFloat(halfLife)
     );
 
+    // Ensure probability is always between 0 and 0.99
     return {
       ...risk,
-      probability: Math.min(risk.probability, 0.99)
+      probability: Math.max(0, Math.min(risk.probability, 0.99))
     };
   }, []);
 
@@ -170,6 +179,10 @@ const EpiRisk = () => {
     return parseFloat(activeRoom.height) * parseFloat(activeRoom.floorArea);
   }, [activeRoom]);
 
+  // Add state to track if we're using minimum rate
+  const [isUsingMinRate, setIsUsingMinRate] = useState(true);  // Start with true since we init with min rate
+
+  // Update handlePositivityRateChange to track when user moves away from min rate
   const handlePositivityRateChange = (event) => {
     const value = event.target.value;
     
@@ -193,7 +206,6 @@ const EpiRisk = () => {
       // Only update the actual rate if it's a valid number
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
-        // Update both temporary and actual values immediately
         const minPercentage = getMinPositivityRate();
         const maxPercentage = getMaxPositivityRate();
         const boundedValue = Math.max(
@@ -203,6 +215,9 @@ const EpiRisk = () => {
         const roundedValue = Number(boundedValue.toFixed(2));
         setPositivityRate(roundedValue.toString());
         setTempPositivityRate(roundedValue.toString());
+        
+        // Update isUsingMinRate based on whether we're at the minimum
+        setIsUsingMinRate(roundedValue === minPercentage);
       }
     }
   };
@@ -287,35 +302,55 @@ const EpiRisk = () => {
   };
 
   const handleHalfLifeChange = (event) => {
-    // Convert to number and handle precision
-    const value = parseFloat(event.target.value);
+    const value = event.target.value;
     
-    // Allow empty input for typing
-    if (event.target.value === '') {
+    // Allow empty string for typing
+    if (value === '') {
       setHalfLife('');
       return;
     }
 
-    // Validate the input
-    if (isNaN(value)) return;
-    
-    // Ensure we keep 4 decimal places without rounding
-    const formattedValue = Number(value.toFixed(4));
-    
-    // Update if within bounds
-    if (formattedValue >= 0.0001 && formattedValue <= 24) {
-      setHalfLife(formattedValue);
-      
-      // Update pathogen in context
+    // Allow typing decimal points
+    if (value === '.' || value.endsWith('.')) {
+      setHalfLife(value);
+      return;
+    }
+
+    // Validate the input is a proper number with up to 4 decimal places
+    const regex = /^\d*\.?\d{0,4}$/;
+    if (regex.test(value)) {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0.0001 && numValue <= 24) {
+        setHalfLife(value);
+        
+        // Only dispatch valid numbers
+        dispatch({
+          type: 'UPDATE_PATHOGEN',
+          payload: {
+            pathogenId: pathogen,
+            updates: { halfLife: numValue }
+          }
+        });
+        dispatch({ type: 'RESET_TIMER' });
+      }
+    }
+  };
+
+  const handleHalfLifeBlur = () => {
+    // Reset to valid value if empty or invalid
+    if (halfLife === '' || halfLife === '.' || isNaN(parseFloat(halfLife)) || 
+        parseFloat(halfLife) < 0.0001 || parseFloat(halfLife) > 24) {
+      const defaultValue = '1.1';
+      setHalfLife(defaultValue);
       dispatch({
         type: 'UPDATE_PATHOGEN',
         payload: {
           pathogenId: pathogen,
-          updates: { halfLife: formattedValue }
+          updates: { halfLife: parseFloat(defaultValue) }
         }
       });
+      dispatch({ type: 'RESET_TIMER' });
     }
-    dispatch({ type: 'RESET_TIMER' });
   };
 
   // Memoize risk calculation
@@ -366,10 +401,10 @@ const EpiRisk = () => {
 
   // Animate risk value changes
   useEffect(() => {
-    const targetValue = riskData.probability * 100;
+    const targetValue = Math.max(0, riskData.probability * 100); // Ensure target is never negative
     const startValue = displayValue;
-    const duration = 1200; // increased from 500 to 1200ms
-    const steps = 60;     // increased from 20 to 60 steps for smoother animation
+    const duration = 1200;
+    const steps = 60;
     const stepDuration = duration / steps;
     const increment = (targetValue - startValue) / steps;
     
@@ -378,8 +413,7 @@ const EpiRisk = () => {
     const animateValue = () => {
       if (currentStep < steps) {
         setDisplayValue(prev => {
-          const newValue = startValue + (increment * (currentStep + 1));
-          // Smoother decimal handling
+          const newValue = Math.max(0, startValue + (increment * (currentStep + 1))); // Ensure value is never negative
           if (newValue < 1) return Number(newValue.toFixed(2));
           if (newValue < 10) return Number(newValue.toFixed(1));
           return Number(newValue.toFixed(0));
@@ -449,6 +483,25 @@ const EpiRisk = () => {
       payload: parseFloat(halfLife)
     });
   }, [halfLife, dispatch]);
+
+  // Update effect to use isUsingMinRate
+  useEffect(() => {
+    const minRate = getMinPositivityRate();
+    const maxRate = getMaxPositivityRate();
+    const currentRate = parseFloat(positivityRate);
+
+    // If using min rate or current rate is below minimum, set to new minimum
+    if (isUsingMinRate || currentRate <= minRate) {
+      const newRate = minRate.toString();
+      setPositivityRate(newRate);
+      setTempPositivityRate(newRate);
+    } else if (currentRate > maxRate) {
+      // Handle the max rate case
+      const newRate = maxRate.toString();
+      setPositivityRate(newRate);
+      setTempPositivityRate(newRate);
+    }
+  }, [getTotalOccupants()]); // Dependency on total occupants
 
   return (
     <Tile 
@@ -608,13 +661,14 @@ const EpiRisk = () => {
                   <TextField
                     className={tileStyles['tile-text-field']}
                     label="Half-life (hours)"
-                    type="number"
+                    type="text"
                     value={halfLife}
                     onChange={handleHalfLifeChange}
+                    onBlur={handleHalfLifeBlur}
                     inputProps={{ 
                       min: 0.0001,
                       max: 24,
-                      step: 0.0001  // Updated step size to match minimum value precision
+                      step: 0.0001
                     }}
                     fullWidth
                     variant="outlined"

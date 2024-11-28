@@ -16,4 +16,16 @@
   margin: 5% 0;
 }
 
+.cfm-label {
+  margin-top: 8px;
+  text-align: center;
+  color: var(--text-color);
+}
+
+.collapsed-number {
+  font-size: 1rem;  /* Slightly smaller to accommodate longer text */
+  font-weight: 500;
+  text-align: center;
+}
+
 /* Other styles remain unchanged */
