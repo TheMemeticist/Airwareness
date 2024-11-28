@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IconButton, Slider, Tooltip } from '@mui/material';
 import { Speed as SpeedIcon, Restore as RestoreIcon } from '@mui/icons-material';
 import { useAppContext } from '../../../../../context/AppContext';
-import styles from '../Room.module.css';
+import styles from './Timer.module.css';
 
 const formatTime = (seconds) => {
   if (seconds < 60) {

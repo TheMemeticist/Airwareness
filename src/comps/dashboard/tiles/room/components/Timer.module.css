@@ -1,0 +1,144 @@
+/* Timer Container */
+.timer-wrapper {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    pointer-events: auto;
+  }
+  
+  .timer-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    border: 1px solid var(--off-white);
+    transition: all 0.3s ease;
+    height: 44px;
+    width: 20%;
+    min-width: 180px;
+  }
+  
+  .timer-container:hover {
+    border-color: var(--bright-yellow);
+  }
+  
+  /* Timer Display */
+  .timer-display {
+    color: var(--off-white);
+    font-family: var(--font-secondary);
+    font-size: max(0.75rem, 1.2vmin);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
+    width: 30%;
+  }
+  
+  .timer-value {
+    display: inline-block;
+    width: 40px;
+    text-align: right;
+  }
+  
+  .timer-unit {
+    display: inline-block;
+    width: 40px;
+    text-align: left;
+  }
+  
+  /* Timer Buttons */
+  .timer-button {
+    width: 56px !important;
+    height: 56px !important;
+    padding: 8px !important;
+    color: var(--off-white) !important;
+    transition: all 0.3s ease !important;
+    min-width: unset !important;
+    background: transparent !important;
+    flex-shrink: 0;
+  }
+  
+  .timer-button:hover {
+    color: var(--bright-yellow) !important;
+    background-color: rgba(221, 193, 19, 0.1) !important;
+  }
+  
+  .timer-icon {
+    width: 32px !important;
+    height: 32px !important;
+    fill: currentColor !important;
+    color: currentColor !important;
+  }
+  
+  /* Speed Dropdown */
+  .speed-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0px;
+    transform: translateY(0);
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--off-white);
+    border-radius: 8px;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    width: 64px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .speed-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .speed-dropdown:hover {
+    border-color: var(--bright-yellow);
+  }
+  
+  .speed-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--off-white);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+  
+  .speed-dropdown-slider {
+    height: 140px;
+    color: var(--off-white) !important;
+  }
+  
+  /* Slider customization */
+  .speed-dropdown-slider :global(.MuiSlider-rail) {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .speed-dropdown-slider :global(.MuiSlider-track) {
+    background-color: var(--off-white);
+  }
+  
+  .speed-dropdown-slider :global(.MuiSlider-thumb) {
+    background-color: var(--off-white);
+    width: 12px;
+    height: 12px;
+  }
+  
+  .speed-dropdown-slider :global(.MuiSlider-markLabel) {
+    color: var(--off-white);
+    font-size: 0.75rem;
+  }
+  
+  .speed-dropdown-slider:hover {
+    color: var(--bright-yellow) !important;
+  }

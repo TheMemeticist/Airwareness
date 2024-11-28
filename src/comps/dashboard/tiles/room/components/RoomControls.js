@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, IconButton } from '@mui/material';
 import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
-import styles from '../Room.module.css';
+import styles from './RoomControls.module.css';
 import tileStyles from '../../Tile.module.css';
 
 export const RoomControls = ({ 

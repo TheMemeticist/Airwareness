@@ -1,0 +1,129 @@
+.room-params {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: block;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.0);
+    pointer-events: none;
+  }
+  
+  .room-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    width: 100%;
+  }
+  
+  .room-input .MuiOutlinedInput-root {
+    background: transparent;
+  }
+  
+  .room-input .MuiOutlinedInput-notchedOutline {
+    border-color: var(--off-white) !important;
+    border-width: 1px !important;
+  }
+  
+  .room-input:hover .MuiOutlinedInput-notchedOutline {
+    border-color: var(--bright-yellow) !important;
+  }
+  
+  .room-input .Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--bright-yellow) !important;
+    border-width: 1px !important;
+  }
+  
+  .room-input .MuiInputLabel-root {
+    color: var(--off-white) !important;
+  }
+  
+  .room-input .MuiInputLabel-root.Mui-focused {
+    color: var(--bright-yellow) !important;
+  }
+  
+  .room-input .MuiOutlinedInput-input {
+    color: var(--off-white) !important;
+    padding-right: 50px !important;
+  }
+  
+  .room-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .custom-arrows {
+    display: flex;
+    flex-direction: column;
+    margin-left: 4px;
+  }
+  
+  .custom-arrow {
+    width: 24px;
+    height: 24px;
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-arrow svg {
+    color: var(--off-white) !important;
+    fill: var(--off-white) !important;
+    background-color: transparent !important;
+  }
+  
+  .custom-arrow-up:hover {
+    background-color: var(--bright-teal) !important;
+  }
+  
+  .custom-arrow-down:hover {
+    background-color: red !important;
+  }
+  
+  .custom-arrow:hover svg {
+    color: white !important;
+    fill: white !important;
+  }
+  
+  .hide-spin-buttons input[type=number]::-webkit-outer-spin-button,
+  .hide-spin-buttons input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  .hide-spin-buttons input[type=number] {
+    -moz-appearance: textfield;
+  }
+  
+  .height-input-container {
+    position: absolute;
+    top: 50px;
+    right: 16px;
+    width: 160px;
+  }
+  
+  .floor-area-input-container {
+    position: absolute;
+    bottom: 50px;
+    right: 16px;
+    width: 160px;
+  }
+  
+  .height-input-container,
+  .floor-area-input-container,
+  .room-input-container,
+  .custom-arrows,
+  .custom-arrow {
+    pointer-events: auto;
+  }
