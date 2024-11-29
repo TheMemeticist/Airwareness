@@ -16,7 +16,7 @@ const formatTime = (seconds) => {
   }
 };
 
-export const Timer = ({ initialSpeed = 50, onSpeedChange }) => {
+export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
   const { state, dispatch } = useAppContext();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);

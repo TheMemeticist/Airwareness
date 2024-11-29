@@ -15,15 +15,42 @@ const formatTime = (seconds) => {
 };
 
 const calculateFontSize = (canvas, baseFontSize = 24, isMinimized = true) => {
-  const scale = Math.min(canvas.width / 200, canvas.height / 500);
-  const baseSize = Math.max(Math.floor(baseFontSize * scale), 12);
-  return isMinimized ? baseSize * 2 : baseSize;
+  const scale = Math.min(canvas.width / 100, canvas.height / 480);
+  const baseSize = Math.max(Math.floor(baseFontSize * scale), 10);
+  return isMinimized ? baseSize * 1.5 : baseSize;
 };
 
 const InfectiousDoseGraph = ({ particleSystem, speed }) => {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const data = useGraphData(particleSystem, speed);
   const [isHovered, setIsHovered] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 480 });
+
+  // Add resize observer to handle container size changes
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setDimensions({
+          width: Math.floor(width * window.devicePixelRatio),
+          height: Math.floor(height * window.devicePixelRatio)
+        });
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Update canvas size when dimensions change
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    canvasRef.current.width = dimensions.width;
+    canvasRef.current.height = dimensions.height;
+  }, [dimensions]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -39,10 +66,10 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     if (data.length < 2) return;
 
     const padding = {
-      left: 90,
-      right: 100,
-      top: 60,
-      bottom: 70
+      left: Math.floor(width * 0.12),    // ~12% of width
+      right: Math.floor(width * 0.15),   // Increased to 15% to accommodate numbers
+      top: Math.floor(height * 0.12),    // ~12% of height
+      bottom: Math.floor(height * 0.15)  // ~15% of height
     };
 
     const graphWidth = width - (padding.left + padding.right);
@@ -61,10 +88,10 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
 
     // Draw doses labels (right side)
     const dosesSteps = isHovered ? 5 : 2;
-    for (let i = 0; i <= dosesSteps; i++) {
+    for (let i = 1; i <= dosesSteps; i++) {
       const y = padding.top + (graphHeight * (1 - i / dosesSteps));
-      const value = (maxDoses * i / dosesSteps).toFixed(1);
-      ctx.fillText(`${value}`, width - padding.right + 10, y + 3);
+      const value = (maxDoses * i / dosesSteps).toFixed(2);
+      ctx.fillText(`${value}`, width - padding.right + 5, y + 3);
       
       // Grid lines
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -88,7 +115,8 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     // Draw lines
     const drawLine = (metric, color) => {
       ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
+      const lineWidth = Math.max(2, Math.floor(width / 200));
+      ctx.lineWidth = lineWidth;
       ctx.beginPath();
       
       data.forEach((point, i) => {
@@ -107,19 +135,18 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
 
   return (
     <div 
+      ref={containerRef}
       className={styles['graph-container']}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <>
-        <h3 className={styles['graph-title']}>Infectious Doses per 1000 ft³</h3>
-        <h3 className={styles['minimized-title']}>Infectious Doses</h3>
+        <h3 className={styles['graph-title']}>Infectious Doses per 100 ft³</h3>
+        <h3 className={styles['minimized-title']}>Infectious Dose Saturation</h3>
       </>
       <canvas
         ref={canvasRef}
         className={styles['graph-canvas']}
-        width={800}
-        height={480}
       />
       <div className={styles.legend}>
         <div className={styles['legend-item']}>

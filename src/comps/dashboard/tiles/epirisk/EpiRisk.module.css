@@ -7,6 +7,13 @@
   align-items: center;
   max-height: calc(100vh - 200px);
   overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+  padding-right: 1rem !important;
+  overflow-x: hidden;
+  &:focus-within {
+    opacity: 1 !important;
+    background-color: var(--off-black-1) !important;
+  }
 }
 
 .epi-risk-icon {
@@ -236,11 +243,16 @@
   min-width: 200px !important;
   max-width: 300px !important;
   position: relative;
+  overflow: visible;
+  &:focus-within {
+    opacity: 1 !important;
+  }
 }
 
 .pathogen-select {
   width: 100%;
   color: var(--off-white) !important;
+  position: relative;
 }
 
 .pathogen-select-label {
@@ -287,6 +299,7 @@
 .pathogen-select :global(.MuiSelect-select) {
   color: var(--off-white) !important;
   background-color: var(--off-black-1) !important;
+  scrollbar-gutter: stable both-edges;
 }
 
 .pathogen-select :global(.MuiOutlinedInput-root) {
@@ -324,4 +337,26 @@
   font-weight: 500;
   text-align: center;
   margin-top: 0.5rem;
+}
+
+.pathogen-select-container :global(.MuiPaper-root) {
+  overflow: hidden !important;
+  scrollbar-gutter: stable both-edges;
+  background-color: var(--off-black-1) !important;
+  color: var(--off-white) !important;
+  margin: 0 !important;
+  position: absolute;
+  z-index: 1500;
+}
+
+.pathogen-select :global(.MuiMenu-paper) {
+  margin-right: calc(var(--scrollbar-width, 15px));
+}
+
+.pathogen-select-container :global(.MuiSelect-root.Mui-focused) {
+  background-color: var(--off-black-1) !important;
+}
+
+.pathogen-select-container :global(.MuiOutlinedInput-root.Mui-focused) {
+  background-color: var(--off-black-1) !important;
 }

@@ -83,6 +83,28 @@ const getRiskSize = (positivityRate) => {
   return `${baseSize * scale}rem`;
 };
 
+// Add this constant at the top of the file, after imports
+const MENU_PROPS = {
+  PaperProps: {
+    style: {
+      maxHeight: 300,
+      scrollbarGutter: 'stable both-edges',
+      marginRight: 0
+    }
+  },
+  // Prevent menu from modifying body styles
+  disableScrollLock: true,
+  // Ensure menu is properly positioned
+  anchorOrigin: {
+    vertical: 'bottom',
+    horizontal: 'left'
+  },
+  transformOrigin: {
+    vertical: 'top',
+    horizontal: 'left'
+  }
+};
+
 const EpiRisk = () => {
   const { state, dispatch } = useAppContext();
 
@@ -553,6 +575,17 @@ const EpiRisk = () => {
                     label="Select a Pathogen"
                     className={styles['pathogen-select']}
                     IconComponent={ArrowDownIcon}
+                    MenuProps={MENU_PROPS}
+                    sx={{
+                      '&.Mui-focused': {
+                        backgroundColor: 'var(--off-black-1) !important',
+                        opacity: '1 !important'
+                      },
+                      '& .MuiOutlinedInput-root.Mui-focused': {
+                        backgroundColor: 'var(--off-black-1) !important',
+                        opacity: '1 !important'
+                      }
+                    }}
                   >
                     {Object.entries(state.pathogens).map(([key, data]) => (
                       <MenuItem key={key} value={key}>

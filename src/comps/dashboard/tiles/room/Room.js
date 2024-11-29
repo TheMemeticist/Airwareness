@@ -15,7 +15,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [speed, setSpeed] = useState(30);
+  const [speed, setSpeed] = useState(80);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
 
   // Memoize building and rooms lookup

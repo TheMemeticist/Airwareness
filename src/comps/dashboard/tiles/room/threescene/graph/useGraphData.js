@@ -32,12 +32,18 @@ export const useGraphData = (particleSystem, speed = 50, resetGraph = false) => 
     // Calculate doses per cubic foot of clean air
     // If cleanAirPerSecond is 0, default to a very small number to avoid division by zero
     const dosesPerCubicFoot = activeParticles / cleanAirPerHour;
-    const currentDoses = dosesPerCubicFoot * 1000;
+    const currentDoses = dosesPerCubicFoot * 100;
     
     return {
       doses: currentDoses
     };
-  }, [particleSystem, state.currentPathogen, state.pathogens, state.ventilationRate]);
+  }, [
+    particleSystem,
+    state.currentPathogen,
+    state.pathogens,
+    state.ventilationRate,
+    state.buildings
+  ]);
 
   useEffect(() => {
     if (particleSystem && particleSystem.activeParticles === 0) {
