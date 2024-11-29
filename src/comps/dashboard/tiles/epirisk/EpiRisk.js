@@ -527,7 +527,7 @@ const EpiRisk = () => {
 
   return (
     <Tile 
-      title="Epi-Risk" 
+      title="Transmission" 
       collapsible={true} 
       icon={<CoronavirusIcon 
         className={styles['tile-icon']} 
@@ -543,7 +543,7 @@ const EpiRisk = () => {
           }
         }}
       />}
-      count={`${formattedDisplayValue}%`}
+      count={`${formattedDisplayValue}% Risk`}
       helpText={helpText}
     >
       {({ isCollapsed }) => (
@@ -559,7 +559,7 @@ const EpiRisk = () => {
               <Typography variant="subtitle1" className={styles['pathogen-subtitle']}>
                 {state.pathogens[pathogen].name}
               </Typography>
-              <Typography>{formattedDisplayValue}%</Typography>
+              <Typography>{formattedDisplayValue}% Risk</Typography>
             </div>
           )}
           {!isCollapsed && (
@@ -608,7 +608,7 @@ const EpiRisk = () => {
                 />
               </div>
               <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
-                {formattedDisplayValue}%
+                {formattedDisplayValue}% Risk
               </div>
               
               <Typography variant="body2" className={styles['epi-risk-description']}>

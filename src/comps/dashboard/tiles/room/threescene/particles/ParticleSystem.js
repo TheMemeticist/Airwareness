@@ -192,7 +192,7 @@ export class ParticleSystem {
     // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
     const particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
     
-    // Apply simulation speed directly to particle generation
+    // Full scaling for particle generation (no sqrt)
     return particlesPerMs * deltaTime * this.simulationSpeed;
   }
 

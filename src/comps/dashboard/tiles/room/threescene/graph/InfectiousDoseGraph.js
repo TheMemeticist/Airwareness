@@ -23,9 +23,15 @@ const calculateFontSize = (canvas, baseFontSize = 24, isMinimized = true) => {
 const InfectiousDoseGraph = ({ particleSystem, speed }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const data = useGraphData(particleSystem, speed);
+  const animationFrameRef = useRef(null);
+  const lastDrawnDataRef = useRef([]);
+  
+  // Memoize isHovered to prevent unnecessary rerenders
   const [isHovered, setIsHovered] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 800, height: 480 });
+  
+  // Memoize data updates when minimized
+  const data = useGraphData(particleSystem, speed, !isHovered);
 
   // Add resize observer to handle container size changes
   useEffect(() => {
@@ -52,86 +58,113 @@ const InfectiousDoseGraph = ({ particleSystem, speed }) => {
     canvasRef.current.height = dimensions.height;
   }, [dimensions]);
 
+  // Optimize drawing function to run less frequently when minimized
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const drawGraph = () => {
+      // Still update when minimized, just less frequently
+      if (!isHovered) {
+        const shouldUpdate = Date.now() % 3000 < 50; // Update roughly every 500ms
+        if (!shouldUpdate) return;
+      }
 
-    // Clear canvas with transparent background
-    ctx.clearRect(0, 0, width, height);
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
 
-    if (data.length < 2) return;
+      // Clear canvas with transparent background
+      ctx.clearRect(0, 0, width, height);
 
-    const padding = {
-      left: Math.floor(width * 0.12),    // ~12% of width
-      right: Math.floor(width * 0.15),   // Increased to 15% to accommodate numbers
-      top: Math.floor(height * 0.12),    // ~12% of height
-      bottom: Math.floor(height * 0.15)  // ~15% of height
-    };
+      if (data.length < 2) return;
 
-    const graphWidth = width - (padding.left + padding.right);
-    const graphHeight = height - (padding.top + padding.bottom);
+      const padding = {
+        left: Math.floor(width * 0.12),    // ~12% of width
+        right: Math.floor(width * 0.15),   // Increased to 15% to accommodate numbers
+        top: Math.floor(height * 0.12),    // ~12% of height
+        bottom: Math.floor(height * 0.15)  // ~15% of height
+      };
 
-    // Find max values for both metrics
-    const maxDoses = Math.max(...data.map(d => d.doses));
+      const graphWidth = width - (padding.left + padding.right);
+      const graphHeight = height - (padding.top + padding.bottom);
 
-    // Calculate responsive font size
-    const fontSize = calculateFontSize(canvas, 24, !isHovered);
-    
-    // Draw Y-axis labels and grid lines
-    ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.font = `${fontSize}px Arial`;
+      // Find max values for both metrics
+      const maxDoses = Math.max(...data.map(d => d.doses));
 
-    // Draw doses labels (right side)
-    const dosesSteps = isHovered ? 5 : 2;
-    for (let i = 1; i <= dosesSteps; i++) {
-      const y = padding.top + (graphHeight * (1 - i / dosesSteps));
-      const value = (maxDoses * i / dosesSteps).toFixed(2);
-      ctx.fillText(`${value}`, width - padding.right + 5, y + 3);
+      // Calculate responsive font size
+      const fontSize = calculateFontSize(canvas, 24, !isHovered);
       
-      // Grid lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(width - padding.right, y);
-      ctx.stroke();
-    }
+      // Draw Y-axis labels and grid lines
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.font = `${fontSize}px Arial`;
 
-    // Draw time labels with larger font
-    ctx.font = `${fontSize}px Arial`;
-    ctx.textAlign = 'center';
-    const timeSteps = isHovered ? 4 : 2;
-    
-    for (let i = 0; i <= timeSteps; i++) {
-      const x = padding.left + (graphWidth * (i / timeSteps));
-      const currentTime = data[Math.floor((data.length - 1) * (i / timeSteps))]?.simulationTime || 0;
-      ctx.fillText(formatTime(currentTime), x, height - padding.bottom / 2);
-    }
-
-    // Draw lines
-    const drawLine = (metric, color) => {
-      ctx.strokeStyle = color;
-      const lineWidth = Math.max(2, Math.floor(width / 200));
-      ctx.lineWidth = lineWidth;
-      ctx.beginPath();
-      
-      data.forEach((point, i) => {
-        const x = padding.left + (i / (data.length - 1)) * graphWidth;
-        const y = padding.top + graphHeight - (point[metric] / maxDoses * graphHeight);
+      // Draw doses labels (right side)
+      const dosesSteps = isHovered ? 5 : 2;
+      for (let i = 1; i <= dosesSteps; i++) {
+        const y = padding.top + (graphHeight * (1 - i / dosesSteps));
+        const value = (maxDoses * i / dosesSteps).toFixed(2);
+        ctx.fillText(`${value}`, width - padding.right + 5, y + 3);
         
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
+        // Grid lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+      }
+
+      // Draw time labels with larger font
+      ctx.font = `${fontSize}px Arial`;
+      ctx.textAlign = 'center';
+      const timeSteps = isHovered ? 4 : 2;
       
-      ctx.stroke();
+      for (let i = 0; i <= timeSteps; i++) {
+        const x = padding.left + (graphWidth * (i / timeSteps));
+        const currentTime = data[Math.floor((data.length - 1) * (i / timeSteps))]?.simulationTime || 0;
+        ctx.fillText(formatTime(currentTime), x, height - padding.bottom / 2);
+      }
+
+      // Draw lines
+      const drawLine = (metric, color) => {
+        ctx.strokeStyle = color;
+        const lineWidth = Math.max(2, Math.floor(width / 200));
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        
+        data.forEach((point, i) => {
+          const x = padding.left + (i / (data.length - 1)) * graphWidth;
+          const y = padding.top + graphHeight - (point[metric] / maxDoses * graphHeight);
+          
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        
+        ctx.stroke();
+      };
+
+      drawLine('doses', 'rgba(0, 255, 0, 0.8)');
+
+      lastDrawnDataRef.current = data;
     };
 
-    drawLine('doses', 'rgba(0, 255, 0, 0.8)');
-  }, [data]);
+    // Use requestAnimationFrame for smoother rendering
+    const animate = () => {
+      drawGraph();
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animate();
+
+    // Cleanup
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [data, dimensions, isHovered]);
 
   return (
     <div 

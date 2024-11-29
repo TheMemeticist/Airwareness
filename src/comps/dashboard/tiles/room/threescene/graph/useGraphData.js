@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAppContext } from '../../../../../../context/AppContext';
 import { calculateWellsRiley } from '../../../epirisk/transmission-models/Wells-Riley-Model';
 
-export const useGraphData = (particleSystem, speed = 50, resetGraph = false) => {
+export const useGraphData = (particleSystem, speed = 50, isMinimized = false) => {
   const [graphData, setGraphData] = useState([]);
-  const [simulationTime, setSimulationTime] = useState(0);
   const { state } = useAppContext();
   
   const calculateMetrics = useCallback(() => {
@@ -46,24 +45,19 @@ export const useGraphData = (particleSystem, speed = 50, resetGraph = false) => 
   ]);
 
   useEffect(() => {
-    if (particleSystem && particleSystem.activeParticles === 0) {
-      setGraphData([]);
-      setSimulationTime(0);
-    }
-  }, [particleSystem?.activeParticles]);
-
-  useEffect(() => {
     const baseInterval = 1000;
     const updateInterval = baseInterval / speed;
 
     const updateGraph = () => {
       const metrics = calculateMetrics();
       
-      setSimulationTime(prev => prev + 1);
-      
       setGraphData(prevData => {
+        const lastPoint = prevData[prevData.length - 1];
+        // Increment by 1 second per update, matching Timer's logic
+        const newSimTime = lastPoint ? lastPoint.simulationTime + 1 : 0;
+        
         return [...prevData, {
-          simulationTime,
+          simulationTime: newSimTime,
           doses: metrics.doses
         }];
       });
@@ -71,14 +65,16 @@ export const useGraphData = (particleSystem, speed = 50, resetGraph = false) => 
 
     const intervalId = setInterval(updateGraph, updateInterval);
     return () => clearInterval(intervalId);
-  }, [calculateMetrics, speed, simulationTime]);
+  }, [calculateMetrics, speed]);
 
+  // Reset data when particles are cleared
   useEffect(() => {
-    if (resetGraph) {
+    if (particleSystem && particleSystem.activeParticles === 0) {
       setGraphData([]);
-      setSimulationTime(0);
     }
-  }, [resetGraph]);
+  }, [particleSystem?.activeParticles]);
 
-  return graphData;
+  return isMinimized 
+    ? graphData.filter((_, i) => i % Math.max(1, Math.floor(graphData.length / 100)) === 0)
+    : graphData;
 };
