@@ -150,7 +150,7 @@ const Occupants = ({ buildingId, roomId }) => {
                   {activityIcons[activityLevel - 1].label}
                 </Typography>
               </Box>
-              <Box className={styles['mask-options-container']}>
+              {/* <Box className={styles['mask-options-container']}>
                 <WhiteTextField
                   className={styles['mask-input']}
                   label="Mask Rate (%)"
@@ -173,7 +173,7 @@ const Occupants = ({ buildingId, roomId }) => {
                   InputLabelProps={{ shrink: true }}
                   InputProps={{ inputProps: { min: 0, max: 100 } }}
                 />
-              </Box>
+              </Box> */}
               <Box className={styles['groups-container']} sx={{ maxHeight: 200, overflowY: 'auto' }}>
                 <Stack spacing={2}>
                   {groups.map((group, index) => (
