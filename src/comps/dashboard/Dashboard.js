@@ -146,9 +146,9 @@ const Dashboard = React.memo(() => {
             <RestartAltIcon className={styles['reset-icon']} />
           </button>
         </div>
-        <div className={styles['header-container']}>
+        {/* <div className={styles['header-container']}>
           <h2 className={styles['dashboard-header']}>AIR SUPPORT PROJECT</h2>
-        </div>
+        </div> */}
         <Box className={styles['building-select-container']}>
           <FormControl variant="outlined" size="small" className={styles['building-select']}>
             <InputLabel id="building-select-label" className={styles['building-select-label']}>
