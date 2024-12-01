@@ -34,18 +34,15 @@ export class ParticleAnimator {
   }
 
   updateParticles(system, deltaTime) {
-    // Scale deltaTime differently for movement vs decay
-    const movementDeltaTime = deltaTime * (1 + (system.simulationSpeed - 1) * 0.033); // ~3.3% scaling for movement
-    const decayDeltaTime = deltaTime * system.simulationSpeed; // Full scaling for decay
-    
-    const speedFactor = movementDeltaTime / 16.67;  // Normalize for framerate
+    // Use raw deltaTime for movement
+    const speedFactor = deltaTime;  // Remove extra scaling
 
     let activeCount = system.activeParticles;
 
     for (let i = 0; i < activeCount; i++) {
       const idx = i * 3;
       
-      // Update position using slightly scaled time
+      // Update position using raw deltaTime
       system.manager.positions[idx] += system.manager.velocities[idx] * speedFactor;
       system.manager.positions[idx + 1] += system.manager.velocities[idx + 1] * speedFactor;
       system.manager.positions[idx + 2] += system.manager.velocities[idx + 2] * speedFactor;
@@ -57,7 +54,7 @@ export class ParticleAnimator {
       );
 
       // Use fully scaled time for lifespan reduction
-      system.manager.lifespans[i] -= decayDeltaTime;
+      system.manager.lifespans[i] -= deltaTime;
 
       // Handle expired particles
       if (system.manager.lifespans[i] <= 0) {

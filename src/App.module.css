@@ -16,6 +16,13 @@
   --font-primary: 'Anton', sans-serif;
   --font-secondary: 'Inter', sans-serif;
 
+  /* Override WordPress container styles */
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+
   /* Styles for .app */
   font-family: var(--font-secondary);
   text-align: center;
@@ -24,6 +31,7 @@
   font-weight: 200;
   min-height: 100vh;
   position: relative;
+  display: block;
 }
 
 /* Other component styles */

@@ -326,6 +326,13 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
     }
   }, [simulationSpeed]);
 
+  // Add effect to watch ventilation rate changes
+  useEffect(() => {
+    if (particleSystemRef.current && state.ventilationRate) {
+      particleSystemRef.current.updateVentilationRate(state.ventilationRate);
+    }
+  }, [state.ventilationRate]);
+
   const handlePivotChange = (e) => {
     setPivotCorner(e.target.value);
   };

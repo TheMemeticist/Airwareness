@@ -73,6 +73,8 @@ export class ParticleManager {
     ).normalize();
 
     const speed = this.system.getCurrentSpeed();
+    console.log('New particle speed:', speed);
+
     this.velocities[idx] = direction.x * speed;
     this.velocities[idx + 1] = direction.y * speed;
     this.velocities[idx + 2] = direction.z * speed;

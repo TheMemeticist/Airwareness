@@ -32,19 +32,44 @@ export class ParticleSystem {
     
     this.infectiousCount = 1;
     
+    this.ventilationRate = 1; // Default ACH value
+    
     this.initialize();
     
     // Update particle count based on initial quanta rate
     this.updateParticleCount();
     
-    // Unified velocity configuration - ADJUSTED VALUES
-    this.BASE_SPEED = 0.01;  // Keeping the faster base movement
+    // Calculate base speed to cross room in exactly one hour
+    const maxDimension = Math.max(
+        dimensions.width,
+        dimensions.height,
+        dimensions.length
+    );
+    
+    // Base speed to cross room in one hour (units per millisecond)
+    this.BASE_SPEED = maxDimension / (3600 * 1000); // Convert to milliseconds
+    
+    console.log('Particle speed calculations:', {
+        maxDimension,
+        baseSpeed: this.BASE_SPEED,
+        unitsPerSecond: this.BASE_SPEED * 1000,
+        timeToTraverseRoom: maxDimension / this.BASE_SPEED, // in milliseconds
+    });
+    
     this.simulationSpeed = 1; // Default multiplier
     
-    // Speed calculation to scale from 1x to 1.5x base speed
+    // Speed calculation with wider range (from 1x to 100x base speed)
     this.getCurrentSpeed = () => {
-      const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 3; // Maps 1->1 and 50->1.5
-      return this.BASE_SPEED * speedMultiplier;
+        const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 99; // Maps 1->1 and 50->100
+        
+        // Create a more dramatic curve for ACH effect
+        // When ACH is 1.0, ventEffect = 1.0
+        // When ACH is 0.5, ventEffect = 0.5
+        // When ACH is 0.1, ventEffect = 0.1
+        // When ACH is 0.01, ventEffect = 0.01
+        const ventEffect = Math.max(0.001, this.ventilationRate);
+        
+        return this.BASE_SPEED * speedMultiplier * ventEffect;
     };
     
     // Add storage for original decay rates
@@ -250,5 +275,33 @@ export class ParticleSystem {
     this.manager.lifespans[newParticleIndex] /= this.simulationSpeed;
     
     this.activeParticles++;
+  }
+
+  // Add new method to update ventilation rate
+  updateVentilationRate(rate) {
+    if (!rate || isNaN(rate)) return;
+    
+    // Allow much lower minimum to see near-stagnant air
+    this.ventilationRate = Math.max(0.001, rate);
+    
+    // Update all particle velocities with new speed
+    const targetSpeed = this.getCurrentSpeed();
+    
+    // Update velocities for all active particles
+    for (let i = 0; i < this.activeParticles; i++) {
+      const idx = i * 3;
+      const vx = this.manager.velocities[idx];
+      const vy = this.manager.velocities[idx + 1];
+      const vz = this.manager.velocities[idx + 2];
+      
+      // Normalize and scale to new speed
+      const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
+      if (length > 0) {
+        const scale = targetSpeed / length;
+        this.manager.velocities[idx] *= scale;
+        this.manager.velocities[idx + 1] *= scale;
+        this.manager.velocities[idx + 2] *= scale;
+      }
+    }
   }
 } 
