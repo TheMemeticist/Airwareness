@@ -251,7 +251,19 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
 
   useEffect(() => {
     if (clippingPlanesRef.current.length) {
+      // Set high priority for dimension updates
+      if (animationControllerRef.current) {
+        animationControllerRef.current.setHighPriority(true);
+      }
+
       updateDimensions(dimensionsInMeters, clippingPlanesRef.current, pivotCorner, position, true);
+
+      // Reset priority after a delay
+      setTimeout(() => {
+        if (animationControllerRef.current) {
+          animationControllerRef.current.setHighPriority(false);
+        }
+      }, 6000); // Match TRANSITION_DURATION
 
       if (debug && planeHelpersRef.current.length) {
         planeHelpersRef.current.forEach((helper) => {
@@ -295,15 +307,16 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
     }
   }, [dimensionsInMeters]);
 
-  // Add effect to watch both currentPathogen AND pathogen updates
+  // Separate the risk calculation updates to prevent animation interference
   useEffect(() => {
     if (particleSystemRef.current) {
-      const pathogenData = state.pathogens[state.currentPathogen];
-      const quantaRate = pathogenData.quantaRate;
-      console.log('Updating particle system with quanta rate:', quantaRate);
-      particleSystemRef.current.updateQuantaRate(quantaRate);
+      requestIdleCallback(() => {
+        const pathogenData = state.pathogens[state.currentPathogen];
+        const quantaRate = pathogenData.quantaRate;
+        particleSystemRef.current.updateQuantaRate(quantaRate);
+      });
     }
-  }, [state.pathogens, state.currentPathogen]); // Watch both values
+  }, [state.pathogens, state.currentPathogen]);
 
   // Add effect to watch infectious count changes
   useEffect(() => {

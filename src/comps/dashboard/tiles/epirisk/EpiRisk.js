@@ -375,14 +375,14 @@ const EpiRisk = () => {
     }
   };
 
-  // Memoize risk calculation
-  const riskData = React.useMemo(() => {
+  // Separate memo for dynamic risk calculation
+  const dynamicRiskData = React.useMemo(() => {
     return memoizedCalculateRisk({
       totalOccupants: getTotalOccupants(),
       positivityRate,
       quantaRate,
       breathingRate,
-      exposureTime,
+      exposureTime: state.exposureTime,
       roomVolume: getRoomVolume(),
       ventilationRate: state.ventilationRate,
       halfLife
@@ -391,7 +391,7 @@ const EpiRisk = () => {
     positivityRate, 
     quantaRate, 
     breathingRate,
-    exposureTime, 
+    state.exposureTime,
     state.ventilationRate,
     halfLife,
     memoizedCalculateRisk,
@@ -399,8 +399,35 @@ const EpiRisk = () => {
     getRoomVolume
   ]);
 
+  // Separate memo for fixed 1-hour risk calculation
+  const fixedRiskData = React.useMemo(() => {
+    return memoizedCalculateRisk({
+      totalOccupants: getTotalOccupants(),
+      positivityRate,
+      quantaRate,
+      breathingRate,
+      exposureTime: 1, // Fixed 1-hour exposure
+      roomVolume: getRoomVolume(),
+      ventilationRate: state.ventilationRate,
+      halfLife
+    });
+  }, [
+    positivityRate, 
+    quantaRate, 
+    breathingRate,
+    state.ventilationRate,
+    halfLife,
+    memoizedCalculateRisk,
+    getTotalOccupants,
+    getRoomVolume
+  ]);
+
+  // Format display values
+  const formattedDynamicValue = (dynamicRiskData.probability * 100).toFixed(1);
+  const formattedFixedValue = (fixedRiskData.probability * 100).toFixed(1);
+
   const totalOccupants = getTotalOccupants();
-  const riskColor = getRiskColor(riskData.probability);
+  const riskColor = getRiskColor(dynamicRiskData.probability);
 
   // Use useEffect to create continuous rotation
   useEffect(() => {
@@ -423,7 +450,7 @@ const EpiRisk = () => {
 
   // Animate risk value changes
   useEffect(() => {
-    const targetValue = Math.max(0, riskData.probability * 100); // Ensure target is never negative
+    const targetValue = Math.max(0, dynamicRiskData.probability * 100); // Ensure target is never negative
     const startValue = displayValue;
     const duration = 1200;
     const steps = 60;
@@ -446,7 +473,7 @@ const EpiRisk = () => {
     };
 
     animateValue();
-  }, [riskData.probability]);
+  }, [dynamicRiskData.probability]);
 
   // Replace the direct risk display with animated value
   const formattedDisplayValue = React.useMemo(() => {
@@ -459,9 +486,9 @@ const EpiRisk = () => {
   useEffect(() => {
     dispatch({
       type: 'UPDATE_INFECTIOUS_COUNT',
-      payload: riskData.infectiousCount
+      payload: dynamicRiskData.infectiousCount
     });
-  }, [riskData.infectiousCount, dispatch]);
+  }, [dynamicRiskData.infectiousCount, dispatch]);
 
   const handleDeletePathogen = () => {
     // Get all pathogen IDs
@@ -525,44 +552,46 @@ const EpiRisk = () => {
     }
   }, [getTotalOccupants()]); // Dependency on total occupants
 
+  // Reset exposure time when timer resets
+  useEffect(() => {
+    if (state.timerReset) {
+      dispatch({
+        type: 'UPDATE_EXPOSURE_TIME',
+        payload: 0
+      });
+    }
+  }, [state.timerReset, dispatch]);
+
   return (
     <Tile 
       title="Transmission" 
       collapsible={true} 
-      icon={<CoronavirusIcon 
-        className={styles['tile-icon']} 
-        sx={{ 
-          color: `${riskColor} !important`,
-          fill: `${riskColor} !important`,
-          '&.MuiSvgIcon-root': {
-            color: `${riskColor} !important`,
-            fill: `${riskColor} !important`
-          },
-          '& path': {
-            fill: `${riskColor} !important`
-          }
-        }}
-      />}
-      count={`${formattedDisplayValue}% Risk`}
+      icon={<CoronavirusIcon />}
+      count={`${formattedDynamicValue}% Risk`}
       helpText={helpText}
     >
       {({ isCollapsed }) => (
         <>
-          {isCollapsed && (
+          {isCollapsed ? (
             <div className={styles['collapsed-content']}>
               <div className={styles['minimized-icon']}>
                 <CoronavirusIcon 
                   className={styles['tile-icon']} 
-                  sx={{ color: riskColor, fontSize: '80px' }}
+                  sx={{ 
+                    // Use dynamic risk color when collapsed
+                    color: getRiskColor(dynamicRiskData.probability), 
+                    fontSize: '80px' 
+                  }}
                 />
               </div>
               <Typography variant="subtitle1" className={styles['pathogen-subtitle']}>
                 {state.pathogens[pathogen].name}
               </Typography>
-              <Typography>{formattedDisplayValue}% Risk</Typography>
+              <Typography>
+                {formattedDynamicValue}% Risk
+              </Typography>
             </div>
-          )}
-          {!isCollapsed && (
+          ) : (
             <div className={`${tileStyles['tile-content']} ${styles['epi-risk-container']}`}>
               <Box className={styles['pathogen-title-container']}>
                 <FormControl variant="outlined" size="small" className={styles['pathogen-select-container']}>
@@ -602,17 +631,21 @@ const EpiRisk = () => {
                 <CoronavirusIcon 
                   className={styles['epi-risk-icon']} 
                   sx={{ 
-                    color: riskColor,
+                    // Use fixed 1-hour risk color when expanded
+                    color: getRiskColor(fixedRiskData.probability), 
                     fontSize: getRiskSize(positivityRate)
                   }}
                 />
               </div>
-              <div className={styles['epi-risk-value']} style={{ color: riskColor }}>
-                {formattedDisplayValue}% Risk
+              <div className={styles['epi-risk-value']} style={{ color: getRiskColor(fixedRiskData.probability) }}>
+                {formattedFixedValue}% Risk
+                <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                  1-hour exposure assessment
+                </Typography>
               </div>
               
               <Typography variant="body2" className={styles['epi-risk-description']}>
-                {riskData.infectiousCount} infectious individuals out of {totalOccupants} total
+                {dynamicRiskData.infectiousCount} infectious individuals out of {totalOccupants} total
               </Typography>
 
               <Box 
@@ -713,6 +746,16 @@ const EpiRisk = () => {
                     }}
                   />
                 </Box>
+              </Box>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
+                  <strong>Fixed Time Risk Assessment:</strong> This view shows the transmission risk 
+                  for a standardized 1-hour exposure period, allowing you to compare different scenarios 
+                  independently of elapsed time.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Switch to the collapsed view to see real-time risk based on current conditions.
+                </Typography>
               </Box>
             </div>
           )}

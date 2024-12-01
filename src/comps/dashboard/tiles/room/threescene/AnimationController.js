@@ -10,6 +10,7 @@ export class AnimationController {
     this.targetCube = targetCube;
     this.isAnimating = false;
     this.frameId = null;
+    this.highPriorityAnimation = false;
 
     if (this.controls) {
       this.controls.calculateIdealCameraPosition = (dimensions) => {
@@ -41,13 +42,27 @@ export class AnimationController {
     
     this.frameId = requestAnimationFrame(this.animate);
     
-    if (this.controls && this.targetCube) {
-      this.controls.target.copy(this.targetCube.position);
-      this.controls.update();
-    }
-    
-    if (this.renderer && this.scene && this.camera) {
-      this.renderer.render(this.scene, this.camera);
+    if (this.highPriorityAnimation) {
+      if (this.controls && this.targetCube) {
+        this.controls.target.copy(this.targetCube.position);
+        this.controls.update();
+      }
+      
+      if (this.renderer && this.scene && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
+    } else {
+      if (this.controls && this.targetCube) {
+        this.controls.target.copy(this.targetCube.position);
+      }
+      
+      if (this.controls) {
+        this.controls.update();
+      }
+      
+      if (this.renderer && this.scene && this.camera) {
+        this.renderer.render(this.scene, this.camera);
+      }
     }
   };
 
@@ -65,5 +80,9 @@ export class AnimationController {
 
   easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  setHighPriority(value) {
+    this.highPriorityAnimation = value;
   }
 } 

@@ -10,6 +10,9 @@ const calculateCameraDistance = (dimensions) => {
   return baseDistance * 1.2 * heightFactor;
 };
 
+// Add a flag to track active animations
+let isAnimating = false;
+
 export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
   console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });
 
@@ -18,6 +21,13 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
   const height = isNaN(dimensions.height) ? 1 : dimensions.height;
 
   if (clippingPlanes && clippingPlanes.length === 6) {
+    // Don't start new animation if one is already running
+    if (isAnimating) {
+      return;
+    }
+    
+    isAnimating = true;
+
     // Determine offsets based on pivot corner
     let xOffset, yOffset, zOffset;
     switch (pivotCorner) {
@@ -83,7 +93,10 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
       progress: 1,
       duration: TRANSITION_DURATION,
       ease: "power2.inOut",
-      onUpdate: () => animationObject.update()
+      onUpdate: () => animationObject.update(),
+      onComplete: () => {
+        isAnimating = false;
+      }
     });
 
     if (window.threeDSceneControls) {

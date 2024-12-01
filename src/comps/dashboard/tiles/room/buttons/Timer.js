@@ -43,9 +43,16 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
         timeRef.current += 1;
       }, interval);
 
-      // Update display every 2 seconds
+      // Update display and exposure time every 2 seconds
       displayIntervalId = setInterval(() => {
-        setDisplayTime(timeRef.current);
+        const currentTime = timeRef.current;
+        setDisplayTime(currentTime);
+        
+        // Dispatch exposure time in hours
+        dispatch({
+          type: 'UPDATE_EXPOSURE_TIME',
+          payload: currentTime / 3600 // Convert seconds to hours
+        });
       }, 2000);
 
       onSpeedChange(speed);
@@ -55,7 +62,7 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
       clearInterval(intervalId);
       clearInterval(displayIntervalId);
     };
-  }, [isRunning, speed, onSpeedChange]);
+  }, [isRunning, speed, onSpeedChange, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

@@ -31,6 +31,7 @@ const initialState = {
   infectiousCount: 0,
   splashScreenVisible: true,
   ventilationRate: 1,
+  exposureTime: 0,
 };
 
 const AppContext = createContext();
@@ -164,6 +165,11 @@ function reducer(state, action) {
       return {
         ...state,
         timerReset: Date.now()
+      };
+    case 'UPDATE_EXPOSURE_TIME':
+      return {
+        ...state,
+        exposureTime: action.payload
       };
     default:
       return state;
