@@ -18,7 +18,8 @@ const formatTime = (seconds) => {
 
 export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
   const { state, dispatch } = useAppContext();
-  const [time, setTime] = useState(0);
+  const [displayTime, setDisplayTime] = useState(0);
+  const timeRef = useRef(0);
   const [isRunning, setIsRunning] = useState(true);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
   const [speed, setSpeed] = useState(initialSpeed);
@@ -33,14 +34,27 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
 
   useEffect(() => {
     let intervalId;
+    let displayIntervalId;
+
     if (isRunning) {
+      // Update internal time counter frequently
       const interval = 1000 / speed;
       intervalId = setInterval(() => {
-        setTime(prevTime => prevTime + 1);
+        timeRef.current += 1;
       }, interval);
+
+      // Update display every 2 seconds
+      displayIntervalId = setInterval(() => {
+        setDisplayTime(timeRef.current);
+      }, 2000);
+
       onSpeedChange(speed);
     }
-    return () => clearInterval(intervalId);
+
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(displayIntervalId);
+    };
   }, [isRunning, speed, onSpeedChange]);
 
   useEffect(() => {
@@ -65,7 +79,8 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
   }, [showSpeedControl]);
 
   const resetTimer = () => {
-    setTime(0);
+    timeRef.current = 0;
+    setDisplayTime(0);
     dispatch({ type: 'UPDATE_INFECTIOUS_COUNT', payload: 0 });
     requestAnimationFrame(() => {
       dispatch({ type: 'UPDATE_INFECTIOUS_COUNT', payload: 1 });
@@ -87,8 +102,8 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
         </Tooltip>
 
         <div className={styles['timer-display']}>
-          <span className={styles['timer-value']}>{formatTime(time).value}</span>
-          <span className={styles['timer-unit']}>{formatTime(time).unit}</span>
+          <span className={styles['timer-value']}>{formatTime(displayTime).value}</span>
+          <span className={styles['timer-unit']}>{formatTime(displayTime).unit}</span>
         </div>
 
         <Tooltip title="Reset Timer">
