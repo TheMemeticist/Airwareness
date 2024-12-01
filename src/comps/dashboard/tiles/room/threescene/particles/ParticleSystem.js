@@ -62,11 +62,6 @@ export class ParticleSystem {
     this.getCurrentSpeed = () => {
         const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 99; // Maps 1->1 and 50->100
         
-        // Create a more dramatic curve for ACH effect
-        // When ACH is 1.0, ventEffect = 1.0
-        // When ACH is 0.5, ventEffect = 0.5
-        // When ACH is 0.1, ventEffect = 0.1
-        // When ACH is 0.01, ventEffect = 0.01
         const ventEffect = Math.max(0.001, this.ventilationRate);
         
         return this.BASE_SPEED * speedMultiplier * ventEffect;
@@ -200,7 +195,13 @@ export class ParticleSystem {
   calculateLifespan() {
     // Calculate base lifespan without simulation speed adjustment
     const baseLifespan = (-this.baseHalfLife * Math.log(1 - Math.random()));
-    return baseLifespan;
+    
+    // ACH directly represents how many times the air is replaced per hour
+    // No need to add 1 - the ACH value itself represents the decay rate
+    const achEffect = Math.max(0.001, this.ventilationRate);
+    
+    // Shorter lifespan with higher ACH
+    return baseLifespan / achEffect;
   }
 
   updateHalfLife(halfLifeHours) {
@@ -217,8 +218,11 @@ export class ParticleSystem {
     // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
     const particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
     
-    // Full scaling for particle generation (no sqrt)
-    return particlesPerMs * deltaTime * this.simulationSpeed;
+    // Apply ACH reduction for values above 1
+    const achEffect = this.ventilationRate > 1 ? (1 / this.ventilationRate) : 1;
+    
+    // Full scaling for particle generation with ACH effect
+    return particlesPerMs * deltaTime * this.simulationSpeed * achEffect;
   }
 
   resetParticles() {
@@ -281,13 +285,12 @@ export class ParticleSystem {
   updateVentilationRate(rate) {
     if (!rate || isNaN(rate)) return;
     
-    // Allow much lower minimum to see near-stagnant air
     this.ventilationRate = Math.max(0.001, rate);
     
-    // Update all particle velocities with new speed
+    // Update speeds of existing particles
     const targetSpeed = this.getCurrentSpeed();
     
-    // Update velocities for all active particles
+    // Update velocities and lifespans for all active particles
     for (let i = 0; i < this.activeParticles; i++) {
       const idx = i * 3;
       const vx = this.manager.velocities[idx];
@@ -302,6 +305,9 @@ export class ParticleSystem {
         this.manager.velocities[idx + 1] *= scale;
         this.manager.velocities[idx + 2] *= scale;
       }
+      
+      // Use ACH directly for decay rate
+      this.manager.lifespans[i] = this.manager.lifespans[i] / this.ventilationRate;
     }
   }
 } 
