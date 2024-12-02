@@ -10,135 +10,154 @@
   
   .timer-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
-    border: 1px solid var(--off-white);
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5),
+                0 0 2px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    padding: 8px 12px;
+    min-width: 160px;
     transition: all 0.3s ease;
-    height: 44px;
-    width: 20%;
-    min-width: 180px;
+  }
+  
+  /* Speed controls wrapper with transition */
+  .speed-controls-wrapper {
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  /* Show speed controls on container hover */
+  .timer-container:hover .speed-controls-wrapper {
+    height: 48px; /* Adjust based on your content */
+    opacity: 1;
+    margin-top: 8px;
   }
   
   .timer-container:hover {
     border-color: var(--bright-yellow);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6),
+                0 0 4px rgba(221, 193, 19, 0.2);
+  }
+  
+  .timer-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
   }
   
   /* Timer Display */
   .timer-display {
     color: var(--off-white);
     font-family: var(--font-secondary);
-    font-size: max(0.75rem, 1.2vmin);
-    font-weight: 500;
+    font-size: max(0.9rem, 1.4vmin);
+    font-weight: 600;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 0px;
-    flex: 1;
+    gap: 4px;
     justify-content: center;
     white-space: nowrap;
-    width: 30%;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   }
   
   .timer-value {
     display: inline-block;
-    width: 40px;
     text-align: right;
+    margin-right: 2px;
   }
   
   .timer-unit {
     display: inline-block;
-    width: 40px;
     text-align: left;
+    opacity: 0.7;
+    font-weight: 400;
   }
   
   /* Timer Buttons */
   .timer-button {
-    width: 56px !important;
-    height: 56px !important;
-    padding: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 6px !important;
     color: var(--off-white) !important;
-    transition: all 0.3s ease !important;
+    transition: all 0.2s ease !important;
     min-width: unset !important;
     background: transparent !important;
     flex-shrink: 0;
+    opacity: 0.8;
   }
   
   .timer-button:hover {
     color: var(--bright-yellow) !important;
-    background-color: rgba(221, 193, 19, 0.1) !important;
+    background-color: rgba(221, 193, 19, 0.15) !important;
+    opacity: 1;
+    transform: scale(1.05);
   }
   
   .timer-icon {
-    width: 32px !important;
-    height: 32px !important;
+    width: 18px !important;
+    height: 18px !important;
     fill: currentColor !important;
     color: currentColor !important;
   }
   
-  /* Speed Dropdown */
-  .speed-dropdown {
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 0px;
-    transform: translateY(0);
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid var(--off-white);
-    border-radius: 8px;
-    padding: 16px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    width: 64px;
-    height: 250px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .speed-dropdown.show {
-    opacity: 1;
-    visibility: visible;
-  }
-  
-  .speed-dropdown:hover {
-    border-color: var(--bright-yellow);
-  }
-  
-  .speed-label {
+  .speed-controls {
     display: flex;
     align-items: center;
     gap: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px;
+    border-radius: 6px;
+  }
+  
+  .speed-input {
+    width: 48px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--bright-yellow);
+    padding: 2px 4px;
+    text-align: center;
+    font-family: var(--font-secondary);
+    font-size: max(0.8rem, 1.2vmin);
+    height: 24px;
+    transition: all 0.2s ease;
+    -moz-appearance: textfield;
+  }
+  
+  .speed-input:hover {
+    border-color: var(--bright-yellow);
+    box-shadow: 0 0 10px rgba(221, 193, 19, 0.1);
+  }
+  
+  .speed-input:focus {
+    outline: none;
+    border-color: var(--bright-yellow);
+    background: rgba(221, 193, 19, 0.05);
+  }
+  
+  .speed-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  
+  .speed-label {
     color: var(--off-white);
-    font-size: 0.75rem;
-    white-space: nowrap;
+    font-size: max(0.6rem, 0.9vmin);
+    opacity: 0.6;
+    text-transform: lowercase;
+    letter-spacing: 0.5px;
   }
   
-  .speed-dropdown-slider {
-    height: 140px;
-    color: var(--off-white) !important;
-  }
-  
-  /* Slider customization */
-  .speed-dropdown-slider :global(.MuiSlider-rail) {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  .speed-dropdown-slider :global(.MuiSlider-track) {
-    background-color: var(--off-white);
-  }
-  
-  .speed-dropdown-slider :global(.MuiSlider-thumb) {
-    background-color: var(--off-white);
-    width: 12px;
-    height: 12px;
-  }
-  
-  .speed-dropdown-slider :global(.MuiSlider-markLabel) {
-    color: var(--off-white);
-    font-size: 0.75rem;
-  }
-  
-  .speed-dropdown-slider:hover {
-    color: var(--bright-yellow) !important;
+  .speed-input::-webkit-inner-spin-button,
+  .speed-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }

@@ -38,13 +38,13 @@ const CentralVentilation = () => {
   }, [ach, state.buildings]);
 
   const increaseAch = () => {
-    const newValue = (parseFloat(ach) + 0.1).toFixed(1);
+    const newValue = (parseFloat(ach) + 1).toFixed(1);
     setAch(newValue);
     dispatch({ type: 'UPDATE_VENTILATION_RATE', payload: parseFloat(newValue) });
   };
 
   const decreaseAch = () => {
-    const newValue = Math.max(0, parseFloat(ach) - 0.1).toFixed(1);
+    const newValue = Math.max(0, parseFloat(ach) - 1).toFixed(1);
     setAch(newValue);
     dispatch({ type: 'UPDATE_VENTILATION_RATE', payload: parseFloat(newValue) });
   };
@@ -92,7 +92,7 @@ const CentralVentilation = () => {
                   onChange={handleAchChange}
                   variant="outlined"
                   size="small"
-                  InputProps={{ inputProps: { min: 0, step: 0.1 } }}
+                  InputProps={{ inputProps: { min: 0, step: 1 } }}
                 />
                 <IconButton onClick={increaseAch} className={styles['ach-button']}>
                   <AddIcon />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IconButton, Slider, Tooltip } from '@mui/material';
-import { Speed as SpeedIcon, Restore as RestoreIcon } from '@mui/icons-material';
+import { Speed as SpeedIcon, Restore as RestoreIcon, FastForward, FastRewind } from '@mui/icons-material';
 import { useAppContext } from '../../../../../context/AppContext';
 import styles from './Timer.module.css';
 
@@ -37,21 +37,19 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
     let displayIntervalId;
 
     if (isRunning) {
-      // Update internal time counter frequently
-      const interval = 1000 / speed;
+      // Use a fixed interval of 16ms (approximately 60fps)
+      // But increment by an amount proportional to the speed
       intervalId = setInterval(() => {
-        timeRef.current += 1;
-      }, interval);
+        const increment = speed / 60; // Convert speed to increment per frame
+        timeRef.current += increment;
+      }, 16);
 
-      // Update display and exposure time every 2 seconds
+      // Keep display updates at 2-second intervals
       displayIntervalId = setInterval(() => {
-        const currentTime = timeRef.current;
-        setDisplayTime(currentTime);
-        
-        // Dispatch exposure time in hours
+        setDisplayTime(timeRef.current);
         dispatch({
           type: 'UPDATE_EXPOSURE_TIME',
-          payload: currentTime / 3600 // Convert seconds to hours
+          payload: timeRef.current / 3600
         });
       }, 2000);
 
@@ -94,55 +92,65 @@ export const Timer = ({ initialSpeed = 80, onSpeedChange }) => {
     });
   };
 
+  const adjustSpeed = (multiplier) => {
+    const newSpeed = Math.max(1, Math.round(speed * multiplier));
+    setSpeed(newSpeed);
+  };
+
+  const handleSpeedInputChange = (event) => {
+    const value = Math.max(1, Math.round(Number(event.target.value)));
+    setSpeed(value);
+  };
+
   return (
     <div className={styles['timer-wrapper']}>
       <div className={styles['timer-container']}>
-        <Tooltip title="Simulation Speed">
-          <IconButton
-            ref={speedButtonRef}
-            className={styles['timer-button']}
-            onClick={() => setShowSpeedControl(!showSpeedControl)}
-            aria-label="Speed Control"
-          >
-            <SpeedIcon className={styles['timer-icon']} />
-          </IconButton>
-        </Tooltip>
+        <div className={styles['timer-row']}>
+          <Tooltip title="Reset Timer">
+            <IconButton
+              className={styles['timer-button']}
+              onClick={resetTimer}
+              aria-label="Reset Timer"
+            >
+              <RestoreIcon className={styles['timer-icon']} />
+            </IconButton>
+          </Tooltip>
 
-        <div className={styles['timer-display']}>
-          <span className={styles['timer-value']}>{formatTime(displayTime).value}</span>
-          <span className={styles['timer-unit']}>{formatTime(displayTime).unit}</span>
+          <div className={styles['timer-display']}>
+            <span className={styles['timer-value']}>{formatTime(displayTime).value}</span>
+            <span className={styles['timer-unit']}>{formatTime(displayTime).unit}</span>
+          </div>
         </div>
 
-        <Tooltip title="Reset Timer">
-          <IconButton
-            className={styles['timer-button']}
-            onClick={resetTimer}
-            aria-label="Reset Timer"
-          >
-            <RestoreIcon className={styles['timer-icon']} />
-          </IconButton>
-        </Tooltip>
+        <div className={styles['speed-controls-wrapper']}>
+          <div className={styles['speed-controls']}>
+            <IconButton
+              className={styles['timer-button']}
+              onClick={() => adjustSpeed(0.61)}
+              aria-label="Decrease Speed"
+            >
+              <FastRewind className={styles['timer-icon']} />
+            </IconButton>
 
-        <div 
-          ref={speedDropdownRef}
-          className={`${styles['speed-dropdown']} ${showSpeedControl ? styles['show'] : ''}`}
-        >
-          <div className={styles['speed-label']}>Speed</div>
-          <Slider
-            orientation="vertical"
-            value={speed}
-            onChange={(_, newValue) => setSpeed(newValue)}
-            min={1}
-            max={100}
-            aria-label="Speed"
-            valueLabelDisplay="auto"
-            marks={[
-              { value: 1, label: '1x' },
-              { value: 50, label: '50x' },
-              { value: 100, label: '100x' }
-            ]}
-            className={styles['speed-dropdown-slider']}
-          />
+            <div className={styles['speed-input-container']}>
+              <input
+                type="number"
+                min="1"
+                value={speed}
+                onChange={handleSpeedInputChange}
+                className={styles['speed-input']}
+              />
+              <span className={styles['speed-label']}>speed multiplier</span>
+            </div>
+
+            <IconButton
+              className={styles['timer-button']}
+              onClick={() => adjustSpeed(1.61)}
+              aria-label="Increase Speed"
+            >
+              <FastForward className={styles['timer-icon']} />
+            </IconButton>
+          </div>
         </div>
       </div>
     </div>
