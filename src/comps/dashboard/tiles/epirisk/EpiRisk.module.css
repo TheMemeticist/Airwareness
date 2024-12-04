@@ -5,21 +5,42 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 80px);
   overflow-y: auto;
   scrollbar-gutter: stable both-edges;
   padding-right: 1rem !important;
   overflow-x: hidden;
+  gap: 0.5rem;
   &:focus-within {
     opacity: 1 !important;
     background-color: var(--off-black-1) !important;
   }
 }
 
+.epi-risk-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.epi-risk-container::-webkit-scrollbar-track {
+  background: var(--off-black-1);
+  border-radius: 4px;
+}
+
+.epi-risk-container::-webkit-scrollbar-thumb {
+  background: var(--off-black-3);
+  border-radius: 4px;
+}
+
+.epi-risk-container::-webkit-scrollbar-thumb:hover {
+  background: var(--off-black-4);
+}
+
 .epi-risk-icon {
-  font-size: 12rem;
+  font-size: min(12rem, 60vw);
   margin-bottom: 0.5rem;
   transform-origin: center center;
+  width: 100%;
+  height: 100%;
 }
 
 .epi-risk-icon-wrapper {
@@ -27,11 +48,11 @@
   justify-content: center;
   align-items: center;
   transform-origin: center center;
-  width: 12rem;
-  height: 12rem;
+  width: min(12rem, 60vw);
+  height: min(12rem, 60vw);
   margin: 0 auto;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .epi-risk-icon:hover {
@@ -40,7 +61,9 @@
 
 .epi-risk-value {
   font-size: 3rem;
-  margin: 0.5rem 0;
+  
+  margin: 0.0rem 0;
+  margin-top: -1rem;
   font-weight: 600;
   background: linear-gradient(45deg, var(--bright-teal), #2196f3);
   -webkit-background-clip: text;
@@ -142,8 +165,13 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .epi-risk-icon-wrapper {
+    width: min(8rem, 50vw);
+    height: min(8rem, 50vw);
+  }
+  
   .epi-risk-icon {
-    font-size: 8rem;
+    font-size: min(8rem, 50vw);
   }
   
   .epi-risk-value {
@@ -155,15 +183,16 @@
     max-width: 100%;
     margin: 0.5rem auto;
   }
-  .epi-risk-icon-wrapper {
-    width: 10rem;
-    height: 10rem;
-  }
 }
 
 @media (max-width: 480px) {
+  .epi-risk-icon-wrapper {
+    width: min(6rem, 40vw);
+    height: min(6rem, 40vw);
+  }
+  
   .epi-risk-icon {
-    font-size: 6rem;
+    font-size: min(6rem, 40vw);
   }
   
   .epi-risk-value {
@@ -172,7 +201,7 @@
   
   .epi-risk-container {
     padding: 0.5rem;
-    max-height: calc(100vh - 150px);
+    max-height: calc(100vh - 60px);
   }
 
   .epi-risk-params {
@@ -199,9 +228,13 @@
     max-width: 95%;
     font-size: 0.8rem;
   }
-  .epi-risk-icon-wrapper {
-    width: 8rem;
-    height: 8rem;
+
+  .risk-description-primary,
+  .risk-description-secondary {
+    max-width: 95% !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+    font-size: 0.9rem;
   }
 }
 
@@ -359,4 +392,122 @@
 
 .pathogen-select-container :global(.MuiOutlinedInput-root.Mui-focused) {
   background-color: var(--off-black-1) !important;
+}
+
+.pathogen-editor {
+  background-color: var(--off-black-2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 0rem;
+  width: 50%;
+  max-width: 200px;
+  transition: all 1s ease;
+}
+
+.pathogen-editor.expanded {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 1rem;
+  background-color: var(--off-black-1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.9);
+}
+
+.editor-params {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.61rem;
+}
+
+.edit-button {
+  color: var(--off-white) !important;
+  text-transform: none !important;
+  font-size: 0.9rem !important;
+  padding: 4px 12px !important;
+  border-radius: 4px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.edit-button:hover {
+  background-color: var(--off-black-3) !important;
+}
+
+.risk-description-primary {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+  max-width: 80% !important;
+  font-size: 0.9rem;
+}
+
+.risk-description-secondary {
+  max-width: 80% !important;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+  font-size: 0.9rem;
+}
+
+.helper-text {
+  color: var(--off-white) !important;
+  opacity: 0.8;
+  font-size: 0.75rem !important;
+  margin-top: 4px !important;
+  line-height: 1.3 !important;
+  padding: 0 4px;
+}
+
+.epi-risk-params :global(.MuiFormHelperText-root) {
+  color: var(--off-white) !important;
+  opacity: 0.8;
+}
+
+.risk-description-container {
+  width: 100%;
+  max-width: 80%;
+  margin: 1rem auto;
+  margin-bottom: 8rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.source-button {
+  margin-top: 0.0rem !important;
+  background-color: var(--off-black-2) !important;
+  color: var(--off-white) !important;
+  font-size: 0.85rem !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  text-transform: none !important;
+  transition: background-color 0.2s ease !important;
+  align-self: flex-end;
+  
+  &:hover {
+    background-color: var(--off-black-3) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+.source-button:hover {
+  background-color: var(--light-blue) !important;
+}
+
+/* Update existing styles to work with container */
+.risk-description-primary {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+  width: 100% !important;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+/* Add responsive styling */
+@media (max-width: 480px) {
+  .risk-description-container {
+    max-width: 95%;
+  }
+  
+  .source-button {
+    font-size: 0.8rem !important;
+    padding: 3px 10px !important;
+  }
 }

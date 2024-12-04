@@ -9,6 +9,10 @@ import { calculateWellsRiley } from './transmission-models/Wells-Riley-Model';
 import { useAppContext } from '../../../../context/AppContext';
 import { alpha, keyframes } from '@mui/material';
 import ArrowDownIcon from '@mui/icons-material/ArrowDownward';
+import PathogenEditor from './PathogenEditor';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ArticleIcon from '@mui/icons-material/Article';
 
 const spin = keyframes`
   from {
@@ -580,7 +584,7 @@ const EpiRisk = () => {
                   sx={{ 
                     // Use dynamic risk color when collapsed
                     color: getRiskColor(dynamicRiskData.probability), 
-                    fontSize: '80px' 
+                    fontSize: '60px' 
                   }}
                 />
               </div>
@@ -623,6 +627,39 @@ const EpiRisk = () => {
                     ))}
                   </Select>
                 </FormControl>
+                <div className={styles['pathogen-actions']}>
+                  <Button
+                    variant="contained"
+                    className={`${styles['action-button']} ${styles['add-pathogen-button']}`}
+                    onClick={() => {
+                      const id = `custom-${Date.now()}`;
+                      dispatch({
+                        type: 'ADD_PATHOGEN',
+                        payload: {
+                          id,
+                          pathogen: {
+                            name: `New Pathogen`,
+                            quantaRate: 25,
+                            halfLife: 1.1
+                          }
+                        }
+                      });
+                      setPathogen(id);
+                    }}
+                    title="Add new pathogen"
+                  >
+                    <AddIcon className={styles['button-content']} />
+                  </Button>
+                  <Button
+                    variant="contained"
+                    className={`${styles['action-button']} ${styles['delete-pathogen-button']}`}
+                    onClick={handleDeletePathogen}
+                    disabled={Object.keys(state.pathogens).length <= 1}
+                    title="Delete current pathogen"
+                  >
+                    <DeleteIcon className={styles['button-content']} />
+                  </Button>
+                </div>
               </Box>
               <div 
                 className={styles['epi-risk-icon-wrapper']}
@@ -643,120 +680,47 @@ const EpiRisk = () => {
                   1-hour exposure assessment
                 </Typography>
               </div>
-              
               <Typography variant="body2" className={styles['epi-risk-description']}>
                 {dynamicRiskData.infectiousCount} infectious individuals out of {totalOccupants} total
               </Typography>
+              <PathogenEditor
+                tempPositivityRate={tempPositivityRate}
+                handlePositivityRateChange={handlePositivityRateChange}
+                handleBlur={handleBlur}
+                getMinPositivityRate={getMinPositivityRate}
+                getMaxPositivityRate={getMaxPositivityRate}
+                pathogen={pathogen}
+                state={state}
+                dispatch={dispatch}
+                quantaRate={quantaRate}
+                handleQuantaRateChange={handleQuantaRateChange}
+                handleQuantaRateBlur={handleQuantaRateBlur}
+                halfLife={halfLife}
+                handleHalfLifeChange={handleHalfLifeChange}
+                handleHalfLifeBlur={handleHalfLifeBlur}
+              />
+              <div className={styles['risk-description-container']}>
+                <Typography 
+                  variant="body2" 
+                  color="white" 
+                  className={styles['risk-description-primary']}
+                >
+                  <p><strong>Risk Assessment System:</strong> This tool provides two complementary views of transmission risk: The expanded view shows a standardized 1-hour baseline assessment, while the collapsed view displays real-time dynamic risk calculations. Both use the Wells-Riley model to estimate infection probability in enclosed spaces.</p>
+                  
+                  <p>The model accounts for various factors including room occupancy, ventilation rates, pathogen characteristics, and exposure time. Using the pathogen editor, you can customize parameters to evaluate transmission risks for different scenarios and pathogens.</p>
 
-              <Box 
-                display="flex" 
-                flexDirection="column" 
-                className={styles['epi-risk-params']} 
-                gap={1}
-              >
-                <Box flex={1}>
-                  <TextField
-                    className={tileStyles['tile-text-field']}
-                    label="Positivity Rate (%)"
-                    value={tempPositivityRate}
-                    onChange={handlePositivityRateChange}
-                    onBlur={handleBlur}
-                    type="number"
-                    inputProps={{ 
-                      min: getMinPositivityRate(), 
-                      max: getMaxPositivityRate(),
-                      step: 5
-                    }}
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    sx={{ 
-                      '& .MuiInputLabel-root': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  />
-                </Box>
-                <Box flex={1}>
-                  <TextField
-                    className={tileStyles['tile-text-field']}
-                    label="Pathogen Name"
-                    value={state.pathogens[pathogen].name}
-                    onChange={(e) => {
-                      dispatch({
-                        type: 'UPDATE_PATHOGEN',
-                        payload: {
-                          pathogenId: pathogen,
-                          updates: { name: e.target.value }
-                        }
-                      });
-                    }}
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    sx={{ 
-                      '& .MuiInputLabel-root': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  />
-                </Box>
-                <Box flex={1}>
-                  <TextField
-                    className={tileStyles['tile-text-field']}
-                    label="Quanta Rate (per hour)"
-                    type="number"
-                    value={quantaRate}
-                    onChange={handleQuantaRateChange}
-                    onBlur={handleQuantaRateBlur}
-                    inputProps={{ 
-                      min: 1, 
-                      step: 25 
-                    }}
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    sx={{ 
-                      '& .MuiInputLabel-root': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  />
-                </Box>
-                <Box flex={1}>
-                  <TextField
-                    className={tileStyles['tile-text-field']}
-                    label="Half-life (hours)"
-                    type="text"
-                    value={halfLife}
-                    onChange={handleHalfLifeChange}
-                    onBlur={handleHalfLifeBlur}
-                    inputProps={{ 
-                      min: 0.0001,
-                      max: 24,
-                      step: 0.0001
-                    }}
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    sx={{ 
-                      '& .MuiInputLabel-root': {
-                        backgroundColor: 'transparent'
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
-                  <strong>Fixed Time Risk Assessment:</strong> This view shows the transmission risk 
-                  for a standardized 1-hour exposure period, allowing you to compare different scenarios 
-                  independently of elapsed time.
+                  <Button
+                    variant="contained"
+                    className={styles['source-button']}
+                    href="https://en.wikipedia.org/wiki/Wells-Riley_model"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    startIcon={<ArticleIcon />}
+                  >
+                    Learn more about the Wells-Riley model
+                  </Button>
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Switch to the collapsed view to see real-time risk based on current conditions.
-                </Typography>
-              </Box>
+              </div>
             </div>
           )}
         </>
