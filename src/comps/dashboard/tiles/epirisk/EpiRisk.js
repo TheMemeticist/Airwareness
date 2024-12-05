@@ -13,6 +13,7 @@ import PathogenEditor from './PathogenEditor';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArticleIcon from '@mui/icons-material/Article';
+import descriptionStyles from '../TileDescriptions.module.css';
 
 const spin = keyframes`
   from {
@@ -699,11 +700,11 @@ const EpiRisk = () => {
                 handleHalfLifeChange={handleHalfLifeChange}
                 handleHalfLifeBlur={handleHalfLifeBlur}
               />
-              <div className={styles['risk-description-container']}>
+              <div className={descriptionStyles['description-container']}>
                 <Typography 
                   variant="body2" 
                   color="white" 
-                  className={styles['risk-description-primary']}
+                  className={descriptionStyles['description-primary']}
                 >
                   <p><strong>Risk Assessment System:</strong> This tool provides two complementary views of transmission risk: The expanded view shows a standardized 1-hour baseline assessment, while the collapsed view displays real-time dynamic risk calculations. Both use the Wells-Riley model to estimate infection probability in enclosed spaces.</p>
                   
@@ -711,7 +712,7 @@ const EpiRisk = () => {
 
                   <Button
                     variant="contained"
-                    className={styles['source-button']}
+                    className={descriptionStyles['source-button']}
                     href="https://en.wikipedia.org/wiki/Wells-Riley_model"
                     target="_blank"
                     rel="noopener noreferrer"
