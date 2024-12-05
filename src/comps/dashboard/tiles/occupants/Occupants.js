@@ -3,10 +3,11 @@ import { useAppContext } from '../../../../context/AppContext';
 import Tile from '../Tile';
 import styles from './Occupants.module.css';
 import tileStyles from '../Tile.module.css';
-import { Box, TextField, IconButton, Slider, Typography, Stack } from '@mui/material';
-import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { Box, TextField, IconButton, Slider, Typography, Stack, Button } from '@mui/material';
+import { Add as AddIcon, Remove as RemoveIcon, Article as ArticleIcon } from '@mui/icons-material';
 import { PeopleIcon, HotelIcon, DirectionsRunIcon, DirectionsWalkIcon, AccessibilityNewIcon, SittingIcon } from './OccupantIcons';
 import { styled, TextFieldProps } from '@mui/material/styles';
+import descriptionStyles from '../TileDescriptions.module.css';
 
 // Add this custom styled component
 const WhiteTextField = styled((props: TextFieldProps) => (
@@ -129,7 +130,7 @@ const Occupants = ({ buildingId, roomId }) => {
           )}
           {!isCollapsed && (
             <div className={`${tileStyles['tile-content']} ${styles['occupants-container']}`}>
-              <Box className={styles['activity-slider-container']}>
+              {/* <Box className={styles['activity-slider-container']}>
                 <Box className={styles['activity-icons']}>
                   {activityIcons.map((item, index) => (
                     <div key={index} className={`${styles['activity-icon']} ${activityLevel === index + 1 ? styles['active'] : ''}`}>
@@ -149,7 +150,7 @@ const Occupants = ({ buildingId, roomId }) => {
                 <Typography className={styles['activity-label']}>
                   {activityIcons[activityLevel - 1].label}
                 </Typography>
-              </Box>
+              </Box> */}
               {/* <Box className={styles['mask-options-container']}>
                 <WhiteTextField
                   className={styles['mask-input']}
@@ -224,6 +225,29 @@ const Occupants = ({ buildingId, roomId }) => {
               <IconButton onClick={addGroup} className={styles['add-group-button']}>
                 <AddIcon />
               </IconButton>
+
+              <div className={descriptionStyles['description-container']}>
+                <Typography 
+                  variant="body2" 
+                  color="white" 
+                  className={descriptionStyles['description-primary']}
+                >
+                  <p><strong>Occupant Management System:</strong> This interface allows you to configure detailed information about room occupants, organizing them into distinct groups with specific characteristics.</p>
+                  
+                  <p>Each group can be customized with a name, count, and average age. This granular approach enables more accurate risk assessments by accounting for different occupant demographics and their varying susceptibilities to airborne transmission.</p>
+
+                  <Button
+                    variant="contained"
+                    className={descriptionStyles['source-button']}
+                    href="https://iris.who.int/bitstream/handle/10665/376346/9789240090576-eng.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    startIcon={<ArticleIcon />}
+                  >
+                    Learn more about occupancy and transmission
+                  </Button>
+                </Typography>
+              </div>
             </div>
           )}
         </>
