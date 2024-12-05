@@ -9,9 +9,10 @@ import Aqi from './tiles/aqi/Aqi';
 import EpiRisk from './tiles/epirisk/EpiRisk';
 import Occupants from './tiles/occupants/Occupants';
 import { useAppContext } from '../../context/AppContext';
-import { FormControl, InputLabel, Select, MenuItem, Box, Button } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem, Box, Button, Tooltip } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 const ArrowDownIcon = React.memo(() => (
   <svg
@@ -139,12 +140,23 @@ const Dashboard = React.memo(() => {
     <div className={styles['dashboard-wrapper']}>
       <div className={styles['dashboard-container']}>
         <div className={styles['nav-buttons-container']}>
-          <a href="https://airsupportproject.com/" className={styles['home-link']}>
-            <HomeIcon className={styles['home-icon']} />
-          </a>
-          <button onClick={handleReset} className={styles['reset-button']}>
-            <RestartAltIcon className={styles['reset-icon']} />
-          </button>
+          <div className={styles['left-nav-buttons']}>
+            <Tooltip title="AIR SUPPORT Project Homepage">
+              <a href="https://airsupportproject.com/" className={styles['home-link']}>
+                <HomeIcon className={styles['home-icon']} />
+              </a>
+            </Tooltip>
+            <Tooltip title="View on GitHub">
+              <a href="https://github.com" className={styles['github-link']}>
+                <GitHubIcon className={styles['github-icon']} />
+              </a>
+            </Tooltip>
+          </div>
+          <Tooltip title="Reset Application Data">
+            <button onClick={handleReset} className={styles['reset-button']}>
+              <RestartAltIcon className={styles['reset-icon']} />
+            </button>
+          </Tooltip>
         </div>
         {/* <div className={styles['header-container']}>
           <h2 className={styles['dashboard-header']}>AIR SUPPORT PROJECT</h2>

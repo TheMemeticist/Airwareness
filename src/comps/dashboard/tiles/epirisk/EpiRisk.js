@@ -337,36 +337,28 @@ const EpiRisk = () => {
       return;
     }
 
-    // Allow typing decimal points
-    if (value === '.' || value.endsWith('.')) {
-      setHalfLife(value);
-      return;
-    }
-
-    // Validate the input is a proper number with up to 4 decimal places
-    const regex = /^\d*\.?\d{0,4}$/;
-    if (regex.test(value)) {
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue) && numValue >= 0.0001 && numValue <= 24) {
-        setHalfLife(value);
-        
-        // Only dispatch valid numbers
-        dispatch({
-          type: 'UPDATE_PATHOGEN',
-          payload: {
-            pathogenId: pathogen,
-            updates: { halfLife: numValue }
-          }
-        });
-        dispatch({ type: 'RESET_TIMER' });
-      }
+    // Parse and validate the value (in hours)
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      setHalfLife(numValue.toString());
+      
+      // Update global state
+      dispatch({
+        type: 'UPDATE_PATHOGEN',
+        payload: {
+          pathogenId: pathogen,
+          updates: { halfLife: numValue }
+        }
+      });
+      dispatch({ type: 'RESET_TIMER' });
     }
   };
 
-  const handleHalfLifeBlur = () => {
-    // Reset to valid value if empty or invalid
-    if (halfLife === '' || halfLife === '.' || isNaN(parseFloat(halfLife)) || 
-        parseFloat(halfLife) < 0.0001 || parseFloat(halfLife) > 24) {
+  const handleHalfLifeBlur = (event) => {
+    const value = event.target.value;
+    
+    // Default to 1.1 hours if empty or invalid
+    if (value === '' || isNaN(parseFloat(value))) {
       const defaultValue = '1.1';
       setHalfLife(defaultValue);
       dispatch({
@@ -376,8 +368,23 @@ const EpiRisk = () => {
           updates: { halfLife: parseFloat(defaultValue) }
         }
       });
-      dispatch({ type: 'RESET_TIMER' });
+      return;
     }
+
+    // Clamp value to valid range (only minimum)
+    const numValue = parseFloat(value);
+    const clampedValue = Math.max(2/3600, numValue); // 2 seconds minimum
+    const formattedValue = clampedValue.toString();
+    
+    setHalfLife(formattedValue);
+    dispatch({
+      type: 'UPDATE_PATHOGEN',
+      payload: {
+        pathogenId: pathogen,
+        updates: { halfLife: clampedValue }
+      }
+    });
+    dispatch({ type: 'RESET_TIMER' });
   };
 
   // Separate memo for dynamic risk calculation

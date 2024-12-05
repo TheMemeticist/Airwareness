@@ -47,28 +47,7 @@ const PathogenEditor = ({
           className={styles['editor-params']} 
           gap={1}
         >
-          <Box flex={1}>
-            <TextField
-              className={tileStyles['tile-text-field']}
-              label="Positivity Rate (%)"
-              value={tempPositivityRate}
-              onChange={handlePositivityRateChange}
-              onBlur={handleBlur}
-              type="number"
-              inputProps={{ 
-                min: getMinPositivityRate(), 
-                max: getMaxPositivityRate(),
-                step: 5
-              }}
-              fullWidth
-              variant="outlined"
-              size="small"
-            />
-            <FormHelperText className={styles['helper-text']}>
-              The percentage of the population that is infectious. This value determines how many people in the space are actively spreading the pathogen.
-            </FormHelperText>
-          </Box>
-
+          
           <Box flex={1}>
             <TextField
               className={tileStyles['tile-text-field']}
@@ -91,7 +70,27 @@ const PathogenEditor = ({
               Specify the name of the pathogen.
             </FormHelperText>
           </Box>
-
+          <Box flex={1}>
+            <TextField
+              className={tileStyles['tile-text-field']}
+              label="Positivity Rate (%)"
+              value={tempPositivityRate}
+              onChange={handlePositivityRateChange}
+              onBlur={handleBlur}
+              type="number"
+              inputProps={{ 
+                min: getMinPositivityRate(), 
+                max: getMaxPositivityRate(),
+                step: 5
+              }}
+              fullWidth
+              variant="outlined"
+              size="small"
+            />
+            <FormHelperText className={styles['helper-text']}>
+              The percentage of the population that is infectious. This value determines how many people in the space are actively spreading the pathogen.
+            </FormHelperText>
+          </Box>
           <Box flex={1}>
             <TextField
               className={tileStyles['tile-text-field']}
@@ -116,15 +115,71 @@ const PathogenEditor = ({
           <Box flex={1}>
             <TextField
               className={tileStyles['tile-text-field']}
-              label="Half-life (hours)"
-              type="text"
-              value={halfLife}
-              onChange={handleHalfLifeChange}
-              onBlur={handleHalfLifeBlur}
+              label="Half-life (minutes)"
+              type="number"
+              value={halfLife ? Math.round(Number(halfLife * 60) * 10) / 10 : ''}
+              onChange={(e) => {
+                const minutesValue = e.target.value;
+                
+                // Allow empty input for typing
+                if (minutesValue === '') {
+                  handleHalfLifeChange({ target: { value: '' } });
+                  return;
+                }
+
+                // Convert to number and validate
+                const minutesNumber = parseFloat(minutesValue);
+                if (!isNaN(minutesNumber) && minutesNumber >= (2/60)) { // 2 seconds minimum
+                  const hoursValue = minutesNumber / 60;
+                  handleHalfLifeChange({
+                    target: { value: hoursValue.toString() }
+                  });
+                }
+              }}
+              onBlur={(e) => {
+                const minutesValue = e.target.value;
+                
+                // Handle empty or invalid input
+                if (minutesValue === '' || isNaN(parseFloat(minutesValue))) {
+                  handleHalfLifeBlur({
+                    target: { value: '1.1' } // Default to 1.1 hours
+                  });
+                  return;
+                }
+
+                // Convert minutes to hours and validate
+                const minutesNumber = parseFloat(minutesValue);
+                const hoursValue = minutesNumber / 60;
+                
+                // Only enforce minimum (2 seconds = 0.0333... minutes)
+                const clampedHours = Math.max(2/3600, hoursValue);
+                handleHalfLifeBlur({
+                  target: { value: clampedHours.toString() }
+                });
+              }}
               inputProps={{ 
-                min: 0.0001,
-                max: 24,
-                step: 0.0001
+                min: 0.0333, // 2 seconds in minutes
+                step: 5,     // 5-minute steps
+                onKeyDown: (e) => {
+                  // Handle up/down arrow keys
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    
+                    // Get current value in minutes
+                    const currentMinutes = halfLife ? Number(halfLife * 60) : 0;
+                    
+                    // Calculate new value with 5-minute steps
+                    const newMinutes = e.key === 'ArrowUp' 
+                      ? currentMinutes + 5 
+                      : Math.max(0.0333, currentMinutes - 5);
+                    
+                    // Convert back to hours and update
+                    const newHours = newMinutes / 60;
+                    handleHalfLifeChange({
+                      target: { value: newHours.toString() }
+                    });
+                  }
+                }
               }}
               fullWidth
               variant="outlined"
