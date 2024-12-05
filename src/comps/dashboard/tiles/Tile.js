@@ -71,7 +71,7 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
               isTransitioning: false,
               originalPosition: null 
             }));
-          }, 400);
+          }, 420);
         });
         return { ...prev, isTransitioning: true, isCollapsed: true };
       }
@@ -110,7 +110,7 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
       {showPlaceholder && (
         <div 
           className={`${styles.placeholder} ${(!tileState.isCollapsed || tileState.isExpanded || tileState.isTransitioning) ? styles.visible : ''}`} 
-          style={{ transition: 'opacity 0.4s cubic-bezier(0.2, 0, 0, 1)' }}
+          style={{ transition: 'opacity 0.4s linear' }}
         />
       )}
       <div 

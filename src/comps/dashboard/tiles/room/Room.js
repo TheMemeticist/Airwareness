@@ -17,7 +17,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
   const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [speed, setSpeed] = useState(80);
+  const [speed, setSpeed] = useState(10);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
 
@@ -249,22 +249,27 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
               className={styles['description-primary']}
               onClick={(e) => e.stopPropagation()}
             >
-              <Typography variant="body2" color="white">
-                <p>This 3D room visualization tool provides an interactive way to configure and monitor your indoor space. The tool helps you:</p>
-                
+              <Typography variant="body2" color="white" textAlign="left">
+                <p>This visualization tool simulates a Wells-Riley risk assessment in 3D space.</p>
+                <p>In well-mixed air conditions, one infectious dose (quanta) will cause infection in approximately 63% of susceptible individuals. Each red particle represents one quanta that could potentially cause infection:</p>
                 <ul>
-                  <li>Visualize room dimensions and layout in real-time 3D</li>
-                  <li>Configure room height and floor area for accurate spatial representation</li>
-                  <li>Monitor and adjust ventilation settings for optimal air quality</li>
-                  <li>Track occupancy and environmental parameters</li>
+                  <li>Particles move realistically and dilute through the space, affected by ventilation rates (ACH)</li>
+                  <li>Higher ventilation rates increase particle speed and dilution</li>
+                  <li>Particle count scales with the number of infectious occupants and their emission rate</li>
+                  <li>The simulation accounts for room size and particle decay over time</li>
                 </ul>
-                
-                <p>Use the room controls to adjust dimensions and settings. The 3D visualization updates in real-time to reflect your changes.</p>
+        
+                <p>The particle behavior updates in real-time to reflect how air quality interventions affect transmission risk.</p>
+                <p>The time controls allow you to:</p>
+                <ul>
+                  <li>Reset the simulation to start fresh</li>
+                  <li>Adjust simulation speed using the speed multiplier so you can observe long-term exposure patterns</li>
+                </ul>
 
                 <Button
                   variant="contained"
                   className={descriptionStyles['source-button']}
-                  href="https://www.epa.gov/indoor-air-quality-iaq/indoor-air-quality-commercial-and-institutional-buildings"
+                  href="https://www.nafahq.org/assets/pdf/2012-03-01-Wells-Riley-Final-Report/"
                   target="_blank"
                   rel="noopener noreferrer"
                   startIcon={<ArticleIcon />}
