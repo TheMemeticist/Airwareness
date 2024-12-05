@@ -398,3 +398,14 @@
   overflow-y: auto;
 }
 
+.close-button {
+  position: absolute !important;
+  right: 8px !important;
+  top: 8px !important;
+  z-index: 1;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+

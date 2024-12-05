@@ -432,3 +432,12 @@
   font-size: 2.5rem !important;
 }
 
+.disclaimer-footer {
+  margin-top: 2rem;
+  padding: 1rem;
+  text-align: center;
+  color: var(--off-white);
+  font-size: 0.9rem;
+  float: right;
+}
+

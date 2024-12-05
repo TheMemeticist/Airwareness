@@ -3,7 +3,7 @@ import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
 import ThreeDScene from './threescene/3Dscene';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, IconButton } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
 import { Settings as SettingsIcon, Help as HelpIcon } from '@mui/icons-material';
 import RoomSettings from './buttons/settings/RoomSettings';
@@ -12,6 +12,7 @@ import { RoomControls } from './buttons/RoomControls';
 import { useRoomDimensions } from './hooks/useRoomDimensions';
 import ArticleIcon from '@mui/icons-material/Article';
 import descriptionStyles from '../TileDescriptions.module.css';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
@@ -249,6 +250,14 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
               className={styles['description-primary']}
               onClick={(e) => e.stopPropagation()}
             >
+              <IconButton
+                className={styles['close-button']}
+                onClick={() => setShowDescription(false)}
+                size="small"
+                sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}
+              >
+                <CloseIcon />
+              </IconButton>
               <Typography variant="body2" color="white" textAlign="left">
                 <p>This visualization tool simulates a Wells-Riley risk assessment in 3D space.</p>
                 <p>In well-mixed air conditions, one infectious dose (quanta) will cause infection in approximately 63% of susceptible individuals. Each red particle represents one quanta that could potentially cause infection:</p>

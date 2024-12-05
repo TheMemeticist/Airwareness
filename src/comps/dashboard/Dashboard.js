@@ -161,7 +161,7 @@ const Dashboard = React.memo(() => {
         {/* <div className={styles['header-container']}>
           <h2 className={styles['dashboard-header']}>AIR SUPPORT PROJECT</h2>
         </div> */}
-        <Box className={styles['building-select-container']}>
+        {/* <Box className={styles['building-select-container']}>
           <FormControl variant="outlined" size="small" className={styles['building-select']}>
             <InputLabel id="building-select-label" className={styles['building-select-label']}>
               Building
@@ -182,8 +182,15 @@ const Dashboard = React.memo(() => {
             </Select>
           </FormControl>
           {buildingActions}
-        </Box>
+        </Box> */}
         {dashboardContent}
+        <footer className={styles['disclaimer-footer']}>
+          <small>
+            Disclaimer: This application provides estimates and models based on available data and simplified assumptions. 
+            Results may not accurately represent all real-world scenarios, variables, or edge cases. 
+            This tool should be used as one of many resources in decision-making processes.
+          </small>
+        </footer>
       </div>
     </div>
   );

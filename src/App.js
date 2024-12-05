@@ -17,10 +17,8 @@ const App = () => {
   return (
     <AppProvider>
       <div className={styles.app}>
-        {/* <SplashScreen /> */}
-        
+        {/* <Clouds /> */}
         <Dashboard />
-        <Clouds />
       </div>
     </AppProvider>
   );

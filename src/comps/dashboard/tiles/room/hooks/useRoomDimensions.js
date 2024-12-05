@@ -67,29 +67,52 @@ export const useRoomDimensions = (room, dispatch, buildingId) => {
 
   // Input handlers
   const handleInputChange = (field) => (event) => {
-    const value = event.target.value;
-    
+    let value = parseFloat(event.target.value) || 0;
+
+    // Set min and max constraints
+    if (field === 'height') {
+      value = Math.max(5, Math.min(value, 150));
+    } else if (field === 'floorArea') {
+      value = Math.max(5, Math.min(value, 33650));
+    }
+
     setInputValues(prev => ({...prev, [field]: value}));
-    
+
     const newDimensions = calculateDimensions(
       field === 'floorArea' ? value : inputValues.floorArea,
       field === 'height' ? value : inputValues.height
     );
-    
+
     debouncedDimensionUpdate(newDimensions);
   };
 
   const handleIncrement = (field) => () => {
     const step = field === 'height' ? 5 : 500;
     const currentValue = parseFloat(inputValues[field]) || 0;
-    const newValue = currentValue + step;
+    let newValue = currentValue + step;
+
+    // Set max constraints
+    if (field === 'height') {
+      newValue = Math.min(newValue, 150);
+    } else if (field === 'floorArea') {
+      newValue = Math.min(newValue, 33650);
+    }
+
     handleInputChange(field)({ target: { value: newValue } });
   };
 
   const handleDecrement = (field) => () => {
     const step = field === 'height' ? 5 : 500;
     const currentValue = parseFloat(inputValues[field]) || 0;
-    const newValue = currentValue - step >= 0 ? currentValue - step : 0;
+    let newValue = currentValue - step;
+
+    // Set min constraints
+    if (field === 'height') {
+      newValue = Math.max(newValue, 5);
+    } else if (field === 'floorArea') {
+      newValue = Math.max(newValue, 5);
+    }
+
     handleInputChange(field)({ target: { value: newValue } });
   };
 
