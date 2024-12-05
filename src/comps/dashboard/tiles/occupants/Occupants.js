@@ -239,7 +239,7 @@ const Occupants = ({ buildingId, roomId }) => {
                   <Button
                     variant="contained"
                     className={descriptionStyles['source-button']}
-                    href="https://iris.who.int/bitstream/handle/10665/376346/9789240090576-eng.pdf"
+                    href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0253096"
                     target="_blank"
                     rel="noopener noreferrer"
                     startIcon={<ArticleIcon />}

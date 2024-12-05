@@ -4,7 +4,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 2;
+    z-index: 20;
     display: block;
     padding: 16px;
     background: rgba(0, 0, 0, 0.0);

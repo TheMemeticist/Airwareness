@@ -706,7 +706,7 @@ const EpiRisk = () => {
                   color="white" 
                   className={descriptionStyles['description-primary']}
                 >
-                  <p><strong>Risk Assessment System:</strong> This tool provides two complementary views of transmission risk: The expanded view shows a standardized 1-hour baseline assessment, while the collapsed view displays real-time dynamic risk calculations. Both use the Wells-Riley model to estimate infection probability in enclosed spaces.</p>
+                  <p>This tool provides two complementary views of transmission risk: This expanded view shows a standardized 1-hour baseline assessment, while the collapsed view displays real-time dynamic risk calculations based on the elapsed exposure time. Both use an implementation of the Wells-Riley model, a well-established framework for assessing the risk of airborne infection in indoor environments, to estimate infection probability.</p>
                   
                   <p>The model accounts for various factors including room occupancy, ventilation rates, pathogen characteristics, and exposure time. Using the pathogen editor, you can customize parameters to evaluate transmission risks for different scenarios and pathogens.</p>
 

@@ -3,13 +3,15 @@ import Tile from '../Tile';
 import styles from './Room.module.css';
 import tileStyles from '../Tile.module.css';
 import ThreeDScene from './threescene/3Dscene';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useAppContext } from '../../../../context/AppContext';
-import { Settings as SettingsIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, Help as HelpIcon } from '@mui/icons-material';
 import RoomSettings from './buttons/settings/RoomSettings';
 import { Timer } from './buttons/Timer';
 import { RoomControls } from './buttons/RoomControls';
 import { useRoomDimensions } from './hooks/useRoomDimensions';
+import ArticleIcon from '@mui/icons-material/Article';
+import descriptionStyles from '../TileDescriptions.module.css';
 
 const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
@@ -17,6 +19,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [speed, setSpeed] = useState(80);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
 
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
@@ -122,6 +125,23 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     };
   }, []);
 
+  // Add this useEffect near your other useEffects
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      if (showDescription) {
+        setShowDescription(false);
+      }
+    };
+
+    if (showDescription) {
+      document.addEventListener('click', handleGlobalClick);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, [showDescription]);
+
   if (!room) {
     return (
       <Tile title="Room Not Found" isRoomTile={true}>
@@ -142,11 +162,22 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
 
   const helpText = "Use this tool to edit room attributes such as size and ventilation rate (natural or HVAC). This helps provide more accurate air quality estimates.";
 
+  // Add console.log to debug click handler
+  const handleHelpClick = (e) => {
+    e.stopPropagation();  // Prevent the click from immediately triggering the global handler
+    setShowDescription(!showDescription);
+  };
+
   return (
     <Tile
       title={
         <Box className={styles['room-title-container']}>
           <span className={styles['room-name']}>{room?.name}</span>
+          <HelpIcon 
+            className={styles['help-icon']}
+            fontSize="small"
+            onClick={handleHelpClick}
+          />
         </Box>
       }
       helptxt={helpText}
@@ -203,6 +234,48 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
           onRoomNameChange={handleRoomNameChange}
         />
       </div>
+
+      {showDescription && (
+        <>
+          <div 
+            className={styles['description-overlay']}
+            onClick={() => setShowDescription(false)}
+          />
+          <div 
+            className={styles['description-container']}
+            onClick={() => setShowDescription(false)}
+          >
+            <div 
+              className={styles['description-primary']}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Typography variant="body2" color="white">
+                <p>This 3D room visualization tool provides an interactive way to configure and monitor your indoor space. The tool helps you:</p>
+                
+                <ul>
+                  <li>Visualize room dimensions and layout in real-time 3D</li>
+                  <li>Configure room height and floor area for accurate spatial representation</li>
+                  <li>Monitor and adjust ventilation settings for optimal air quality</li>
+                  <li>Track occupancy and environmental parameters</li>
+                </ul>
+                
+                <p>Use the room controls to adjust dimensions and settings. The 3D visualization updates in real-time to reflect your changes.</p>
+
+                <Button
+                  variant="contained"
+                  className={descriptionStyles['source-button']}
+                  href="https://www.epa.gov/indoor-air-quality-iaq/indoor-air-quality-commercial-and-institutional-buildings"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<ArticleIcon />}
+                >
+                  Learn more about indoor space management
+                </Button>
+              </Typography>
+            </div>
+          </div>
+        </>
+      )}
     </Tile>
   );
 });
