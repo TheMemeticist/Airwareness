@@ -335,6 +335,12 @@
   justify-content: center;
   height: 100%;
   width: 100%;
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.isTransitioning .collapsed-content {
+  opacity: 0.5; /* Optional: fade out slightly during transition */
 }
 
 /* Consolidate placeholder styles */

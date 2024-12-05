@@ -228,14 +228,6 @@
     max-width: 95%;
     font-size: 0.8rem;
   }
-
-  .risk-description-primary,
-  .risk-description-secondary {
-    max-width: 95% !important;
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-    font-size: 0.9rem;
-  }
 }
 
 .epi-risk-description {
@@ -432,20 +424,6 @@
   background-color: var(--off-black-3) !important;
 }
 
-.risk-description-primary {
-  margin-top: 0.25rem !important;
-  margin-bottom: 0.25rem !important;
-  max-width: 80% !important;
-  font-size: 0.9rem;
-}
-
-.risk-description-secondary {
-  max-width: 80% !important;
-  margin-top: 0.25rem !important;
-  margin-bottom: 0.25rem !important;
-  font-size: 0.9rem;
-}
-
 .helper-text {
   color: var(--off-white) !important;
   opacity: 0.8;
@@ -458,56 +436,4 @@
 .epi-risk-params :global(.MuiFormHelperText-root) {
   color: var(--off-white) !important;
   opacity: 0.8;
-}
-
-.risk-description-container {
-  width: 100%;
-  max-width: 80%;
-  margin: 1rem auto;
-  margin-bottom: 8rem;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.source-button {
-  margin-top: 0.0rem !important;
-  background-color: var(--off-black-2) !important;
-  color: var(--off-white) !important;
-  font-size: 0.85rem !important;
-  padding: 2px 6px !important;
-  border-radius: 4px !important;
-  text-transform: none !important;
-  transition: background-color 0.2s ease !important;
-  align-self: flex-end;
-  
-  &:hover {
-    background-color: var(--off-black-3) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-}
-.source-button:hover {
-  background-color: var(--light-blue) !important;
-}
-
-/* Update existing styles to work with container */
-.risk-description-primary {
-  margin-top: 0.25rem !important;
-  margin-bottom: 0.25rem !important;
-  width: 100% !important;
-  font-size: 0.9rem;
-  position: relative;
-}
-
-/* Add responsive styling */
-@media (max-width: 480px) {
-  .risk-description-container {
-    max-width: 95%;
-  }
-  
-  .source-button {
-    font-size: 0.8rem !important;
-    padding: 3px 10px !important;
-  }
 }

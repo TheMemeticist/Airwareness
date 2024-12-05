@@ -5,9 +5,9 @@ import tileStyles from '../Tile.module.css'; // Import Tile styles
 import { TextField, Box, IconButton, Typography, Button } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon, Air, Article as ArticleIcon } from '@mui/icons-material';
 import { useAppContext } from '../../../../context/AppContext';
-import descriptionStyles from '../TileDescriptions.module.css';  // Add this import
+import descriptionStyles from '../TileDescriptions.module.css';  // Update import path
 
-const CentralVentilation = () => {
+const Airflow = () => {
   const { state, dispatch } = useAppContext();
   const [ach, setAch] = useState(state.ventilationRate?.toString() || '1'); // Get initial value from global state
 
@@ -150,4 +150,4 @@ const CentralVentilation = () => {
   );
 };
 
-export default CentralVentilation;
+export default Airflow;

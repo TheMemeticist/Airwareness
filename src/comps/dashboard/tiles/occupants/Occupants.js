@@ -231,7 +231,6 @@ const Occupants = ({ buildingId, roomId }) => {
                   variant="body2" 
                   color="white" 
                   className={descriptionStyles['description-primary']}
-                  style={{ textAlign: 'left' }}
                 >
                   <p><strong>Occupant Management System:</strong> This interface allows you to configure detailed information about room occupants, organizing them into distinct groups with specific characteristics.</p>
                   

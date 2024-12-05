@@ -3,7 +3,7 @@ import styles from './Dashboard.module.css';
 import Room from './tiles/room/Room';
 import Co2 from './tiles/co2/Co2';
 import Pm from './tiles/pm/Pm';
-import CentralVentilation from './tiles/airsystem/CentralVentilation';
+import Airflow from './tiles/airsystem/Airflow';
 import AirPurifier from './tiles/airsystem/AirPurifier';
 import Aqi from './tiles/aqi/Aqi';
 import EpiRisk from './tiles/epirisk/EpiRisk';
@@ -108,7 +108,7 @@ const Dashboard = React.memo(() => {
             buildingId={selectedBuilding.id} 
             roomId={selectedBuilding.rooms[0].id} 
           />
-          <CentralVentilation />
+          <Airflow />
         </div>
       </div>
     );

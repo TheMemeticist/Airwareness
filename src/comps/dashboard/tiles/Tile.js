@@ -145,7 +145,7 @@ const Tile = React.memo(({ title, children, collapsible = true, icon, count, hel
             )}
           </div>
         </div>
-        {tileState.isCollapsed ? (
+        {(tileState.isCollapsed || tileState.isTransitioning) ? (
           <div className={styles['collapsed-content']}>
             {typeof children === 'function' ? children({ isCollapsed: true }) : children}
           </div>

@@ -17,11 +17,23 @@
   width: 76% !important;
   font-size: 0.9rem;
   position: relative;
+  text-align: left !important;
+}
+
+/* Style paragraphs within description */
+.description-primary p {
+  margin-bottom: 1rem;
+  text-align: left !important;
+}
+
+/* Last paragraph shouldn't have bottom margin */
+.description-primary p:last-child {
+  margin-bottom: 0;
 }
 
 /* Source/Learn More button styling */
 .source-button {
-  margin-top: 0.5rem !important;
+  margin-top: 1.5rem !important;
   background-color: var(--off-black-2) !important;
   color: var(--off-white) !important;
   font-size: 0.85rem !important;
@@ -30,6 +42,7 @@
   text-transform: none !important;
   transition: background-color 0.2s ease !important;
   align-self: flex-end;
+  width: fit-content !important;
   
   &:hover {
     background-color: var(--off-black-3) !important;
@@ -43,12 +56,14 @@
     max-width: 95%;
   }
   
+  .description-primary {
+    font-size: 0.85rem;
+    width: 90% !important;
+  }
+  
   .source-button {
     font-size: 0.8rem !important;
     padding: 3px 10px !important;
-  }
-  
-  .description-primary {
-    font-size: 0.85rem;
+    margin-top: 1rem !important;
   }
 } 
