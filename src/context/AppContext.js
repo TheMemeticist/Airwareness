@@ -1,7 +1,16 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import pathogenData from '../comps/dashboard/tiles/epirisk/PathogenInfo.json';
+import { Subject } from 'rxjs';
 
+const riskUpdates = new Subject();
+
+// Separate the non-serializable state
+const nonSerializableState = {
+  riskUpdates
+};
+
+// Initial state without non-serializable values
 const initialState = {
   buildings: [
     {
@@ -171,6 +180,10 @@ function reducer(state, action) {
         ...state,
         exposureTime: action.payload
       };
+    case 'SET_RISK_UPDATES':
+      // Don't store this in the serializable state
+      nonSerializableState.riskUpdates = action.payload;
+      return state;
     default:
       return state;
   }
@@ -178,14 +191,28 @@ function reducer(state, action) {
 
 export function AppProvider({ children }) {
   const [storedState, setStoredState] = useLocalStorage('appState', initialState);
-  const [state, dispatch] = useReducer(reducer, storedState);
+  const [state, dispatch] = useReducer(reducer, {
+    ...storedState,
+    // Merge non-serializable state at runtime
+    riskUpdates: nonSerializableState.riskUpdates
+  });
 
   useEffect(() => {
-    setStoredState(state);
+    // Only store serializable state
+    const stateToStore = { ...state };
+    delete stateToStore.riskUpdates;
+    setStoredState(stateToStore);
   }, [state, setStoredState]);
 
+  // Provide both state and non-serializable state
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ 
+      state: {
+        ...state,
+        riskUpdates: nonSerializableState.riskUpdates
+      }, 
+      dispatch 
+    }}>
       {children}
     </AppContext.Provider>
   );

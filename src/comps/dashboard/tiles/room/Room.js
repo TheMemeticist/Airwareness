@@ -13,6 +13,7 @@ import { useRoomDimensions } from './hooks/useRoomDimensions';
 import ArticleIcon from '@mui/icons-material/Article';
 import descriptionStyles from '../TileDescriptions.module.css';
 import CloseIcon from '@mui/icons-material/Close';
+import { RiskGraph } from './buttons/RiskGraph';
 
 const Room = React.memo(({ buildingId, roomId, children }) => {
   const { state, dispatch } = useAppContext();
@@ -21,6 +22,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
   const [speed, setSpeed] = useState(10);
   const [showSpeedControl, setShowSpeedControl] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
+  const [currentRisk, setCurrentRisk] = useState(0);
 
   // Memoize building and rooms lookup
   const { building, rooms } = useMemo(() => {
@@ -143,6 +145,14 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     };
   }, [showDescription]);
 
+  // Add this effect to update risk from EpiRisk calculations
+  useEffect(() => {
+    const subscription = state.riskUpdates.subscribe(risk => {
+      setCurrentRisk(risk);
+    });
+    return () => subscription.unsubscribe();
+  }, [state.riskUpdates]);
+
   if (!room) {
     return (
       <Tile title="Room Not Found" isRoomTile={true}>
@@ -220,6 +230,11 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         ) : (
           <p>Please select a room or create a new one.</p>
         )}
+
+        <RiskGraph 
+          risk={currentRisk} 
+          exposureTime={state.exposureTime} 
+        />
 
         <RoomSettings
           open={settingsOpen}

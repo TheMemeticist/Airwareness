@@ -14,6 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArticleIcon from '@mui/icons-material/Article';
 import descriptionStyles from '../TileDescriptions.module.css';
+import { Subject } from 'rxjs';
 
 const spin = keyframes`
   from {
@@ -109,6 +110,9 @@ const MENU_PROPS = {
     horizontal: 'left'
   }
 };
+
+// Add this before the EpiRisk component
+const riskUpdates = new Subject();
 
 const EpiRisk = () => {
   const { state, dispatch } = useAppContext();
@@ -583,6 +587,20 @@ const EpiRisk = () => {
       });
     }
   }, [state.timerReset, dispatch]);
+
+  // Update the risk calculation to emit updates
+  useEffect(() => {
+    const risk = dynamicRiskData.probability;
+    riskUpdates.next(risk);
+  }, [dynamicRiskData.probability]);
+
+  // Add this to component initialization
+  useEffect(() => {
+    dispatch({
+      type: 'SET_RISK_UPDATES',
+      payload: riskUpdates
+    });
+  }, [dispatch]);
 
   return (
     <Tile 
