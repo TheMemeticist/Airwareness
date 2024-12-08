@@ -159,7 +159,8 @@ export const RiskGraph = ({ risk, exposureTime }) => {
     },
     scales: {
       x: {
-        display: isHovered, // Only show axis in expanded view
+        display: isHovered,
+        min: 0,
         title: {
           display: isHovered,
           text: 'Time (hours)',
@@ -167,7 +168,11 @@ export const RiskGraph = ({ risk, exposureTime }) => {
         },
         ticks: {
           color: 'rgba(255, 255, 255, 0.7)',
-          maxTicksLimit: isHovered ? 5 : 0
+          maxTicksLimit: isHovered ? 5 : 0,
+          callback: function(value, index) {
+            // Hide the first tick label
+            return index === 0 ? '' : this.getLabelForValue(value);
+          }
         },
         grid: {
           display: isHovered,
@@ -175,7 +180,7 @@ export const RiskGraph = ({ risk, exposureTime }) => {
         }
       },
       y: {
-        display: isHovered, // Only show axis in expanded view
+        display: isHovered,
         title: {
           display: isHovered,
           text: 'Risk (%)',
@@ -208,6 +213,7 @@ export const RiskGraph = ({ risk, exposureTime }) => {
       }
     }
   };
+  
 
   return (
     <div 
