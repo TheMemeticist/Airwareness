@@ -113,21 +113,27 @@ const MENU_PROPS = {
 const EpiRisk = () => {
   const { state, dispatch } = useAppContext();
 
-  // Ensure we have a valid initial pathogen
+  // Ensure we have a valid initial pathogen with safety checks
   const [pathogen, setPathogen] = useState(() => {
     const currentPathogen = state.currentPathogen;
-    return state.pathogens[currentPathogen] ? currentPathogen : Object.keys(state.pathogens)[0];
+    const pathogens = state.pathogens || {};
+    const pathogenKeys = Object.keys(pathogens);
+    
+    // Return current pathogen if valid, otherwise first available, or a default
+    if (pathogens[currentPathogen]) return currentPathogen;
+    if (pathogenKeys.length > 0) return pathogenKeys[0];
+    return 'tuberculosis'; // Fallback default
   });
 
-  // Get initial values safely
+  // Get initial values safely with null coalescing
   const [quantaRate, setQuantaRate] = useState(() => {
-    const currentPathogenData = state.pathogens[pathogen];
-    return currentPathogenData ? currentPathogenData.quantaRate.toString() : '25';
+    const currentPathogenData = state.pathogens?.[pathogen];
+    return currentPathogenData?.quantaRate?.toString() || '25';
   });
 
   const [halfLife, setHalfLife] = useState(() => {
-    const currentPathogenData = state.pathogens[pathogen];
-    return currentPathogenData ? currentPathogenData.halfLife.toString() : '1.1';
+    const currentPathogenData = state.pathogens?.[pathogen];
+    return currentPathogenData?.halfLife?.toString() || '1.1';
   });
 
   // Move memoized helper inside component
@@ -314,13 +320,17 @@ const EpiRisk = () => {
     }
   };
 
+  // Add safety check for handlePathogenChange
   const handlePathogenChange = (event) => {
     const selectedPathogen = event.target.value;
-    setPathogen(selectedPathogen);
-    setQuantaRate(state.pathogens[selectedPathogen].quantaRate.toString());
-    setHalfLife(state.pathogens[selectedPathogen].halfLife.toString());
+    const pathogenData = state.pathogens?.[selectedPathogen];
     
-    // Add this dispatch
+    if (!pathogenData) return; // Exit if pathogen data is not available
+    
+    setPathogen(selectedPathogen);
+    setQuantaRate(pathogenData.quantaRate?.toString() || '25');
+    setHalfLife(pathogenData.halfLife?.toString() || '1.1');
+    
     dispatch({ 
       type: 'SET_CURRENT_PATHOGEN',
       payload: selectedPathogen
@@ -707,6 +717,27 @@ const EpiRisk = () => {
                 handleHalfLifeChange={handleHalfLifeChange}
                 handleHalfLifeBlur={handleHalfLifeBlur}
               />
+              <Box className={styles['source-buttons-container']}>
+                <header>
+                  <Typography variant="subtitle2">
+                    Sources:
+                  </Typography>
+                </header>
+                  {state.pathogens[pathogen]?.links?.map((link, index) => (
+                    <Button
+                      key={index}
+                      variant="contained"
+                      className={styles['source-button']}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="small"
+                      startIcon={<ArticleIcon />}
+                    >
+                      {index + 1}
+                    </Button>
+                  ))}
+                </Box>
               <div className={descriptionStyles['description-container']}>
                 <Typography 
                   variant="body2" 

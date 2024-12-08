@@ -17,8 +17,9 @@ const App = () => {
   return (
     <AppProvider>
       <div className={styles.app}>
-        {/* <Clouds /> */}
+        <SplashScreen />
         <Dashboard />
+        <Clouds />
       </div>
     </AppProvider>
   );

@@ -437,3 +437,44 @@
   color: var(--off-white) !important;
   opacity: 0.8;
 }
+
+.source-buttons-container {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: left;
+  margin-top: 0.5rem;
+  padding: 0 1rem;
+}
+
+.source-button {
+  background-color: var(--off-black-2) !important;
+  color: var(--off-white) !important;
+  font-size: 0.9rem !important;
+  padding: 1px 6px !important;
+  min-width: unset !important;
+  text-transform: none !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.source-button:hover {
+  background-color: var(--off-black-3) !important;
+  transform: translateY(-1px);
+}
+
+.source-button .MuiButton-startIcon {
+  margin-right: 4px !important;
+}
+
+@media (max-width: 480px) {
+  .source-buttons-container {
+    padding: 0 0.5rem;
+    margin-bottom: 5%;
+  }
+  
+  .source-button {
+    font-size: 0.8rem !important;
+    padding: 2px 8px !important;
+  }
+}

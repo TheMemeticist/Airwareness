@@ -311,8 +311,13 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
   useEffect(() => {
     if (particleSystemRef.current) {
       requestIdleCallback(() => {
-        const pathogenData = state.pathogens[state.currentPathogen];
-        const quantaRate = pathogenData.quantaRate;
+        const pathogenData = state.pathogens?.[state.currentPathogen];
+        // Add safety check for pathogen data
+        if (!pathogenData) {
+          console.warn('No pathogen data available for:', state.currentPathogen);
+          return;
+        }
+        const quantaRate = pathogenData.quantaRate ?? 25; // Fallback to default value
         particleSystemRef.current.updateQuantaRate(quantaRate);
       });
     }
@@ -321,14 +326,18 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
   // Add effect to watch infectious count changes
   useEffect(() => {
     if (particleSystemRef.current) {
-      console.log('Updating particle system infectious count:', state.infectiousCount);
-      particleSystemRef.current.updateInfectiousCount(state.infectiousCount);
+      // Add safety check for infectious count
+      const safeInfectiousCount = state.infectiousCount ?? 0;
+      console.log('Updating particle system infectious count:', safeInfectiousCount);
+      particleSystemRef.current.updateInfectiousCount(safeInfectiousCount);
     }
-  }, [state.infectiousCount]); // Watch infectious count changes
+  }, [state.infectiousCount]);
 
   useEffect(() => {
     if (particleSystemRef.current && state.particleHalfLife) {
-      particleSystemRef.current.updateHalfLife(state.particleHalfLife);
+      // Add safety check for half-life
+      const safeHalfLife = state.particleHalfLife ?? 1.1;
+      particleSystemRef.current.updateHalfLife(safeHalfLife);
     }
   }, [state.particleHalfLife, particleSystemRef.current]);
 
@@ -341,8 +350,10 @@ const ThreeDScene = ({ dimensions, debug = false, simulationSpeed }) => {
 
   // Add effect to watch ventilation rate changes
   useEffect(() => {
-    if (particleSystemRef.current && state.ventilationRate) {
-      particleSystemRef.current.updateVentilationRate(state.ventilationRate);
+    if (particleSystemRef.current) {
+      // Add safety check for ventilation rate
+      const safeVentilationRate = state.ventilationRate ?? 1;
+      particleSystemRef.current.updateVentilationRate(safeVentilationRate);
     }
   }, [state.ventilationRate]);
 

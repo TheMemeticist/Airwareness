@@ -1,17 +1,44 @@
 {
-  "sars-cov-2": {
-    "name": "SARS-CoV-2",
-    "quantaRate": 60.0,
-    "halfLife": 1.1
+  "sars-cov-2-ancestral": {
+    "name": "SARS-CoV-2 (Ancestral)",
+    "quantaRate": 31.0,
+    "halfLife": 1.0,
+    "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
+  },
+  "sars-cov-2-alpha": {
+    "name": "SARS-CoV-2 (Alpha)",
+    "quantaRate": 127.0,
+    "halfLife": 1.0,
+    "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
+  },
+  "sars-cov-2-delta": {
+    "name": "SARS-CoV-2 (Delta)",
+    "quantaRate": 623.5,
+    "halfLife": 1.0,
+    "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
+  },
+  "sars-cov-2-omicron": {
+    "name": "SARS-CoV-2 (Omicron)",
+    "quantaRate": 1535.0,
+    "halfLife": 1.0,
+    "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
   },
   "measles": {
     "name": "Measles",
-    "quantaRate": 300.0,
-    "halfLife": 6.93
+    "quantaRate": 570,
+    "halfLife": 1,
+    "links": ["https://onlinelibrary.wiley.com/doi/full/10.1034/j.1600-0668.2003.00189.x", "https://doi.org/10.1080/15459620590918466"]
   },
   "influenza": {
     "name": "Influenza",
-    "quantaRate": 30.0,
-    "halfLife": 6.93
+    "quantaRate": 71,
+    "halfLife": 1,
+    "links": ["https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHLB/IAQ/CDPH%20Document%20Library/Appendix%202%20-%20Quanta%20Generation%20Rates%20for%20Aerosol%20Transmissible%20Diseases.pdf", "https://www.ashrae.org/File%20Library/Technical%20Resources/ASHRAE%20Journal/2021JournalDocuments/August2021_18-25_Burkett--Pt3.pdf"]
+  },
+  "tuberculosis": {
+    "name": "Tuberculosis",
+    "quantaRate": 25,
+    "halfLife": 1,
+    "links": ["https://www.ashrae.org/File%20Library/Technical%20Resources/ASHRAE%20Journal/2021JournalDocuments/August2021_18-25_Burkett--Pt3.pdf"]
   }
 } 
