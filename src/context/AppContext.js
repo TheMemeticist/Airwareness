@@ -3,11 +3,11 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import pathogenData from '../comps/dashboard/tiles/epirisk/PathogenInfo.json';
 import { Subject } from 'rxjs';
 
-const riskUpdates = new Subject();
+const createFreshRiskUpdates = () => new Subject();
 
 // Separate the non-serializable state
 const nonSerializableState = {
-  riskUpdates
+  riskUpdates: createFreshRiskUpdates()
 };
 
 // Initial state without non-serializable values
@@ -184,6 +184,13 @@ function reducer(state, action) {
       // Don't store this in the serializable state
       nonSerializableState.riskUpdates = action.payload;
       return state;
+    case 'RESET_STATE':
+      // Reset both serializable and non-serializable state
+      nonSerializableState.riskUpdates = createFreshRiskUpdates();
+      return {
+        ...initialState,
+        riskUpdates: nonSerializableState.riskUpdates
+      };
     default:
       return state;
   }
@@ -192,10 +199,16 @@ function reducer(state, action) {
 export function AppProvider({ children }) {
   const [storedState, setStoredState] = useLocalStorage('appState', initialState);
   const [state, dispatch] = useReducer(reducer, {
-    ...storedState,
-    // Merge non-serializable state at runtime
+    ...(storedState || initialState),
     riskUpdates: nonSerializableState.riskUpdates
   });
+
+  // Add an effect to handle initialization
+  useEffect(() => {
+    if (!storedState) {
+      dispatch({ type: 'RESET_STATE' });
+    }
+  }, [storedState]);
 
   useEffect(() => {
     // Only store serializable state

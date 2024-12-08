@@ -87,8 +87,9 @@ const Dashboard = React.memo(() => {
 
   const handleReset = useCallback(() => {
     localStorage.clear();
+    dispatch({ type: 'RESET_STATE' });
     window.location.reload();
-  }, []);
+  }, [dispatch]);
 
   const dashboardContent = useMemo(() => {
     if (!selectedBuilding || !selectedBuilding.rooms.length) {
