@@ -36,7 +36,7 @@ const initialState = {
   pathogens: {
     ...pathogenData
   },
-  currentPathogen: 'sars-cov-2',
+  currentPathogen: 'sars-cov-2-omicron',
   infectiousCount: 0,
   splashScreenVisible: true,
   ventilationRate: 1,
