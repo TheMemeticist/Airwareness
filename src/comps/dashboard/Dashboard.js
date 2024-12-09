@@ -148,7 +148,7 @@ const Dashboard = React.memo(() => {
               </a>
             </Tooltip>
             <Tooltip title="View on GitHub">
-              <a href="https://github.com" className={styles['github-link']}>
+              <a href="https://github.com/TheMemeticist/Airwareness" className={styles['github-link']}>
                 <GitHubIcon className={styles['github-icon']} />
               </a>
             </Tooltip>
