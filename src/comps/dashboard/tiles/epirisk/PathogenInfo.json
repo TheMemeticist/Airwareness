@@ -7,19 +7,19 @@
   },
   "sars-cov-2-alpha": {
     "name": "SARS-CoV-2 (Alpha)",
-    "quantaRate": 127.0,
+    "quantaRate": 89,
     "halfLife": 1.0,
     "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
   },
   "sars-cov-2-delta": {
     "name": "SARS-CoV-2 (Delta)",
-    "quantaRate": 623.5,
+    "quantaRate": 312,
     "halfLife": 1.0,
     "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
   },
   "sars-cov-2-omicron": {
     "name": "SARS-CoV-2 (Omicron)",
-    "quantaRate": 1535.0,
+    "quantaRate": 725,
     "halfLife": 1.0,
     "links": ["https://link.springer.com/article/10.1007/s12273-022-0952-6", "https://www.dhs.gov/archive/science-and-technology/estimated-airborne-decay-sars-cov-2"]
   },

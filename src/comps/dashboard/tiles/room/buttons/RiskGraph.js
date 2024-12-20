@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import styles from './RiskGraph.module.css';
 import { alpha } from '@mui/material';
+import { useAppContext } from '../../../../../context/AppContext';
 
 // Register ChartJS components
 ChartJS.register(
@@ -24,7 +25,13 @@ ChartJS.register(
   Legend
 );
 
-// Add the color mixing helper function from EpiRisk
+// Constants
+const MAX_DATA_POINTS = 500; // Limit to prevent unbounded growth, adjust as needed
+const LOW_COLOR = '#4caf50'; // Green
+const MID_COLOR = '#ffeb3b'; // Yellow
+const HIGH_COLOR = '#f44336'; // Red
+
+// Color mixing function
 function mix(color1, color2, weight) {
   const d2h = (d) => d.toString(16).padStart(2, '0');
   const h2d = (h) => parseInt(h, 16);
@@ -50,45 +57,55 @@ function mix(color1, color2, weight) {
   return `#${d2h(r)}${d2h(g)}${d2h(b)}`;
 }
 
-// Add the getRiskColor function from EpiRisk
+// Get a color from 0 to 1 risk, smoothly transitioning from green to yellow to red
 const getRiskColor = (risk) => {
-  const riskValue = risk * 100;  // Convert from decimal to percentage
-  
-  if (riskValue === 0) return '#4caf50';  // Green
-  if (riskValue <= 49.5) {  // Changed from 50 to 49.5 to account for max 99%
-    // Interpolate between green and yellow (0-49.5%)
+  const riskValue = risk * 100;  // Convert from decimal [0,1] to percentage [0,100]
+
+  if (riskValue === 0) return LOW_COLOR;
+  if (riskValue <= 49.5) {
+    // Interpolate between green and yellow
     return alpha(
-      mix(
-        '#4caf50',  // Green
-        '#ffeb3b',  // Yellow
-        riskValue / 49.5
-      ),
+      mix(LOW_COLOR, MID_COLOR, riskValue / 49.5),
       1
     );
   }
-  // Interpolate between yellow and red (49.5-99%)
+
+  // Interpolate between yellow and red for values > 49.5%
   return alpha(
-    mix(
-      '#ffeb3b',  // Yellow
-      '#f44336',  // Red
-      (riskValue - 49.5) / 49.5
-    ),
+    mix(MID_COLOR, HIGH_COLOR, (riskValue - 49.5) / 49.5),
     1
   );
 };
 
+// Helper to create gradients for border and background
+const createGradient = (ctx, chartArea, transparency = 1) => {
+  const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+  // We create three stops: at 0%, around 49.5%, and 100%
+  gradient.addColorStop(0, alpha(getRiskColor(0), transparency));
+  gradient.addColorStop(0.495, alpha(getRiskColor(0.495), transparency));
+  gradient.addColorStop(1, alpha(getRiskColor(0.99), transparency));
+  return gradient;
+};
+
 export const RiskGraph = ({ risk, exposureTime }) => {
+  const { state } = useAppContext();
   const [dataPoints, setDataPoints] = useState([]);
   const lastUpdateTime = useRef(0);
   const chartRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Update data points when risk or time changes
+  // Add data point at most every 2 seconds
   useEffect(() => {
     const currentTime = Date.now();
-    // Only update every 2 seconds to match Timer update frequency
     if (currentTime - lastUpdateTime.current >= 2000) {
-      setDataPoints(prev => [...prev, { time: exposureTime, risk }]);
+      setDataPoints(prev => {
+        const newData = [...prev, { time: exposureTime, risk }];
+        // Limit data points to prevent unbounded growth
+        if (newData.length > MAX_DATA_POINTS) {
+          newData.shift();
+        }
+        return newData;
+      });
       lastUpdateTime.current = currentTime;
     }
   }, [risk, exposureTime]);
@@ -101,6 +118,14 @@ export const RiskGraph = ({ risk, exposureTime }) => {
     }
   }, [exposureTime]);
 
+  // Add this effect to watch for graph data reset
+  useEffect(() => {
+    if (state.graphDataReset) {
+      setDataPoints([]);
+      lastUpdateTime.current = 0;
+    }
+  }, [state.graphDataReset]);
+
   const data = {
     labels: dataPoints.map(point => point.time.toFixed(1)),
     datasets: [
@@ -109,40 +134,26 @@ export const RiskGraph = ({ risk, exposureTime }) => {
         data: dataPoints.map(point => (point.risk * 100).toFixed(1)),
         borderColor: function(context) {
           const chart = context.chart;
-          const {ctx, chartArea} = chart;
+          const { ctx, chartArea } = chart;
 
           if (!chartArea) {
-            // This can happen when the chart is not yet rendered
+            // If the chart is not rendered yet, default to low risk color
             return getRiskColor(0);
           }
 
-          // Create gradient
-          const gradientBorder = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          
-          // Add color stops
-          gradientBorder.addColorStop(0, getRiskColor(0));      // 0% risk (bottom)
-          gradientBorder.addColorStop(0.495, getRiskColor(0.495)); // 49.5% risk
-          gradientBorder.addColorStop(1, getRiskColor(0.99));   // 99% risk (top)
-          
-          return gradientBorder;
+          // Create a vertical gradient for the line border
+          return createGradient(ctx, chartArea, 1);
         },
         backgroundColor: function(context) {
           const chart = context.chart;
-          const {ctx, chartArea} = chart;
+          const { ctx, chartArea } = chart;
 
           if (!chartArea) {
             return alpha(getRiskColor(0), 0.1);
           }
 
-          // Create gradient
-          const gradientBg = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          
-          // Add color stops with transparency
-          gradientBg.addColorStop(0, alpha(getRiskColor(0), 0.1));
-          gradientBg.addColorStop(0.495, alpha(getRiskColor(0.495), 0.1));
-          gradientBg.addColorStop(1, alpha(getRiskColor(0.99), 0.1));
-          
-          return gradientBg;
+          // Create a vertical gradient for the line background
+          return createGradient(ctx, chartArea, 0.1);
         },
         fill: true,
         tension: 0.4,
@@ -154,9 +165,7 @@ export const RiskGraph = ({ risk, exposureTime }) => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: {
-      duration: 0
-    },
+    animation: { duration: 0 },
     scales: {
       x: {
         display: isHovered,
@@ -168,10 +177,10 @@ export const RiskGraph = ({ risk, exposureTime }) => {
         },
         ticks: {
           color: 'rgba(255, 255, 255, 0.7)',
-          maxTicksLimit: isHovered ? 5 : 0,
+          maxTicksLimit: isHovered ? 5 : 1,
+          // Show at least one label for context
           callback: function(value, index) {
-            // Hide the first tick label
-            return index === 0 ? '' : this.getLabelForValue(value);
+            return this.getLabelForValue(value);
           }
         },
         grid: {
@@ -188,7 +197,7 @@ export const RiskGraph = ({ risk, exposureTime }) => {
         },
         ticks: {
           color: 'rgba(255, 255, 255, 0.7)',
-          maxTicksLimit: isHovered ? 5 : 0
+          maxTicksLimit: isHovered ? 5 : 1
         },
         grid: {
           display: isHovered,
@@ -214,7 +223,6 @@ export const RiskGraph = ({ risk, exposureTime }) => {
     }
   };
   
-
   return (
     <div 
       className={styles.graphContainer}
@@ -229,4 +237,4 @@ export const RiskGraph = ({ risk, exposureTime }) => {
       <Line data={data} options={options} ref={chartRef} />
     </div>
   );
-}; 
+};

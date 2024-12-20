@@ -147,8 +147,9 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
 
   // Add this effect to update risk from EpiRisk calculations
   useEffect(() => {
-    const subscription = state.riskUpdates.subscribe(risk => {
-      setCurrentRisk(risk);
+    const subscription = state.riskUpdates.subscribe(riskData => {
+      console.log('Received risk update:', riskData);
+      setCurrentRisk(riskData.probability);
     });
     return () => subscription.unsubscribe();
   }, [state.riskUpdates]);
@@ -179,6 +180,9 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
     setShowDescription(!showDescription);
   };
 
+  // Get the current room's vacated state
+  const isVacated = room?.vacated || false;
+
   return (
     <Tile
       title={
@@ -203,7 +207,13 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
         >
           <SettingsIcon />
         </Button>
-        <Timer initialSpeed={speed} onSpeedChange={handleSpeedChange} />
+        <Timer 
+          initialSpeed={speed} 
+          onSpeedChange={handleSpeedChange}
+          buildingId={buildingId}
+          roomId={selectedRoomId}
+          isVacated={isVacated}
+        />
 
         {room ? (
           <>
@@ -215,6 +225,7 @@ const Room = React.memo(({ buildingId, roomId, children }) => {
                   height: dimensions.height
                 }}
                 simulationSpeed={speed}
+                vacated={isVacated}
               />
             </div>
             <RoomControls

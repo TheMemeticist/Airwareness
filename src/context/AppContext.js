@@ -19,9 +19,10 @@ const initialState = {
       rooms: [
         {
           id: '1',
-          name: 'Room 1',
+          name: 'Classroom 1',
           height: '10',
           floorArea: '900',
+          vacated: false,
           occupants: {
             groups: [
               { name: 'Teacher', count: 1, age: '35' },
@@ -41,12 +42,12 @@ const initialState = {
   splashScreenVisible: true,
   ventilationRate: 1,
   exposureTime: 0,
+  graphDataReset: 0,
 };
 
 const AppContext = createContext();
 
 function reducer(state, action) {
-  console.log('Reducer called with action:', action);
   switch (action.type) {
     case 'UPDATE_ROOM':
       return {
@@ -181,15 +182,25 @@ function reducer(state, action) {
         exposureTime: action.payload
       };
     case 'SET_RISK_UPDATES':
-      // Don't store this in the serializable state
       nonSerializableState.riskUpdates = action.payload;
-      return state;
+      return {
+        ...state,
+        lastRiskUpdate: {
+          probability: action.payload.probability,
+          isVacated: action.payload.isVacated
+        }
+      };
     case 'RESET_STATE':
       // Reset both serializable and non-serializable state
       nonSerializableState.riskUpdates = createFreshRiskUpdates();
       return {
         ...initialState,
         riskUpdates: nonSerializableState.riskUpdates
+      };
+    case 'RESET_GRAPH_DATA':
+      return {
+        ...state,
+        graphDataReset: Date.now()
       };
     default:
       return state;

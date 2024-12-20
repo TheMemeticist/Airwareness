@@ -14,8 +14,6 @@ const calculateCameraDistance = (dimensions) => {
 let isAnimating = false;
 
 export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
-  console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });
-
   const width = isNaN(dimensions.width) ? 1 : dimensions.width;
   const length = isNaN(dimensions.length) ? 1 : dimensions.length;
   const height = isNaN(dimensions.height) ? 1 : dimensions.height;
@@ -56,7 +54,6 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
         xOffset = 0; yOffset = 0; zOffset = 0;
         break;
       default:
-        console.warn('Invalid pivot corner specified, defaulting to topLeftFront');
         xOffset = width; yOffset = 0; zOffset = 0;
     }
 
@@ -113,15 +110,11 @@ export const updateDimensions = (dimensions, clippingPlanes, pivotCorner = 'topL
       });
     }
 
-  } else {
-    console.warn('Clipping planes not available or incorrect number');
   }
 };
 
 // Alternative version without GSAP (if you prefer not to use external libraries):
 export const updateDimensionsWithoutGSAP = (dimensions, clippingPlanes, pivotCorner = 'topLeftFront', position = { x: 0, y: 0, z: 0 }) => {
-  console.log('UpdateDimensions called with:', { dimensions, clippingPlanes, pivotCorner, position });
-
   const width = isNaN(dimensions.width) ? 1 : dimensions.width;
   const length = isNaN(dimensions.length) ? 1 : dimensions.length;
   const height = isNaN(dimensions.height) ? 1 : dimensions.height;
@@ -155,7 +148,6 @@ export const updateDimensionsWithoutGSAP = (dimensions, clippingPlanes, pivotCor
         xOffset = 0; yOffset = 0; zOffset = 0;
         break;
       default:
-        console.warn('Invalid pivot corner specified, defaulting to topLeftFront');
         xOffset = width; yOffset = 0; zOffset = 0;
     }
 
@@ -194,7 +186,5 @@ export const updateDimensionsWithoutGSAP = (dimensions, clippingPlanes, pivotCor
     };
 
     requestAnimationFrame(animate);
-  } else {
-    console.warn('Clipping planes not available or incorrect number');
   }
 };

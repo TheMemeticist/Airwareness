@@ -51,8 +51,8 @@ export function calculateWellsRiley(
     // Total dose of quanta inhaled by a susceptible individual (quanta)
     const inhaledDose = susceptibleBreathingRate * integratedConcentration;
   
-    // Probability of infection for the susceptible individual
-    const infectionProbability = 1 - Math.exp(-inhaledDose);
+    // Probability of infection for the susceptible individual, capped at 99%
+    const infectionProbability = Math.min(0.999, 1 - Math.exp(-inhaledDose));
   
     return {
       probability: infectionProbability,

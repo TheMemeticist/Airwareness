@@ -161,3 +161,23 @@
     -webkit-appearance: none;
     margin: 0;
   }
+  
+  .timer-button.active {
+    background-color: rgba(221, 193, 19, 0.15) !important;
+    color: var(--bright-yellow) !important;
+    opacity: 1;
+    border: 1px solid rgba(221, 193, 19, 0.3);
+  }
+  
+  .timer-button.active .timer-icon {
+    color: var(--bright-yellow) !important;
+  }
+  
+  .vacate-icon {
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.8));
+  }
+  
+  .timer-button.active .vacate-icon {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 1));
+    color: var(--bright-yellow) !important;
+  }

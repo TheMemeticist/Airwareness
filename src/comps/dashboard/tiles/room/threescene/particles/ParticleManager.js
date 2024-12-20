@@ -3,7 +3,6 @@ import * as THREE from 'three';
 export class ParticleManager {
   constructor(particleCount, dimensions, baseHalfLife, system) {
     this.particleCount = particleCount;
-    
     this.dimensions = dimensions;
     this.baseHalfLife = baseHalfLife;
     this.system = system;
@@ -19,6 +18,9 @@ export class ParticleManager {
     this.boundaryMargin = 2.2;
     this.bottomBoundaryMargin = 3.5;
     
+    // Reuse vector for bounding/collision logic
+    this._tmpVector = new THREE.Vector3();
+
     this.initializeParticles();
   }
 
@@ -29,10 +31,11 @@ export class ParticleManager {
   }
 
   initializeVelocities() {
-    for (let i = 0; i < this.particleCount * 3; i += 3) {
-      this.velocities[i] = (Math.random() - 0.5) * 0.05;
-      this.velocities[i + 1] = (Math.random() - 0.5) * 0.05;
-      this.velocities[i + 2] = (Math.random() - 0.5) * 0.05;
+    const vel = this.velocities;
+    for (let i = 0; i < vel.length; i += 3) {
+      vel[i]     = (Math.random() - 0.5) * 0.05;
+      vel[i + 1] = (Math.random() - 0.5) * 0.05;
+      vel[i + 2] = (Math.random() - 0.5) * 0.05;
     }
   }
 
@@ -43,43 +46,68 @@ export class ParticleManager {
   }
 
   calculateLifespan() {
-    // Base lifespan on one minute to match quanta-per-minute rate
-    const baseLifespan = 60000; // 60 seconds in milliseconds
-    // Apply exponential decay using the half-life
-    return (this.baseHalfLife / Math.log(2)) * (-Math.log(1 - Math.random()));
+    // Base calculation using exponential distribution
+    const baseLifespan = -this.baseHalfLife * Math.log(1 - Math.random());
+    
+    // Return base lifespan without ventilation adjustment
+    // (ventilation adjustment will be applied in ParticleSystem)
+    return baseLifespan;
   }
 
   initializePositions() {
+    const pos = this.positions;
+    const w = this.dimensions.width;
+    const h = this.dimensions.height;
+    const l = this.dimensions.length;
     const scaleFactor = 4;
-    for (let i = 0; i < this.particleCount * 3; i += 3) {
-      this.positions[i] = (Math.random() * this.dimensions.width * scaleFactor) - (this.dimensions.width * scaleFactor / 2);
-      this.positions[i + 1] = (Math.random() * this.dimensions.height * scaleFactor) - (this.dimensions.height * scaleFactor / 2);
-      this.positions[i + 2] = (Math.random() * this.dimensions.length * scaleFactor) - (this.dimensions.length * scaleFactor / 2);
+    
+    const halfW = (w * scaleFactor) / 2;
+    const halfH = (h * scaleFactor) / 2;
+    const halfL = (l * scaleFactor) / 2;
+    
+    for (let i = 0; i < pos.length; i += 3) {
+      pos[i]     = (Math.random() * w * scaleFactor) - halfW;
+      pos[i + 1] = (Math.random() * h * scaleFactor) - halfH;
+      pos[i + 2] = (Math.random() * l * scaleFactor) - halfL;
     }
   }
 
-  generateNewParticle(index) {
+  generateNewParticle(index, options = {}) {
     const idx = index * 3;
     const scaleFactor = 4;
     
-    this.positions[idx] = (Math.random() * this.dimensions.width * scaleFactor) - (this.dimensions.width * scaleFactor / 2);
-    this.positions[idx + 1] = (Math.random() * this.dimensions.height * scaleFactor) - (this.dimensions.height * scaleFactor / 2);
-    this.positions[idx + 2] = (Math.random() * this.dimensions.length * scaleFactor) - (this.dimensions.length * scaleFactor / 2);
+    const w = this.dimensions.width;
+    const h = this.dimensions.height;
+    const l = this.dimensions.length;
+    
+    const halfW = (w * scaleFactor) / 2;
+    const halfH = (h * scaleFactor) / 2;
+    const halfL = (l * scaleFactor) / 2;
+    
+    // Add small random offsets to position
+    const jitter = 0.1; // Small position variation
+    this.positions[idx]     = (Math.random() * w * scaleFactor) - halfW + (Math.random() - 0.5) * jitter;
+    this.positions[idx + 1] = (Math.random() * h * scaleFactor) - halfH + (Math.random() - 0.5) * jitter;
+    this.positions[idx + 2] = (Math.random() * l * scaleFactor) - halfL + (Math.random() - 0.5) * jitter;
 
-    const direction = new THREE.Vector3(
-      Math.random() - 0.5,
-      Math.random() - 0.5,
-      Math.random() - 0.5
-    ).normalize();
+    // Add more variation to velocity direction and magnitude
+    this._tmpVector.set(
+      Math.random() - 0.5 + (Math.random() - 0.5) * 0.2, // Add extra randomness
+      Math.random() - 0.5 + (Math.random() - 0.5) * 0.2,
+      Math.random() - 0.5 + (Math.random() - 0.5) * 0.2
+    );
+    this._tmpVector.normalize();
+    
+    // Add slight speed variation (±10%)
+    const spd = this.system.getCurrentSpeed() * (0.9 + Math.random() * 0.2);
+    
+    this.velocities[idx]     = this._tmpVector.x * spd;
+    this.velocities[idx + 1] = this._tmpVector.y * spd;
+    this.velocities[idx + 2] = this._tmpVector.z * spd;
 
-    const speed = this.system.getCurrentSpeed();
-    console.log('New particle speed:', speed);
-
-    this.velocities[idx] = direction.x * speed;
-    this.velocities[idx + 1] = direction.y * speed;
-    this.velocities[idx + 2] = direction.z * speed;
-
-    this.lifespans[index] = this.calculateLifespan();
+    // Calculate base lifespan without ventilation effect
+    const baseLifespan = this.calculateLifespan();
+    this.lifespans[index] = baseLifespan * (0.95 + Math.random() * 0.1); // ±5% variation
   }
 
   setClippingPlanes(planes) {
@@ -94,21 +122,25 @@ export class ParticleManager {
     const newParticleCount = Math.floor((intensity / 100) * this.particleCount);
     system.activeParticles = newParticleCount;
     
+    const pos = this.positions;
+    const vel = this.velocities;
+    const life = this.lifespans;
+    
     // Clear positions of inactive particles
     for (let i = newParticleCount; i < this.particleCount; i++) {
-        const idx = i * 3;
-        this.positions[idx] = 0;
-        this.positions[idx + 1] = -1000; // Move them far below the scene
-        this.positions[idx + 2] = 0;
-        this.velocities[idx] = 0;
-        this.velocities[idx + 1] = 0;
-        this.velocities[idx + 2] = 0;
-        this.lifespans[i] = 0;
+      const idx = i * 3;
+      pos[idx] = 0;
+      pos[idx + 1] = -1000; // Move them far below the scene
+      pos[idx + 2] = 0;
+      vel[idx] = vel[idx + 1] = vel[idx + 2] = 0;
+      life[i] = 0;
     }
   }
 
   checkBounds(position) {
-    if (!this.clippingPlanes.length) return { inBounds: true };
+    if (!this.clippingPlanes.length) {
+      return { inBounds: true };
+    }
     
     for (const plane of this.clippingPlanes) {
       const isFloor = plane.normal.y > 0.9;
@@ -119,7 +151,7 @@ export class ParticleManager {
         return {
           inBounds: false,
           normal: plane.normal,
-          distance: distance
+          distance
         };
       }
     }
@@ -130,12 +162,14 @@ export class ParticleManager {
   checkCollisions(position) {
     if (!this.collisionMeshes.length) return false;
     
-    const point = new THREE.Vector3(position.x, position.y, position.z);
-    return this.collisionMeshes.some(mesh => {
-      const localPoint = point.clone().applyMatrix4(mesh.matrixWorld.invert());
-      return mesh.geometry.boundingBox.containsPoint(localPoint);
-    });
+    // Check each mesh bounding box quickly
+    for (const mesh of this.collisionMeshes) {
+      // Invert matrix once to localPoint 
+      this._tmpVector.copy(position).applyMatrix4(mesh.matrixWorld.invert());
+      if (mesh.geometry.boundingBox && mesh.geometry.boundingBox.containsPoint(this._tmpVector)) {
+        return true;
+      }
+    }
+    return false;
   }
-
-  // ... other utility methods for particle management
 } 

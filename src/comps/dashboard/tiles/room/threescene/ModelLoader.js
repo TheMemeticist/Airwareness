@@ -1,13 +1,19 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import sceneModel from './models/Classroom.glb';
 
-export const loadModel = (scene, camera, controls, renderer, setErrorMessage, objectPosition) => {
+export const loadModel = (scene, camera, controls, renderer, setErrorMessage, objectPosition, highQuality = false) => {
   // Enable shadow mapping on the renderer
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;  // Better quality shadows
+  renderer.shadowMap.type = highQuality ? THREE.PCFSoftShadowMap : THREE.BasicShadowMap;
 
   const loader = new GLTFLoader();
+
+  // Set up DRACO loader
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/'); // Use CDN path instead
+  loader.setDRACOLoader(dracoLoader);
 
   const fov = camera.fov * (Math.PI / 180);
   const center = new THREE.Vector3();
@@ -21,10 +27,8 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
       // Modified light and shadow handling
       model.traverse((child) => {
         if (child.isLight) {
-          console.log('Found light:', child.type, child);
-          
           let newLight;
-          const intensity = child.intensity * 0.03;
+          const intensity = child.intensity * (highQuality ? 0.03 : 0.02);
           const color = child.color;
           const position = child.position.clone();
           const rotation = child.rotation.clone();
@@ -45,37 +49,45 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
           if (newLight) {
             newLight.position.copy(position);
             newLight.rotation.copy(rotation);
-            newLight.castShadow = true;
+            newLight.castShadow = highQuality;
             
-            // Improved shadow settings
-            newLight.shadow.mapSize.width = 1024;  // Increased for better quality
-            newLight.shadow.mapSize.height = 1024;
-            newLight.shadow.bias = -0.0001;        // Reduced shadow acne
-            newLight.shadow.normalBias = 0.001;    // Helps reduce shadow artifacts
-            newLight.shadow.radius = 1.5;          // Soft shadows
-            newLight.shadow.blurSamples = 8;       // Improved blur quality
+            // Quality-dependent shadow settings
+            if (highQuality) {
+              newLight.shadow.mapSize.width = 1024;
+              newLight.shadow.mapSize.height = 1024;
+              newLight.shadow.bias = -0.0001;
+              newLight.shadow.normalBias = 0.001;
+              newLight.shadow.radius = 1.5;
+              newLight.shadow.blurSamples = 8;
+            } else {
+              newLight.shadow.mapSize.width = 256;
+              newLight.shadow.mapSize.height = 256;
+              newLight.shadow.bias = -0.001;
+              newLight.shadow.normalBias = 0.001;
+              newLight.shadow.radius = 1;
+              newLight.shadow.blurSamples = 4;
+            }
             
             if (newLight.isDirectionalLight) {
-              // Tighter shadow camera frustum for better shadow resolution
-              const shadowCameraSize = 10;
+              const shadowCameraSize = highQuality ? 10 : 15;
               newLight.shadow.camera.left = -shadowCameraSize;
               newLight.shadow.camera.right = shadowCameraSize;
               newLight.shadow.camera.top = shadowCameraSize;
               newLight.shadow.camera.bottom = -shadowCameraSize;
               newLight.shadow.camera.near = 0.1;
-              newLight.shadow.camera.far = 50;
+              newLight.shadow.camera.far = highQuality ? 50 : 30;
             } else {
               newLight.shadow.camera.near = 0.1;
-              newLight.shadow.camera.far = 35;
+              newLight.shadow.camera.far = highQuality ? 35 : 20;
               if (newLight.isSpotLight) {
                 newLight.shadow.camera.fov = 60;
               }
             }
             
-            // Create and add a target for directional and spot lights
-            if (newLight.isDirectionalLight || newLight.isSpotLight) {
+            // Only create targets in high quality mode
+            if (highQuality && (newLight.isDirectionalLight || newLight.isSpotLight)) {
               const target = new THREE.Object3D();
-              target.position.set(0, 0, 0);  // Point towards scene center
+              target.position.set(0, 0, 0);
               scene.add(target);
               newLight.target = target;
             }
@@ -86,24 +98,24 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
         }
         
         if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+          child.castShadow = highQuality;
+          child.receiveShadow = highQuality;
+          child.frustumCulled = true;
           
           if (child.material) {
             const materials = Array.isArray(child.material) ? child.material : [child.material];
             
             materials.forEach(material => {
-              // Improved material settings for better shadows
-              material.shadowSide = THREE.FrontSide;
-              material.side = THREE.DoubleSide;
+              material.shadowSide = highQuality ? THREE.FrontSide : THREE.BackSide;
+              material.side = highQuality ? THREE.DoubleSide : THREE.FrontSide;
               
               if (material.isMeshStandardMaterial) {
-                material.envMapIntensity = 0.7;
-                material.metalness = Math.min(material.metalness, 0.8);
-                material.roughness = Math.max(material.roughness, 0.2);
-                // Ensure proper normal mapping if available
-                if (material.normalMap) {
-                  material.normalScale.set(1, 1);
+                material.envMapIntensity = highQuality ? 0.7 : 0.5;
+                material.metalness = Math.min(material.metalness, highQuality ? 0.8 : 0.6);
+                material.roughness = Math.max(material.roughness, highQuality ? 0.2 : 0.4);
+                // Only use normal maps in high quality mode
+                if (material.normalMap && !highQuality) {
+                  material.normalMap = null;
                 }
               }
             });
@@ -177,10 +189,8 @@ export const loadModel = (scene, camera, controls, renderer, setErrorMessage, ob
       //scene.add(testLight);
     },
     (xhr) => {
-      console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
     },
     (error) => {
-      console.error('Error loading 3D model:', error);
       setErrorMessage(`Error loading 3D model: ${error.message}`);
     }
   );

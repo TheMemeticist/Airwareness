@@ -3,7 +3,7 @@ import Tile from '../Tile';
 import BiohazardIcon from './BiohazardIcon';
 import styles from './EpiRisk.module.css';
 import tileStyles from '../Tile.module.css';
-import { TextField, Select, MenuItem, FormControl, InputLabel, Box, Typography, Button } from '@mui/material';
+import { TextField, Select, MenuItem, FormControl, InputLabel, Box, Typography, Button, Slider } from '@mui/material';
 import CoronavirusIcon from '@mui/icons-material/Coronavirus';
 import { calculateWellsRiley } from './transmission-models/Wells-Riley-Model';
 import { useAppContext } from '../../../../context/AppContext';
@@ -15,6 +15,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArticleIcon from '@mui/icons-material/Article';
 import descriptionStyles from '../TileDescriptions.module.css';
 import { Subject } from 'rxjs';
+import { calculateWellsRileyPostDecay } from './transmission-models/Wells-Riley-Post-Decay-Model';
+import { quantaPowerLawQuantaRate } from './transmission-models/Quanta-Power-Law-Model';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import MicIcon from '@mui/icons-material/Mic';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+
 
 const spin = keyframes`
   from {
@@ -117,19 +124,44 @@ const riskUpdates = new Subject();
 const EpiRisk = () => {
   const { state, dispatch } = useAppContext();
 
-  // Ensure we have a valid initial pathogen with safety checks
+  // Add activityLevel before pathogen state
+  const [activityLevel, setActivityLevel] = useState(0.2);
+
+  // Modify the pathogen state setup to include initial quanta rate calculation
   const [pathogen, setPathogen] = useState(() => {
     const currentPathogen = state.currentPathogen;
     const pathogens = state.pathogens || {};
     const pathogenKeys = Object.keys(pathogens);
     
-    // Return current pathogen if valid, otherwise first available, or a default
-    if (pathogens[currentPathogen]) return currentPathogen;
-    if (pathogenKeys.length > 0) return pathogenKeys[0];
-    return 'tuberculosis'; // Fallback default
+    // Get initial pathogen ID
+    const initialPathogenId = pathogens[currentPathogen] ? currentPathogen : 
+                            pathogenKeys.length > 0 ? pathogenKeys[0] : 
+                            'tuberculosis';
+
+    // Get the pathogen data
+    const pathogenData = pathogens[initialPathogenId];
+    if (pathogenData) {
+      // Calculate initial adjusted quanta rate
+      const baseRate = pathogenData.baseQuantaRate || pathogenData.quantaRate;
+      const adjustedRate = quantaPowerLawQuantaRate(baseRate, 0.2); // Use default activity level
+
+      // Update the pathogen with adjusted rate
+      dispatch({
+        type: 'UPDATE_PATHOGEN',
+        payload: {
+          pathogenId: initialPathogenId,
+          updates: { 
+            quantaRate: adjustedRate,
+            baseQuantaRate: baseRate
+          }
+        }
+      });
+    }
+    
+    return initialPathogenId;
   });
 
-  // Get initial values safely with null coalescing
+  // Use raw quanta rate from pathogen data
   const [quantaRate, setQuantaRate] = useState(() => {
     const currentPathogenData = state.pathogens?.[pathogen];
     return currentPathogenData?.quantaRate?.toString() || '25';
@@ -140,35 +172,92 @@ const EpiRisk = () => {
     return currentPathogenData?.halfLife?.toString() || '1.1';
   });
 
-  // Move memoized helper inside component
-  const memoizedCalculateRisk = React.useCallback((params) => {
-    const { totalOccupants, positivityRate, quantaRate, breathingRate, exposureTime, roomVolume, ventilationRate, halfLife } = params;
-    
-    // Add validation to prevent invalid calculations
-    if (!totalOccupants || totalOccupants <= 0) {
-      return {
-        probability: 0,
-        infectiousCount: 0
-      };
+  // Track total occupant (generative) exposure hours before vacating
+  // so we can start the post-decay model from that point onward.
+  const [generativeExposureHours, setGenerativeExposureHours] = useState(0);
+
+  // Consolidate room-related logic into a single memoized value
+  const roomData = React.useMemo(() => {
+    const activeBuilding = state.buildings.find(b => b.rooms.length > 0);
+    const activeRoom = activeBuilding?.rooms[0];
+    return {
+      room: activeRoom,
+      isVacated: activeRoom?.vacated || false,
+      volume: activeRoom?.height && activeRoom?.floorArea 
+        ? parseFloat(activeRoom.height) * parseFloat(activeRoom.floorArea)
+        : 1000
+    };
+  }, [state.buildings]);
+
+  // Remove the duplicate activeRoom declarations and use roomData instead
+  useEffect(() => {
+    if (!roomData.isVacated) {
+      setGenerativeExposureHours(state.exposureTime);
     }
-    
-    const risk = calculateWellsRiley(
+  }, [roomData.isVacated, state.exposureTime]);
+
+  const getRoomVolume = React.useCallback(() => {
+    return roomData.volume;
+  }, [roomData.volume]);
+
+  // Original risk calculation callback
+  // Modify it to choose between standard Wells-Riley and the post-decay model
+  const memoizedCalculateRisk = React.useCallback((params) => {
+    const {
       totalOccupants,
-      parseFloat(positivityRate),
+      positivityRate,
       quantaRate,
       breathingRate,
-      exposureTime,
       roomVolume,
       ventilationRate,
-      parseFloat(halfLife)
-    );
+      halfLife
+    } = params;
 
-    // Ensure probability is always between 0 and 0.99
-    return {
-      ...risk,
-      probability: Math.max(0, Math.min(risk.probability, 0.99))
-    };
-  }, []);
+    console.log('Calculating risk with:', {
+      isVacated: roomData.isVacated,
+      generativeHours: generativeExposureHours,
+      totalHours: state.exposureTime
+    });
+
+    if (!roomData.isVacated) {
+      // Standard Wells-Riley when room is occupied
+      return calculateWellsRiley(
+        totalOccupants,
+        parseFloat(positivityRate),
+        quantaRate,
+        breathingRate,
+        state.exposureTime,
+        roomVolume,
+        ventilationRate,
+        parseFloat(halfLife)
+      );
+    } else {
+      // Post-decay model when room is vacated
+      return calculateWellsRileyPostDecay(
+        totalOccupants,
+        parseFloat(positivityRate),
+        quantaRate,
+        breathingRate,
+        generativeExposureHours,
+        Math.max(0, state.exposureTime - generativeExposureHours),
+        roomVolume,
+        ventilationRate,
+        parseFloat(halfLife)
+      );
+    }
+  }, [
+    roomData.isVacated,
+    generativeExposureHours,
+    state.exposureTime,
+    // ... other dependencies
+  ]);
+
+  // Add this for debugging
+  useEffect(() => {
+    console.log('Room Vacated:', roomData.isVacated);
+    console.log('Generative Hours:', generativeExposureHours);
+    console.log('Total Hours:', state.exposureTime);
+  }, [roomData.isVacated, generativeExposureHours, state.exposureTime]);
 
   const getTotalOccupants = () => {
     const activeBuilding = state.buildings.find(b => b.rooms.length > 0);
@@ -204,17 +293,6 @@ const EpiRisk = () => {
   const [displayValue, setDisplayValue] = useState(0);
 
   const helpText = "Calculates infection risk using the Wells-Riley model. Different pathogens produce varying amounts of infectious particles (quanta) per minute, affecting transmission probability.";
-
-  // Add room dimensions dependency to recalculate risk
-  const activeRoom = React.useMemo(() => {
-    const activeBuilding = state.buildings.find(b => b.rooms.length > 0);
-    return activeBuilding?.rooms[0];
-  }, [state.buildings]);
-
-  const getRoomVolume = React.useCallback(() => {
-    if (!activeRoom?.height || !activeRoom?.floorArea) return 1000;
-    return parseFloat(activeRoom.height) * parseFloat(activeRoom.floorArea);
-  }, [activeRoom]);
 
   // Add state to track if we're using minimum rate
   const [isUsingMinRate, setIsUsingMinRate] = useState(true);  // Start with true since we init with min rate
@@ -280,31 +358,92 @@ const EpiRisk = () => {
     }
   };
 
+  // Modify the marks to include a render function for the label
+  const activityMarks = [
+    { 
+      value: 0.05, 
+      label: <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <VolumeUpIcon sx={{ fontSize: 16 }} />
+        Resting
+      </div>
+    },
+    { 
+      value: 0.33, 
+      label: <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <MicIcon sx={{ fontSize: 16 }} />
+        Speaking
+      </div>
+    },
+    { 
+      value: 0.66, 
+      label: <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <CampaignIcon sx={{ fontSize: 16 }} />
+        Loud Speaking
+      </div>
+    },
+    { 
+      value: 0.95, 
+      label: <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <MusicNoteIcon sx={{ fontSize: 16 }} />
+        Singing
+      </div>
+    }
+  ];
+
+  // Modify handleQuantaRateChange to incorporate activity level
   const handleQuantaRateChange = (event) => {
     const value = event.target.value;
     
-    // Allow empty string for typing
     if (value === '') {
       setQuantaRate('');
       return;
     }
 
-    // Parse the value to a number
     const numValue = parseFloat(value);
     
-    // Validate the number
     if (!isNaN(numValue) && numValue >= 1) {
+      // Store the base quanta rate
+      const baseRate = numValue;
       setQuantaRate(value);
       
-      // Ensure we're dispatching a number, not a string
+      // Calculate adjusted rate based on activity level
+      const adjustedRate = quantaPowerLawQuantaRate(baseRate, activityLevel);
+      
       dispatch({
         type: 'UPDATE_PATHOGEN',
         payload: {
           pathogenId: pathogen,
-          updates: { quantaRate: numValue }
+          updates: { 
+            quantaRate: adjustedRate,
+            baseQuantaRate: baseRate // Store base rate separately
+          }
         }
       });
     }
+    dispatch({ type: 'RESET_TIMER' });
+  };
+
+  // Add handler for activity level changes
+  const handleActivityLevelChange = (_, newValue) => {
+    setActivityLevel(newValue);
+    
+    // Get the base quanta rate
+    const baseRate = state.pathogens[pathogen].baseQuantaRate || parseFloat(quantaRate);
+    
+    // Calculate new adjusted rate
+    const adjustedRate = quantaPowerLawQuantaRate(baseRate, newValue);
+    
+    // Update the pathogen with new adjusted rate
+    dispatch({
+      type: 'UPDATE_PATHOGEN',
+      payload: {
+        pathogenId: pathogen,
+        updates: { 
+          quantaRate: adjustedRate,
+          baseQuantaRate: baseRate
+        }
+      }
+    });
     dispatch({ type: 'RESET_TIMER' });
   };
 
@@ -401,56 +540,73 @@ const EpiRisk = () => {
     dispatch({ type: 'RESET_TIMER' });
   };
 
-  // Separate memo for dynamic risk calculation
+  // Modify the dynamic risk calculation to use the adjusted quanta rate
   const dynamicRiskData = React.useMemo(() => {
+    console.log('Calculating risk with:', {
+      isVacated: roomData.isVacated,
+      generativeHours: generativeExposureHours,
+      totalHours: state.exposureTime
+    });
+
+    // Use the current pathogen's actual quanta rate (which includes activity adjustment)
+    const currentQuantaRate = state.pathogens[pathogen].quantaRate || parseFloat(quantaRate);
+
     return memoizedCalculateRisk({
       totalOccupants: getTotalOccupants(),
       positivityRate,
-      quantaRate,
+      quantaRate: currentQuantaRate, // Use the adjusted rate here
       breathingRate,
-      exposureTime: state.exposureTime,
       roomVolume: getRoomVolume(),
       ventilationRate: state.ventilationRate,
-      halfLife
+      halfLife: parseFloat(halfLife)
     });
   }, [
-    positivityRate, 
-    quantaRate, 
+    roomData.isVacated,
+    memoizedCalculateRisk,
+    getTotalOccupants,
+    positivityRate,
+    pathogen,
+    state.pathogens, // Add this dependency to catch quanta rate updates
+    quantaRate,
     breathingRate,
+    getRoomVolume,
+    state.ventilationRate,
     state.exposureTime,
+    halfLife,
+    generativeExposureHours
+  ]);
+
+  // Create a separate calculation for 1-hour fixed assessment
+  const oneHourRiskData = React.useMemo(() => {
+    // Use the current pathogen's actual quanta rate (which includes activity adjustment)
+    const currentQuantaRate = state.pathogens[pathogen].quantaRate || parseFloat(quantaRate);
+    
+    return calculateWellsRiley(
+      getTotalOccupants(),
+      parseFloat(positivityRate),
+      currentQuantaRate, // Use the adjusted rate instead of directly using quantaRate
+      breathingRate,
+      1, // Fixed 1-hour exposure
+      getRoomVolume(),
+      state.ventilationRate,
+      parseFloat(halfLife)
+    );
+  }, [
+    pathogen,
+    state.pathogens, // Add this dependency to catch quanta rate updates
+    positivityRate,
+    breathingRate,
     state.ventilationRate,
     halfLife,
-    memoizedCalculateRisk,
     getTotalOccupants,
     getRoomVolume
   ]);
 
-  // Separate memo for fixed 1-hour risk calculation
-  const fixedRiskData = React.useMemo(() => {
-    return memoizedCalculateRisk({
-      totalOccupants: getTotalOccupants(),
-      positivityRate,
-      quantaRate,
-      breathingRate,
-      exposureTime: 1, // Fixed 1-hour exposure
-      roomVolume: getRoomVolume(),
-      ventilationRate: state.ventilationRate,
-      halfLife
-    });
-  }, [
-    positivityRate, 
-    quantaRate, 
-    breathingRate,
-    state.ventilationRate,
-    halfLife,
-    memoizedCalculateRisk,
-    getTotalOccupants,
-    getRoomVolume
-  ]);
+  // Format the one-hour risk value
+  const formattedOneHourValue = (oneHourRiskData.probability * 100).toFixed(1);
 
   // Format display values
   const formattedDynamicValue = (dynamicRiskData.probability * 100).toFixed(1);
-  const formattedFixedValue = (fixedRiskData.probability * 100).toFixed(1);
 
   const totalOccupants = getTotalOccupants();
   const riskColor = getRiskColor(dynamicRiskData.probability);
@@ -590,9 +746,15 @@ const EpiRisk = () => {
 
   // Update the risk calculation to emit updates
   useEffect(() => {
-    const risk = dynamicRiskData.probability;
-    riskUpdates.next(risk);
-  }, [dynamicRiskData.probability]);
+    console.log('Emitting new risk:', {
+      risk: dynamicRiskData.probability,
+      isVacated: roomData.isVacated
+    });
+    riskUpdates.next({
+      probability: dynamicRiskData.probability,
+      isVacated: roomData.isVacated
+    });
+  }, [dynamicRiskData.probability, roomData.isVacated]);
 
   // Add this to component initialization
   useEffect(() => {
@@ -607,7 +769,7 @@ const EpiRisk = () => {
       title="Transmission" 
       collapsible={true} 
       icon={<CoronavirusIcon />}
-      count={`${formattedDynamicValue}% Risk`}
+      count={`${formattedOneHourValue}% Risk`}
       helpText={helpText}
     >
       {({ isCollapsed }) => (
@@ -618,7 +780,6 @@ const EpiRisk = () => {
                 <CoronavirusIcon 
                   className={styles['tile-icon']} 
                   sx={{ 
-                    // Use dynamic risk color when collapsed
                     color: getRiskColor(dynamicRiskData.probability), 
                     fontSize: '60px' 
                   }}
@@ -704,20 +865,19 @@ const EpiRisk = () => {
                 <CoronavirusIcon 
                   className={styles['epi-risk-icon']} 
                   sx={{ 
-                    // Use fixed 1-hour risk color when expanded
-                    color: getRiskColor(fixedRiskData.probability), 
+                    color: getRiskColor(oneHourRiskData.probability), 
                     fontSize: getRiskSize(positivityRate)
                   }}
                 />
               </div>
-              <div className={styles['epi-risk-value']} style={{ color: getRiskColor(fixedRiskData.probability) }}>
-                {formattedFixedValue}% Risk
+              <div className={styles['epi-risk-value']} style={{ color: getRiskColor(oneHourRiskData.probability) }}>
+                {formattedOneHourValue}% Risk
                 <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
                   1-hour exposure assessment
                 </Typography>
               </div>
               <Typography variant="body2" className={styles['epi-risk-description']}>
-                {dynamicRiskData.infectiousCount} infectious individuals out of {totalOccupants} total
+                {oneHourRiskData.infectiousCount} infectious individuals out of {totalOccupants} total
               </Typography>
               <PathogenEditor
                 tempPositivityRate={tempPositivityRate}
@@ -756,6 +916,55 @@ const EpiRisk = () => {
                     </Button>
                   ))}
                 </Box>
+              <Box sx={{ 
+                width: '80%',
+                mt: 2, 
+                mb: 2,
+                maxWidth: '400px',
+                margin: '16px auto'
+              }}>
+                <Typography variant="subtitle2" gutterBottom align="center">
+                  Aerosol Generation Activity Level
+                </Typography>
+                <Slider
+                  value={activityLevel}
+                  onChange={handleActivityLevelChange}
+                  step={0.01}
+                  marks={activityMarks}
+                  min={0.05}
+                  max={0.95}
+                  valueLabelDisplay="auto"
+                  valueLabelFormat={(value) => `${(value * 100).toFixed(0)}%`}
+                  sx={{
+                    '& .MuiSlider-mark': {
+                      backgroundColor: '#fff',
+                    },
+                    '& .MuiSlider-markLabel': {
+                      color: '#fff',
+                      fontSize: '0.75rem',
+                      transform: 'translate(-50%, 20px)',
+                      whiteSpace: 'nowrap',
+                    },
+                    '& .MuiSlider-valueLabel': {
+                      backgroundColor: 'var(--primary)',
+                    }
+                  }}
+                />
+                <Typography variant="body2" sx={{ mt: 2, color: 'rgba(255, 255, 255, 0.7)' }}>
+                  The aerosol generation level significantly affects transmission risk, following a power law model. The model shows that vocal activities progressively increase infectious particle emission, from minimal levels during rest and normal breathing, through speaking and loud speech, up to peak emissions during singing.
+                </Typography>
+                <Button
+                  variant="contained"
+                  className={styles['source-button']}
+                  href="https://www.medrxiv.org/content/10.1101/2020.04.12.20062828v1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<ArticleIcon />}
+                  sx={{ mt: 1 }}
+                >
+                  View aerosol generation study
+                </Button>
+              </Box>
               <div className={descriptionStyles['description-container']}>
                 <Typography 
                   variant="body2" 

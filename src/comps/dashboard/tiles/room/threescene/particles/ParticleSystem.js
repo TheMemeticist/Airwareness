@@ -29,55 +29,44 @@ export class ParticleSystem {
     this.lastUpdateTime = Date.now();
     
     this.quantaRate = 1;
-    
     this.infectiousCount = 1;
-    
     this.ventilationRate = 1; // Default ACH value
     
+    // Particle geometry and material
     this.initialize();
     
     // Update particle count based on initial quanta rate
     this.updateParticleCount();
     
     // Calculate base speed to cross room in exactly one hour
-    const maxDimension = Math.max(
-        dimensions.width,
-        dimensions.height,
-        dimensions.length
-    );
-    
-    // Base speed to cross room in one hour (units per millisecond)
-    this.BASE_SPEED = maxDimension / (3600 * 1000); // Convert to milliseconds
-    
-    console.log('Particle speed calculations:', {
-        maxDimension,
-        baseSpeed: this.BASE_SPEED,
-        unitsPerSecond: this.BASE_SPEED * 1000,
-        timeToTraverseRoom: maxDimension / this.BASE_SPEED, // in milliseconds
-    });
+    const maxDimension = Math.max(dimensions.width, dimensions.height, dimensions.length);
+    this.BASE_SPEED = maxDimension / (3600 * 1000); // Convert to ms
     
     this.simulationSpeed = 1; // Default multiplier
     
-    // Speed calculation with wider range (from 1x to 100x base speed)
+    // Speed function
     this.getCurrentSpeed = () => {
-        const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 99; // Maps 1->1 and 50->100
-        
-        const ventEffect = Math.max(0.001, this.ventilationRate);
-        
-        return this.BASE_SPEED * speedMultiplier * ventEffect;
+      const speedMultiplier = 1 + ((this.simulationSpeed - 1) / 49) * 99; 
+      const ventEffect = Math.max(0.001, this.ventilationRate);
+      return this.BASE_SPEED * speedMultiplier * ventEffect;
     };
     
-    // Add storage for original decay rates
+    // For storing original lifespans if needed
     this.originalLifespans = new Float32Array(this.particleCount);
+    
+    // New property
+    this.isVacated = false;
   }
 
   initialize() {
     this.particleGeometry = new THREE.BufferGeometry();
-    this.particleGeometry.setAttribute('position', 
-      new THREE.BufferAttribute(this.manager.positions, 3));
+    this.particleGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(this.manager.positions, 3)
+    );
 
     this.particleMaterial = new THREE.PointsMaterial({
-      color: 0xFF0000,
+      color: 0xff0000,
       size: this.baseParticleSize,
       sizeAttenuation: true,
       depthWrite: false,
@@ -90,7 +79,6 @@ export class ParticleSystem {
     this.scene.add(this.particles);
   }
 
-  // Core methods
   setCollisionMeshes(model) {
     this.manager.setCollisionMeshes(model);
   }
@@ -105,29 +93,27 @@ export class ParticleSystem {
       this.particleGeometry.dispose();
       this.particleMaterial.dispose();
     }
-    
-    // Optionally reset active particles
     this.activeParticles = 0;
   }
 
-  // Delegate to animator/manager
   animate() {
     if (!this.particles) return;
     
     const currentTime = Date.now();
     const deltaTime = currentTime - this.lastUpdateTime;
     
-    // Calculate and generate new particles
-    this.particlesToGenerate = (this.particlesToGenerate || 0) + this.calculateParticlesPerFrame(deltaTime);
-    
-    // Generate whole particles when we accumulate enough
-    while (this.particlesToGenerate >= 1 && this.activeParticles < this.maxActiveParticles) {
-      const newParticleIndex = this.activeParticles;
-      this.manager.generateNewParticle(newParticleIndex);
-      this.activeParticles++;
-      this.particlesToGenerate--;
+    // Only create new particles if this.isVacated is false
+    if (!this.isVacated) {
+      this.particlesToGenerate = (this.particlesToGenerate || 0) + this.calculateParticlesPerFrame(deltaTime);
+      
+      while (this.particlesToGenerate >= 1 && this.activeParticles < this.maxActiveParticles) {
+        this.generateNewParticle(this.activeParticles);
+        this.activeParticles++;
+        this.particlesToGenerate--;
+      }
     }
     
+    // Delegate the actual movement/animation
     this.animator.animate(this);
     this.particleGeometry.attributes.position.needsUpdate = true;
     
@@ -143,12 +129,12 @@ export class ParticleSystem {
   }
 
   async updateRoomBounds(dimensions, clippingPlanes, position) {
-    // Only call startTransition if dimensions are different
+    // Only call startTransition if dimensions differ
     if (JSON.stringify(this.dimensions) !== JSON.stringify(dimensions)) {
-        await this.animator.startTransition(dimensions, clippingPlanes, position);
+      await this.animator.startTransition(dimensions, clippingPlanes, position);
     }
 
-    // Update system properties after transition
+    // Update after transition
     this.dimensions = dimensions;
     this.manager.dimensions = dimensions;
     this.manager.clippingPlanes = clippingPlanes;
@@ -163,45 +149,29 @@ export class ParticleSystem {
   }
 
   updateInfectiousCount(count) {
-    console.log('ParticleSystem updating infectious count:', count);
     this.infectiousCount = Math.max(1, count);
     this.resetParticles();
     this.updateParticleCount();
   }
 
   updateParticleCount() {
-    // Convert quanta per hour to particles per minute
+    // Particles per minute
     const particlesPerMinute = this.quantaRate / 60;
-    
-    // Calculate maximum particles based on particles per minute and infectious count
     const maxParticles = Math.floor(
-      particlesPerMinute * 
-      this.infectiousCount * 
-      100 // Scale factor to maintain visual density
+      particlesPerMinute * this.infectiousCount * 100 // visual scaling
     );
     
-    // Cap at maximum particle count
-    this.maxActiveParticles = 30000;
-    
-    console.log('Updated particle system limits:', {
-      quantaRate: this.quantaRate,
-      particlesPerMinute: particlesPerMinute,
-      infectiousCount: this.infectiousCount,
-      maxParticles: maxParticles,
-      maxActiveParticles: this.maxActiveParticles
-    });
+    // Keep an upper bound
+    this.maxActiveParticles = 30000; 
   }
 
   calculateLifespan() {
-    // Calculate base lifespan without simulation speed adjustment
-    const baseLifespan = (-this.baseHalfLife * Math.log(1 - Math.random()));
+    // Match Wells-Riley model's total removal rate calculation
+    const pathogenDecayRate = Math.log(2) / (this.baseHalfLife / 3600000); // Convert ms to hours
+    const totalRemovalRate = this.ventilationRate + pathogenDecayRate;
     
-    // ACH directly represents how many times the air is replaced per hour
-    // No need to add 1 - the ACH value itself represents the decay rate
-    const achEffect = Math.max(0.001, this.ventilationRate);
-    
-    // Shorter lifespan with higher ACH
-    return baseLifespan / achEffect;
+    // Use total removal rate for exponential distribution
+    return -3600000 * Math.log(1 - Math.random()) / totalRemovalRate; // Convert hours to ms
   }
 
   updateHalfLife(halfLifeHours) {
@@ -215,99 +185,127 @@ export class ParticleSystem {
   }
 
   calculateParticlesPerFrame(deltaTime) {
-    // Convert quanta per hour to particles per millisecond, adjusted by infectiousCount
-    const particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
+    // Convert quanta/hour to quanta/ms, multiplied by infectiousCount
+    let particlesPerMs = (this.quantaRate * this.infectiousCount) / 3600000;
     
-    // Apply ACH reduction for values above 1
-    const achEffect = this.ventilationRate > 1 ? (1 / this.ventilationRate) : 1;
-    
-    // Full scaling for particle generation with ACH effect
-    return particlesPerMs * deltaTime * this.simulationSpeed * achEffect;
+    // Return a rate independent of ventilation
+    return particlesPerMs * deltaTime * this.simulationSpeed;
   }
 
   resetParticles() {
-    // Reset all particles
     this.activeParticles = 0;
     this.particlesToGenerate = 0;
     
-    // Clear all particle positions and velocities
+    // Quickly reset all particles
+    const pos = this.manager.positions;
+    const vel = this.manager.velocities;
+    const life = this.manager.lifespans;
     for (let i = 0; i < this.particleCount; i++) {
       const idx = i * 3;
-      this.manager.positions[idx] = 0;
-      this.manager.positions[idx + 1] = -1000;
-      this.manager.positions[idx + 2] = 0;
-      this.manager.velocities[idx] = 0;
-      this.manager.velocities[idx + 1] = 0;
-      this.manager.velocities[idx + 2] = 0;
-      this.manager.lifespans[i] = 0;
+      pos[idx] = 0; 
+      pos[idx + 1] = -1000;
+      pos[idx + 2] = 0;
+      vel[idx] = vel[idx + 1] = vel[idx + 2] = 0;
+      life[i] = 0;
     }
     
-    // Update the geometry
+    // Update geometry
     this.particleGeometry.attributes.position.needsUpdate = true;
   }
 
   updateSimulationSpeed(speed) {
+    const previousSpeed = this.simulationSpeed;
     this.simulationSpeed = speed;
+    const speedRatio = previousSpeed / speed;
+    
+    // Update velocities and lifespans of active particles
+    const vel = this.manager.velocities;
+    const lifespans = this.manager.lifespans;
     const targetSpeed = this.getCurrentSpeed();
     
-    // Update velocities for all active particles
     for (let i = 0; i < this.activeParticles; i++) {
-      const idx = i * 3;
-      const vx = this.manager.velocities[idx];
-      const vy = this.manager.velocities[idx + 1];
-      const vz = this.manager.velocities[idx + 2];
-      
-      // Normalize and scale to new speed in one operation
-      const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
-      if (length > 0) {
-        const scale = targetSpeed / length;
-        this.manager.velocities[idx] *= scale;
-        this.manager.velocities[idx + 1] *= scale;
-        this.manager.velocities[idx + 2] *= scale;
-      }
+        // Update velocities
+        const idx = i * 3;
+        const vx = vel[idx];
+        const vy = vel[idx + 1];
+        const vz = vel[idx + 2];
+        
+        const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
+        if (length > 0) {
+            const scale = targetSpeed / length;
+            vel[idx]     *= scale;
+            vel[idx + 1] *= scale;
+            vel[idx + 2] *= scale;
+        }
+        
+        // Scale remaining lifespan based on speed change
+        lifespans[i] *= speedRatio;
     }
   }
 
   generateNewParticle(index) {
     const newParticleIndex = this.activeParticles;
-    this.manager.generateNewParticle(newParticleIndex);
     
-    // Store the original lifespan for this particle
-    this.originalLifespans[newParticleIndex] = this.manager.lifespans[newParticleIndex];
+    // Pass additional randomization factors to the manager
+    this.manager.generateNewParticle(newParticleIndex, {
+        timeOffset: Date.now() % 1000 / 1000,
+        speedVariation: 0.5 + Math.random() * 0.5,
+        directionJitter: 0.4
+    });
     
-    // Apply current simulation speed to the actual lifespan
-    this.manager.lifespans[newParticleIndex] /= this.simulationSpeed;
+    // Store the base lifespan before ventilation adjustment
+    const baseLifespan = this.manager.lifespans[newParticleIndex];
+    this.originalLifespans[newParticleIndex] = baseLifespan;
     
-    this.activeParticles++;
+    // Apply ventilation effect to lifespan
+    this.manager.lifespans[newParticleIndex] = baseLifespan / this.ventilationRate;
+    
+    // Apply simulation speed effect
+    const speedVariation = 0.9 + Math.random() * 0.2;
+    this.manager.lifespans[newParticleIndex] /= (this.simulationSpeed * speedVariation);
   }
 
-  // Add new method to update ventilation rate
   updateVentilationRate(rate) {
     if (!rate || isNaN(rate)) return;
     
-    this.ventilationRate = Math.max(0.001, rate);
+    const previousRate = this.ventilationRate;
+    this.ventilationRate = rate; // Remove minimum constraint
     
-    // Update speeds of existing particles
-    const targetSpeed = this.getCurrentSpeed();
+    // Update velocities & lifespans
+    const vel = this.manager.velocities;
+    const lifespans = this.manager.lifespans;
+    const originalLifespans = this.originalLifespans;
     
-    // Update velocities and lifespans for all active particles
+    const pathogenDecayRate = Math.log(2) / (this.baseHalfLife / 3600000);
+    const previousTotalRate = previousRate + pathogenDecayRate;
+    const newTotalRate = this.ventilationRate + pathogenDecayRate;
+    
     for (let i = 0; i < this.activeParticles; i++) {
-      const idx = i * 3;
-      const vx = this.manager.velocities[idx];
-      const vy = this.manager.velocities[idx + 1];
-      const vz = this.manager.velocities[idx + 2];
-      
-      // Normalize and scale to new speed
-      const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
-      if (length > 0) {
-        const scale = targetSpeed / length;
-        this.manager.velocities[idx] *= scale;
-        this.manager.velocities[idx + 1] *= scale;
-        this.manager.velocities[idx + 2] *= scale;
-      }
-      
-      // Use ACH directly for decay rate
-      this.manager.lifespans[i] = this.manager.lifespans[i] / this.ventilationRate;
+        // Update velocities
+        const idx = i * 3;
+        const vx = vel[idx];
+        const vy = vel[idx + 1];
+        const vz = vel[idx + 2];
+        
+        const length = Math.sqrt(vx * vx + vy * vy + vz * vz);
+        if (length > 0) {
+            const scale = this.getCurrentSpeed() / length;
+            vel[idx]     *= scale;
+            vel[idx + 1] *= scale;
+            vel[idx + 2] *= scale;
+        }
+        
+        // Adjust lifespan using total removal rates
+        const remainingLifespan = lifespans[i];
+        const originalLifespan = originalLifespans[i];
+        const elapsedFraction = 1 - (remainingLifespan / (originalLifespan * previousTotalRate));
+        lifespans[i] = (originalLifespan * newTotalRate) * (1 - elapsedFraction);
     }
+  }
+
+  // New setter method to toggle the vacated state
+  setVacated(vacated) {
+    console.log('ParticleSystem.setVacated:', vacated);
+    this.isVacated = vacated;
   }
 } 
